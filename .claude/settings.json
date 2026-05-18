@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" || exit 0; [ -d node_modules ] || exit 0; out=$(npm run lint:fix 2>&1 && npm run typecheck 2>&1) || { echo \"$out\" >&2; exit 2; }",
+            "timeout": 180,
+            "statusMessage": "Running lint:fix + typecheck"
+          }
+        ]
+      }
+    ]
+  }
+}
