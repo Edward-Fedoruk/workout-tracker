@@ -6,14 +6,11 @@ import {
 import {
   Box,
   Button,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
-  HStack,
-  Input,
-  Text,
-  VStack,
-} from '@chakra-ui/react';
+  FormHelperText,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { useCallback, useState } from 'react';
 
 type FormErrors = {
@@ -139,7 +136,6 @@ export const WorkoutForm = ({ initialData, onCancel, onSave }: Props) => {
 
       onSave();
     } catch (e) {
-      debugger
       setSubmitError('Failed to save workout. Please try again.');
     } finally {
       setIsLoading(false);
@@ -178,142 +174,111 @@ export const WorkoutForm = ({ initialData, onCancel, onSave }: Props) => {
   );
 
   return (
-    <VStack
-      align="stretch"
-      spacing={4}
-    >
-      <FormControl isInvalid={Boolean(errors.workoutDate)}>
-        <FormLabel>Date</FormLabel>
-        <Input
-          max={getToday()}
-          onChange={(event) => {
-            setWorkoutDate(event.target.value);
-          }}
-          type="date"
-          value={workoutDate}
-        />
-        <FormErrorMessage>{errors.workoutDate}</FormErrorMessage>
-      </FormControl>
+    <Stack spacing={2}>
+      <TextField
+        error={Boolean(errors.workoutDate)}
+        fullWidth
+        helperText={errors.workoutDate}
+        label="Date"
+        onChange={(event) => {
+          setWorkoutDate(event.target.value);
+        }}
+        slotProps={{ htmlInput: { max: getToday() } }}
+        type="date"
+        value={workoutDate}
+      />
 
-      <FormControl isInvalid={Boolean(errors.exerciseName)}>
-        <FormLabel>Exercise</FormLabel>
-        <Input
-          onChange={(event) => {
-            setExerciseName(event.target.value);
-          }}
-          placeholder="e.g. Bench Press"
-          value={exerciseName}
-        />
-        <FormErrorMessage>{errors.exerciseName}</FormErrorMessage>
-      </FormControl>
+      <TextField
+        error={Boolean(errors.exerciseName)}
+        fullWidth
+        helperText={errors.exerciseName}
+        label="Exercise"
+        onChange={(event) => {
+          setExerciseName(event.target.value);
+        }}
+        placeholder="e.g. Bench Press"
+        value={exerciseName}
+      />
 
       <Box>
-        <Text
-          fontWeight="semibold"
-          mb={2}
-        >
+        <Typography sx={{ fontWeight: 600, mb: 1 }}>
           Sets
-        </Text>
+        </Typography>
         {sets.map((set, index) => (
-          <HStack
-            align="flex-start"
+          <Stack
+            direction="row"
             key={set._key}
-            mb={2}
-            spacing={2}
+            spacing={1}
+            sx={{ alignItems: 'flex-start', mb: 1 }}
           >
-            <Text
-              color="gray.500"
-              minWidth="20px"
-              pt={2}
-            >
+            <Typography color="text.secondary" sx={{ minWidth: 20, pt: 1.5 }}>
               {index + 1}.
-            </Text>
-            <FormControl isInvalid={Boolean(errors.sets[index]?.weight)}>
-              <Input
-                min="0.1"
-                onChange={(event) => {
-                  updateSet(index, 'weight', event.target.value);
-                }}
-                placeholder="kg"
-                step="0.1"
-                type="number"
-                value={set.weight}
-              />
-              <FormErrorMessage>{errors.sets[index]?.weight}</FormErrorMessage>
-            </FormControl>
-            <FormControl isInvalid={Boolean(errors.sets[index]?.reps)}>
-              <Input
-                min="1"
-                onChange={(event) => {
-                  updateSet(index, 'reps', event.target.value);
-                }}
-                placeholder="reps"
-                step="1"
-                type="number"
-                value={set.reps}
-              />
-              <FormErrorMessage>{errors.sets[index]?.reps}</FormErrorMessage>
-            </FormControl>
-          </HStack>
+            </Typography>
+            <TextField
+              error={Boolean(errors.sets[index]?.weight)}
+              helperText={errors.sets[index]?.weight}
+              onChange={(event) => {
+                updateSet(index, 'weight', event.target.value);
+              }}
+              placeholder="kg"
+              size="small"
+              slotProps={{ htmlInput: { min: '0.1', step: '0.1' } }}
+              type="number"
+              value={set.weight}
+            />
+            <TextField
+              error={Boolean(errors.sets[index]?.reps)}
+              helperText={errors.sets[index]?.reps}
+              onChange={(event) => {
+                updateSet(index, 'reps', event.target.value);
+              }}
+              placeholder="reps"
+              size="small"
+              slotProps={{ htmlInput: { min: '1', step: '1' } }}
+              type="number"
+              value={set.reps}
+            />
+          </Stack>
         ))}
 
         {errors.general && (
-          <Text
-            color="red.500"
-            fontSize="sm"
-            mb={2}
-          >
+          <FormHelperText error sx={{ mb: 1 }}>
             {errors.general}
-          </Text>
+          </FormHelperText>
         )}
 
-        <HStack
-          mt={2}
-          spacing={2}
-        >
+        <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
           <Button
-            isDisabled={sets.length >= 5}
+            disabled={sets.length >= 5}
             onClick={addSet}
-            size="sm"
-            variant="outline"
+            size="small"
+            variant="outlined"
           >
             + Add Set
           </Button>
           {sets.length > 1 && (
-            <Button
-              onClick={removeLastSet}
-              size="sm"
-              variant="ghost"
-            >
+            <Button onClick={removeLastSet} size="small">
               − Remove Last Set
             </Button>
           )}
-        </HStack>
+        </Stack>
       </Box>
 
-      {submitError && <Text color="red.500">{submitError}</Text>}
+      {submitError && <Typography color="error">{submitError}</Typography>}
 
-      <HStack
-        justify="flex-end"
-        spacing={2}
-      >
+      <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
+        <Button onClick={onCancel}>Cancel</Button>
         <Button
-          onClick={onCancel}
-          variant="ghost"
-        >
-          Cancel
-        </Button>
-        <Button
-          colorScheme="blue"
-          isLoading={isLoading}
+          disabled={isLoading}
           onClick={() => {
             // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync handler
             handleSave().catch(() => undefined);
           }}
+          variant="contained"
         >
           {isEditing ? 'Update Workout' : 'Save Workout'}
         </Button>
-      </HStack>
-    </VStack>
+      </Stack>
+    </Stack>
   );
 };

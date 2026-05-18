@@ -7,61 +7,30 @@ import {
 } from '../database';
 import { WorkoutForm } from './WorkoutForm';
 import {
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogOverlay,
   Box,
   Button,
-  HStack,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
-  Spinner,
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
-  Tr,
-  VStack,
-} from '@chakra-ui/react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from '@mui/material';
+import {
+  MaterialReactTable,
+  useMaterialReactTable,
+  type MRT_ColumnDef,
+} from 'material-react-table';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-const SET_DISPLAY_COLS: Array<{
-  hideBelow?: string;
-  key: keyof WorkoutTableRow;
-  label: string;
-}> = [
-  { key: 'Set1_weight', label: 'S1 kg' },
-  { key: 'Set1_reps', label: 'S1 reps' },
-  { hideBelow: 'md', key: 'Set2_weight', label: 'S2 kg' },
-  { hideBelow: 'md', key: 'Set2_reps', label: 'S2 reps' },
-  { hideBelow: 'md', key: 'Set3_weight', label: 'S3 kg' },
-  { hideBelow: 'md', key: 'Set3_reps', label: 'S3 reps' },
-  { hideBelow: 'md', key: 'Set4_weight', label: 'S4 kg' },
-  { hideBelow: 'md', key: 'Set4_reps', label: 'S4 reps' },
-  { hideBelow: 'md', key: 'Set5_weight', label: 'S5 kg' },
-  { hideBelow: 'md', key: 'Set5_reps', label: 'S5 reps' },
-];
+const renderNullable = (value: number | null) => value ?? '—';
 
 export const WorkoutTable = () => {
   const [workouts, setWorkouts] = useState<WorkoutTableRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [editingWorkout, setEditingWorkout] = useState<null | WorkoutWithSets>(
-    null,
-  );
+  const [editingWorkout, setEditingWorkout] = useState<null | WorkoutWithSets>(null);
   const [showForm, setShowForm] = useState(false);
   const [loadError, setLoadError] = useState<null | string>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<null | number>(null);
-  const cancelDeleteRef = useRef<HTMLButtonElement>(null);
 
   const loadWorkouts = useCallback(async () => {
     setIsLoading(true);
@@ -77,22 +46,9 @@ export const WorkoutTable = () => {
   }, []);
 
   useEffect(() => {
-    const run = async () => {
-      setIsLoading(true);
-      setLoadError(null);
-      try {
-        const rows = await listWorkouts();
-        setWorkouts(rows);
-      } catch {
-        setLoadError('Failed to load workouts. Please reload the page.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync useEffect callback
-    run().catch(() => undefined);
-  }, []);
+    loadWorkouts().catch(() => undefined);
+  }, [loadWorkouts]);
 
   const openNewForm = useCallback(() => {
     setEditingWorkout(null);
@@ -106,13 +62,9 @@ export const WorkoutTable = () => {
   }, []);
 
   const handleDeleteConfirm = useCallback(async () => {
-    if (confirmDeleteId === null) {
-      return;
-    }
-
+    if (confirmDeleteId === null) return;
     const idToDelete = confirmDeleteId;
     setConfirmDeleteId(null);
-
     try {
       await deleteWorkout(idToDelete);
       await loadWorkouts();
@@ -133,184 +85,182 @@ export const WorkoutTable = () => {
     setEditingWorkout(null);
   }, []);
 
+  const columns = useMemo<MRT_ColumnDef<WorkoutTableRow>[]>(
+    () => [
+      { accessorKey: 'workout_date', header: 'Date', size: 110 },
+      { accessorKey: 'exercise_name', header: 'Exercise', size: 200 },
+      {
+        accessorKey: 'Set1_weight',
+        header: 'S1 kg',
+        size: 80,
+        Cell: ({ cell }) => renderNullable(cell.getValue<number | null>()),
+      },
+      {
+        accessorKey: 'Set1_reps',
+        header: 'S1 reps',
+        size: 80,
+        Cell: ({ cell }) => renderNullable(cell.getValue<number | null>()),
+      },
+      {
+        accessorKey: 'Set2_weight',
+        header: 'S2 kg',
+        size: 80,
+        Cell: ({ cell }) => renderNullable(cell.getValue<number | null>()),
+      },
+      {
+        accessorKey: 'Set2_reps',
+        header: 'S2 reps',
+        size: 80,
+        Cell: ({ cell }) => renderNullable(cell.getValue<number | null>()),
+      },
+      {
+        accessorKey: 'Set3_weight',
+        header: 'S3 kg',
+        size: 80,
+        Cell: ({ cell }) => renderNullable(cell.getValue<number | null>()),
+      },
+      {
+        accessorKey: 'Set3_reps',
+        header: 'S3 reps',
+        size: 80,
+        Cell: ({ cell }) => renderNullable(cell.getValue<number | null>()),
+      },
+      {
+        accessorKey: 'Set4_weight',
+        header: 'S4 kg',
+        size: 80,
+        Cell: ({ cell }) => renderNullable(cell.getValue<number | null>()),
+      },
+      {
+        accessorKey: 'Set4_reps',
+        header: 'S4 reps',
+        size: 80,
+        Cell: ({ cell }) => renderNullable(cell.getValue<number | null>()),
+      },
+      {
+        accessorKey: 'Set5_weight',
+        header: 'S5 kg',
+        size: 80,
+        Cell: ({ cell }) => renderNullable(cell.getValue<number | null>()),
+      },
+      {
+        accessorKey: 'Set5_reps',
+        header: 'S5 reps',
+        size: 80,
+        Cell: ({ cell }) => renderNullable(cell.getValue<number | null>()),
+      },
+    ],
+    [],
+  );
+
+  const table = useMaterialReactTable({
+    columns,
+    data: workouts,
+    enableRowActions: true,
+    positionActionsColumn: 'last',
+    renderRowActions: ({ row }) => (
+      <Box sx={{ display: 'flex', gap: 1 }}>
+        <Button
+          onClick={() => {
+            // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync handler
+            openEditForm(row.original.id).catch(() => undefined);
+          }}
+          size="small"
+          variant="outlined"
+        >
+          Edit
+        </Button>
+        <Button
+          color="error"
+          onClick={() => {
+            setConfirmDeleteId(row.original.id);
+          }}
+          size="small"
+          variant="outlined"
+        >
+          Delete
+        </Button>
+      </Box>
+    ),
+    renderTopToolbarCustomActions: () => (
+      <Button onClick={openNewForm} variant="contained">
+        Add Workout
+      </Button>
+    ),
+    initialState: {
+      columnVisibility: {
+        Set2_reps: false,
+        Set2_weight: false,
+        Set3_reps: false,
+        Set3_weight: false,
+        Set4_reps: false,
+        Set4_weight: false,
+        Set5_reps: false,
+        Set5_weight: false,
+      },
+    },
+    state: {
+      isLoading,
+      showAlertBanner: loadError !== null,
+    },
+    ...(loadError !== null
+      ? { muiToolbarAlertBannerProps: { severity: 'error' as const, children: loadError } }
+      : {}),
+  });
+
   return (
-    <Box
-      margin="auto"
-      maxWidth="1200px"
-      p={4}
-    >
-      <VStack
-        align="stretch"
-        spacing={4}
-      >
-        <HStack justify="space-between">
-          <Text
-            as="h1"
-            fontSize="2xl"
-            fontWeight="bold"
-          >
-            Workout Log
-          </Text>
-          <Button
-            colorScheme="blue"
-            minHeight="44px"
-            minWidth="44px"
-            onClick={openNewForm}
-          >
-            Add Workout
-          </Button>
-        </HStack>
+    <Box sx={{ maxWidth: 1200, mx: 'auto', p: 2 }}>
+      <MaterialReactTable table={table} />
 
-        {loadError !== null && <Text color="red.500">{loadError}</Text>}
-
-        {isLoading ? (
-          <Box
-            py={8}
-            textAlign="center"
-          >
-            <Spinner />
-          </Box>
-        ) : workouts.length === 0 ? (
-          <Box
-            color="gray.500"
-            py={8}
-            textAlign="center"
-          >
-            No workouts yet. Add your first one!
-          </Box>
-        ) : (
-          <TableContainer>
-            <Table
-              size="sm"
-              variant="simple"
-            >
-              <Thead>
-                <Tr>
-                  <Th>Date</Th>
-                  <Th>Exercise</Th>
-                  {SET_DISPLAY_COLS.map((col) => (
-                    <Th
-                      key={col.key}
-                      {...(col.hideBelow
-                        ? { display: { base: 'none', md: 'table-cell' } }
-                        : {})}
-                    >
-                      {col.label}
-                    </Th>
-                  ))}
-                  <Th>Actions</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {workouts.map((workout) => (
-                  <Tr key={workout.id}>
-                    <Td whiteSpace="nowrap">{workout.workout_date}</Td>
-                    <Td>{workout.exercise_name}</Td>
-                    {SET_DISPLAY_COLS.map((col) => (
-                      <Td
-                        isNumeric
-                        key={col.key}
-                        {...(col.hideBelow
-                          ? { display: { base: 'none', md: 'table-cell' } }
-                          : {})}
-                      >
-                        {workout[col.key] ?? '—'}
-                      </Td>
-                    ))}
-                    <Td>
-                      <HStack spacing={1}>
-                        <Button
-                          minHeight="44px"
-                          minWidth="44px"
-                          onClick={() => {
-                            // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync handler
-                            openEditForm(workout.id).catch(() => undefined);
-                          }}
-                          size="sm"
-                          variant="outline"
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          colorScheme="red"
-                          minHeight="44px"
-                          minWidth="44px"
-                          onClick={() => {
-                            setConfirmDeleteId(workout.id);
-                          }}
-                          size="sm"
-                          variant="outline"
-                        >
-                          Delete
-                        </Button>
-                      </HStack>
-                    </Td>
-                  </Tr>
-                ))}
-              </Tbody>
-            </Table>
-          </TableContainer>
-        )}
-      </VStack>
-
-      <Modal
-        isOpen={showForm}
+      <Dialog
+        fullWidth
+        maxWidth="sm"
         onClose={handleFormCancel}
-        size="lg"
+        open={showForm}
       >
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>
-            {editingWorkout ? 'Edit Workout' : 'Add Workout'}
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <WorkoutForm
-              onCancel={handleFormCancel}
-              onSave={handleFormSave}
-              {...(editingWorkout ? { initialData: editingWorkout } : {})}
-            />
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+        <DialogTitle>
+          {editingWorkout ? 'Edit Workout' : 'Add Workout'}
+        </DialogTitle>
+        <DialogContent>
+          <WorkoutForm
+            onCancel={handleFormCancel}
+            onSave={handleFormSave}
+            {...(editingWorkout ? { initialData: editingWorkout } : {})}
+          />
+        </DialogContent>
+      </Dialog>
 
-      <AlertDialog
-        isOpen={confirmDeleteId !== null}
-        leastDestructiveRef={cancelDeleteRef}
+      <Dialog
         onClose={() => {
           setConfirmDeleteId(null);
         }}
+        open={confirmDeleteId !== null}
       >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader>Delete Workout</AlertDialogHeader>
-            <AlertDialogBody>
-              Are you sure you want to delete this workout? This cannot be
-              undone.
-            </AlertDialogBody>
-            <AlertDialogFooter>
-              <Button
-                onClick={() => {
-                  setConfirmDeleteId(null);
-                }}
-                ref={cancelDeleteRef}
-              >
-                Cancel
-              </Button>
-              <Button
-                colorScheme="red"
-                ml={3}
-                onClick={() => {
-                  // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync handler
-                  handleDeleteConfirm().catch(() => undefined);
-                }}
-              >
-                Delete
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
+        <DialogTitle>Delete Workout</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this workout? This cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setConfirmDeleteId(null);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            color="error"
+            onClick={() => {
+              // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync handler
+              handleDeleteConfirm().catch(() => undefined);
+            }}
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

@@ -1,7 +1,9 @@
 import { WorkoutTable } from './components/WorkoutTable';
 import { initDatabase } from './database';
-import { Box, ChakraProvider } from '@chakra-ui/react';
+import { Box, ThemeProvider, createTheme } from '@mui/material';
 import { useEffect, useState } from 'react';
+
+const muiTheme = createTheme();
 
 export const App = () => {
   const [isDatabaseReady, setIsDatabaseReady] = useState(false);
@@ -23,21 +25,18 @@ export const App = () => {
 
   if (error !== null) {
     return (
-      <ChakraProvider>
-        <Box
-          color="red.500"
-          p={4}
-        >
+      <ThemeProvider theme={muiTheme}>
+        <Box sx={{ color: 'error.main', p: 2 }}>
           {error}
         </Box>
-      </ChakraProvider>
+      </ThemeProvider>
     );
   }
 
   return (
-    <ChakraProvider>
-      {isDatabaseReady ? <WorkoutTable /> : <Box p={4}>Loading...</Box>}
-    </ChakraProvider>
+    <ThemeProvider theme={muiTheme}>
+      {isDatabaseReady ? <WorkoutTable /> : <Box sx={{ p: 2 }}>Loading...</Box>}
+    </ThemeProvider>
   );
 };
 
