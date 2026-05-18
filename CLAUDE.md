@@ -19,11 +19,11 @@ There is no test runner configured.
 
 These are hard rules. Breaking them silently corrupts data, breaks OPFS, or causes the worker to be instantiated twice.
 
-- **The worker is created exactly once.** `sqlite3Worker1Promiser` is called inside `initDb` in `src/db.ts`, and `initDb` is memoized by the module-level `dbPromise`. Never call `sqlite3Worker1Promiser` from anywhere else. Never bypass the memoization (e.g. by adding a guard that re-creates it).
-- **`dbId` is set once at init and used by every `exec` call.** It lives at module scope in `db.ts`. Every helper must pass it. Do not call `promiser('open', ...)` from outside `initDb`.
-- **All DB access goes through `db.ts`.** UI/components never import `@sqlite.org/sqlite-wasm` directly and never see the raw `promiser`. To expose a new operation, add a typed async helper to `db.ts` and import it.
-- **All schema work happens inside `initDb` before it resolves.** Both `CREATE TABLE` and any migrations must complete before the promise returned by `initDb` resolves. The rest of the app assumes a fully-migrated DB.
-- **UI gates on `isDbReady`.** `App.tsx` does not render the main tree until `initDb()` resolves. New top-level UI must respect that gate or be mounted inside it.
+- **The worker is created exactly once.** `sqlite3Worker1Promiser` is called inside `initDatabase` in `src/database.ts`, and `initDatabase` is memoized by the module-level `dbPromise`. Never call `sqlite3Worker1Promiser` from anywhere else. Never bypass the memoization (e.g. by adding a guard that re-creates it).
+- **`dbId` is set once at init and used by every `exec` call.** It lives at module scope in `database.ts`. Every helper must pass it. Do not call `promiser('open', ...)` from outside `initDatabase`.
+- **All DB access goes through `database.ts`.** UI/components never import `@sqlite.org/sqlite-wasm` directly and never see the raw `promiser`. To expose a new operation, add a typed async helper to `database.ts` and import it.
+- **All schema work happens inside `initDatabase` before it resolves.** Both `CREATE TABLE` and any migrations must complete before the promise returned by `initDatabase` resolves. The rest of the app assumes a fully-migrated DB.
+- **UI gates on `isDbReady`.** `App.tsx` does not render the main tree until `initDatabase()` resolves. New top-level UI must respect that gate or be mounted inside it.
 - **Never string-interpolate SQL.** Always use the `bind` array with `?` placeholders. The promiser supports only positional params.
 
 ## SQLite-WASM promiser contract
@@ -39,7 +39,7 @@ type Promiser = (command: 'open' | 'exec' | string, params: object) => Promise<a
 - `filename: 'file:<name>.sqlite3?vfs=opfs'` — opens a persistent OPFS-backed DB.
 - `filename: ':memory:'` — opens a non-persistent in-memory DB (the fallback path).
 - Returns `{ result: { dbId, filename, ... } }`. Capture `dbId` at module scope.
-- Throws if OPFS is unavailable (the catch in `initDb` falls back to in-memory).
+- Throws if OPFS is unavailable (the catch in `initDatabase` falls back to in-memory).
 
 ### `promiser('exec', { sql, bind?, rowMode?, dbId })`
 
@@ -54,7 +54,7 @@ type Promiser = (command: 'open' | 'exec' | string, params: object) => Promise<a
 
 ```ts
 export async function listX(): Promise<X[]> {
-  const promiser = await initDb();
+  const promiser = await initDatabase();
   const result = await promiser('exec', {
     sql: 'SELECT ... FROM x WHERE ... ORDER BY ...',
     bind: [/* params */],
@@ -71,11 +71,11 @@ INSERT/UPDATE/DELETE: same shape, omit `rowMode`, ignore the result. Use `INSERT
 
 Things that look reasonable but will break something:
 
-- **Don't add a second `useEffect` that calls `initDb()` with its own guard.** It's already memoized; a parallel guard can race with the fallback path and end up with two `dbId`s in flight.
+- **Don't add a second `useEffect` that calls `initDatabase()` with its own guard.** It's already memoized; a parallel guard can race with the fallback path and end up with two `dbId`s in flight.
 - **Don't bypass the `isDbReady` gate** by rendering children that hit the DB synchronously. They will run before the schema exists.
 - **Don't remove COOP/COEP headers** from `vite.config.ts` (`server.headers`). SQLite-WASM's OPFS VFS requires a cross-origin-isolated context. The same headers must be set on whatever production server hosts the build.
 - **Don't drop `@sqlite.org/sqlite-wasm` from `optimizeDeps.exclude`.** Vite's pre-bundler rewrites worker URLs and breaks loading.
-- **Don't do destructive schema changes** (DROP COLUMN, rename) inside `initDb`. The migration runs on every load against whatever state the user's OPFS DB is already in. Use additive migrations + a `PRAGMA table_info` check (see the original `migrateDatabase` shape in git history for the pattern) and gate each step on its check.
+- **Don't do destructive schema changes** (DROP COLUMN, rename) inside `initDatabase`. The migration runs on every load against whatever state the user's OPFS DB is already in. Use additive migrations + a `PRAGMA table_info` check (see the original `migrateDatabase` shape in git history for the pattern) and gate each step on its check.
 - **Don't string-interpolate SQL** (repeated for emphasis — it's the most common slip).
 - **Don't introduce a second persistence layer** (localStorage, IndexedDB) for app data. Everything goes through SQLite. The exception is the PWA service worker's own Workbox cache, which is managed by `vite-plugin-pwa`.
 
@@ -98,7 +98,7 @@ main thread (React)  ──►  promiser (async API)  ──►  Web Worker  ─
 - Every DB call is async. There is no synchronous escape hatch.
 - The worker is single-threaded; concurrent `exec` calls are serialized by the worker, so transactions are safe without app-level locking, but a slow query blocks the next one.
 - The UI thread never touches the wasm or the OPFS file directly — it only awaits the promiser.
-- "DB ready" means: worker spawned, DB opened (OPFS or `:memory:`), schema + migrations applied. Until `initDb()` resolves, none of those are guaranteed.
+- "DB ready" means: worker spawned, DB opened (OPFS or `:memory:`), schema + migrations applied. Until `initDatabase()` resolves, none of those are guaranteed.
 - On unsupported browsers, the OPFS open throws and the fallback to `:memory:` is silent (a `console.warn` is logged). The app appears to work but data is lost on reload — check the console if persistence seems broken.
 
 <!-- SPECKIT START -->

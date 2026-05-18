@@ -1,60 +1,61 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import { VitePWA } from 'vite-plugin-pwa'
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  optimizeDeps: {
+    exclude: ['@sqlite.org/sqlite-wasm'],
+  },
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
       manifest: {
-        name: 'Workout Log',
-        short_name: 'Workout',
-        description: 'Log your workouts. Stored locally in your browser via OPFS + SQLite.',
-        theme_color: '#1a202c',
         background_color: '#1a202c',
+        description:
+          'Log your workouts. Stored locally in your browser via OPFS + SQLite.',
         display: 'standalone',
-        orientation: 'portrait',
-        start_url: '/',
-        scope: '/',
         icons: [
           {
-            src: 'icon-192.png',
             sizes: '192x192',
+            src: 'icon-192.png',
             type: 'image/png',
           },
           {
+            sizes: '512x512',
             src: 'icon-512.png',
-            sizes: '512x512',
             type: 'image/png',
           },
           {
-            src: 'icon-512-maskable.png',
-            sizes: '512x512',
-            type: 'image/png',
             purpose: 'maskable',
+            sizes: '512x512',
+            src: 'icon-512-maskable.png',
+            type: 'image/png',
           },
           {
-            src: 'favicon.svg',
             sizes: 'any',
+            src: 'favicon.svg',
             type: 'image/svg+xml',
           },
         ],
+        name: 'Workout Log',
+        orientation: 'portrait',
+        scope: '/',
+        short_name: 'Workout',
+        start_url: '/',
+        theme_color: '#1a202c',
       },
+      registerType: 'autoUpdate',
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,wasm}'],
-        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+        maximumFileSizeToCacheInBytes: 10 * 1_024 * 1_024,
       },
     }),
   ],
   server: {
     headers: {
-      'Cross-Origin-Opener-Policy': 'same-origin',
       'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Opener-Policy': 'same-origin',
     },
   },
-  optimizeDeps: {
-    exclude: ['@sqlite.org/sqlite-wasm'],
-  },
-})
+});

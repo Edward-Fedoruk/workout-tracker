@@ -1,22 +1,22 @@
-import { useEffect, useState, useCallback } from 'react';
+import { getKV, initDatabase, type KVRow, listKV, setKV } from './database';
 import {
-  ChakraProvider,
   Box,
-  VStack,
-  HStack,
-  Heading,
-  Input,
   Button,
-  Text,
+  ChakraProvider,
   Code,
+  Heading,
+  HStack,
+  Input,
+  Text,
+  VStack,
 } from '@chakra-ui/react';
-import { initDb, setKV, getKV, listKV, type KVRow } from './db';
+import { useCallback, useEffect, useState } from 'react';
 
 const NOTE_KEY = 'note';
 
-export function App() {
-  const [isDbReady, setIsDbReady] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export const App = () => {
+  const [isDatabaseReady, setIsDatabaseReady] = useState(false);
+  const [error, setError] = useState<null | string>(null);
   const [note, setNote] = useState('');
   const [rows, setRows] = useState<KVRow[]>([]);
 
@@ -27,17 +27,21 @@ export function App() {
   useEffect(() => {
     const run = async () => {
       try {
-        await initDb();
+        await initDatabase();
         const existing = await getKV(NOTE_KEY);
-        if (existing !== null) setNote(existing);
+        if (existing !== null) {
+          setNote(existing);
+        }
+
         await refresh();
-        setIsDbReady(true);
-      } catch (err) {
-        console.error('Database initialization failed:', err);
+        setIsDatabaseReady(true);
+      } catch {
         setError('Failed to initialize the database. See console for details.');
       }
     };
-    void run();
+
+    // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync useEffect callback
+    run().catch(() => undefined);
   }, [refresh]);
 
   const handleSave = useCallback(async () => {
@@ -46,17 +50,32 @@ export function App() {
   }, [note, refresh]);
 
   if (error) {
-    return <Box color="red.500" p={4}>{error}</Box>;
+    return (
+      <Box
+        color="red.500"
+        p={4}
+      >
+        {error}
+      </Box>
+    );
   }
 
-  if (!isDbReady) {
+  if (!isDatabaseReady) {
     return <Box p={4}>Loading...</Box>;
   }
 
   return (
     <ChakraProvider>
-      <Box maxWidth="800px" margin="auto" mt={8} p={4}>
-        <VStack spacing={6} align="stretch">
+      <Box
+        margin="auto"
+        maxWidth="800px"
+        mt={8}
+        p={4}
+      >
+        <VStack
+          align="stretch"
+          spacing={6}
+        >
           <Heading>Workout Log</Heading>
           <Text>
             Local-first workout tracking. Data is stored in your browser via
@@ -64,22 +83,40 @@ export function App() {
           </Text>
           <HStack>
             <Input
-              value={note}
-              onChange={(e) => { setNote(e.target.value); }}
+              onChange={(event) => {
+                setNote(event.target.value);
+              }}
               placeholder="Type something..."
+              value={note}
             />
-            <Button onClick={() => void handleSave()} colorScheme="blue">
+            <Button
+              colorScheme="blue"
+              onClick={() => {
+                // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync handler
+                handleSave().catch(() => undefined);
+              }}
+            >
               Save
             </Button>
           </HStack>
           <Box>
-            <Heading size="sm" mb={2}>kv table</Heading>
+            <Heading
+              mb={2}
+              size="sm"
+            >
+              kv table
+            </Heading>
             {rows.length === 0 ? (
               <Text color="gray.500">(empty)</Text>
             ) : (
-              <VStack align="stretch" spacing={1}>
-                {rows.map((r) => (
-                  <Code key={r.key}>{r.key} = {r.value}</Code>
+              <VStack
+                align="stretch"
+                spacing={1}
+              >
+                {rows.map((row) => (
+                  <Code key={row.key}>
+                    {row.key} = {row.value}
+                  </Code>
                 ))}
               </VStack>
             )}
@@ -88,6 +125,6 @@ export function App() {
       </Box>
     </ChakraProvider>
   );
-}
+};
 
 export default App;
