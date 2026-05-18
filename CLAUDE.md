@@ -102,6 +102,9 @@ main thread (React)  ──►  promiser (async API)  ──►  Web Worker  ─
 - On unsupported browsers, the OPFS open throws and the fallback to `:memory:` is silent (a `console.warn` is logged). The app appears to work but data is lost on reload — check the console if persistence seems broken.
 
 <!-- SPECKIT START -->
-For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan
+**Active Feature**: Workout Log Table (branch `001-workout-log-table`)  
+For implementation context, design decisions, data model, and step-by-step quickstart, see:
+- **Plan**: `specs/001-workout-log-table/plan.md`
+- **Data Model**: `specs/001-workout-log-table/data-model.md`
+- **Quickstart**: `specs/001-workout-log-table/quickstart.md`
 <!-- SPECKIT END -->

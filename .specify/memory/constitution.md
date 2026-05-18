@@ -1,21 +1,20 @@
 <!--
 Sync Impact Report
 ==================
-Version change: 1.0.0 → 1.1.0
-Bump rationale: Added Principle VI (Mobile-First, Adaptive UI). MINOR bump per policy —
-new principle added, no existing principle redefined or removed.
+Version change: 1.1.0 → 1.2.0
+Bump rationale: Added Principle VII (Component Separation of Concerns). MINOR bump per
+policy — new principle added, no existing principle redefined or removed.
 Modified principles: none
 Added sections:
-  - Principle VI: Mobile-First, Adaptive UI
+  - Principle VII: Component Separation of Concerns (Containers vs. Presentational UI)
 Removed sections: none
 Templates audited:
-  - .specify/templates/plan-template.md       ⚠ pending (next /speckit-plan should add a
-    responsive/mobile gate to the Constitution Check block)
+  - .specify/templates/plan-template.md       ✅ no changes needed (principles already checked)
   - .specify/templates/spec-template.md       ✅ no changes needed
-  - .specify/templates/tasks-template.md      ✅ no changes needed
-  - CLAUDE.md                                 ⚠ pending (does not currently mention UI
-    responsiveness; update when CLAUDE.md is next revised, or leave to the constitution
-    as authoritative)
+  - .specify/templates/tasks-template.md      ✅ no changes needed (architecture principles
+    covered by existing guidance)
+  - CLAUDE.md                                 ⚠ pending (consider adding component architecture
+    guidance when next revised)
 Follow-up TODOs: none
 -->
 
@@ -96,6 +95,27 @@ Rationale: Workout logging happens on a phone at the gym. A desktop-only layout 
 the product unusable in its primary context, and retrofitting responsiveness after the
 fact is consistently more expensive than building for it.
 
+### VII. Component Separation of Concerns
+
+React components MUST be strictly separated into two categories, each with distinct
+responsibilities:
+
+- **Container Components** (data/logic layer): Hold business logic, state management,
+  data fetching, validation, and side effects. Examples: `WorkoutTable` (fetches data,
+  handles edit/delete), `WorkoutForm` (manages form state, validates, saves to DB).
+  Containers SHOULD NOT contain UI-specific code (styling, layout, DOM structure).
+
+- **Presentational Components** (UI layer): Pure display components that receive props
+  and render UI. Examples: a reusable `Button`, `Table`, `Modal`, `Input`. Presentational
+  components MUST be free of business logic, data fetching, and conditional side effects.
+  They accept data via props and emit events (callbacks) for user interactions.
+
+Rationale: Separation keeps business logic testable and portable; reusable UI components
+stay generic across features. Mixing concerns creates tight coupling, makes components
+hard to reuse, and embeds domain knowledge in presentation code. This discipline also
+makes the codebase more navigable: readers know where to find business rules (containers)
+vs. styling and layout (presentational).
+
 ## Technical Constraints
 
 - **Cross-origin isolation**: COOP/COEP headers MUST be set in `vite.config.ts`
@@ -141,4 +161,4 @@ fact is consistently more expensive than building for it.
   touches; any deviation MUST be justified in a Complexity Tracking entry in the
   feature's plan.md.
 
-**Version**: 1.1.0 | **Ratified**: 2026-05-18 | **Last Amended**: 2026-05-18
+**Version**: 1.2.0 | **Ratified**: 2026-05-18 | **Last Amended**: 2026-05-18
