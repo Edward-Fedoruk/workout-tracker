@@ -1,3 +1,1 @@
-{
-  "feature_directory": "specs/001-workout-log-table"
-}
+{ "feature_directory": "specs/002-export-import-sqlite-dump" }
