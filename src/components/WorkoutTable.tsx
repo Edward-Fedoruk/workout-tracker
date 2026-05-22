@@ -5,6 +5,7 @@ import {
   type WorkoutTableRow,
   type WorkoutWithSets,
 } from '../database';
+import { WorkoutDataActions } from './WorkoutDataActions';
 import { WorkoutForm } from './WorkoutForm';
 import {
   Box,
@@ -17,17 +18,19 @@ import {
 } from '@mui/material';
 import {
   MaterialReactTable,
-  useMaterialReactTable,
   type MRT_ColumnDef,
+  useMaterialReactTable,
 } from 'material-react-table';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-const renderNullable = (value: number | null) => value ?? '—';
+const renderNullable = (value: null | number) => value ?? '—';
 
 export const WorkoutTable = () => {
   const [workouts, setWorkouts] = useState<WorkoutTableRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [editingWorkout, setEditingWorkout] = useState<null | WorkoutWithSets>(null);
+  const [editingWorkout, setEditingWorkout] = useState<null | WorkoutWithSets>(
+    null,
+  );
   const [showForm, setShowForm] = useState(false);
   const [loadError, setLoadError] = useState<null | string>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<null | number>(null);
@@ -62,7 +65,10 @@ export const WorkoutTable = () => {
   }, []);
 
   const handleDeleteConfirm = useCallback(async () => {
-    if (confirmDeleteId === null) return;
+    if (confirmDeleteId === null) {
+      return;
+    }
+
     const idToDelete = confirmDeleteId;
     setConfirmDeleteId(null);
     try {
@@ -85,69 +91,69 @@ export const WorkoutTable = () => {
     setEditingWorkout(null);
   }, []);
 
-  const columns = useMemo<MRT_ColumnDef<WorkoutTableRow>[]>(
+  const columns = useMemo<Array<MRT_ColumnDef<WorkoutTableRow>>>(
     () => [
       { accessorKey: 'workout_date', header: 'Date', size: 110 },
       { accessorKey: 'exercise_name', header: 'Exercise', size: 200 },
       {
         accessorKey: 'Set1_weight',
+        Cell: ({ cell }) => renderNullable(cell.getValue<null | number>()),
         header: 'S1 kg',
         size: 80,
-        Cell: ({ cell }) => renderNullable(cell.getValue<number | null>()),
       },
       {
         accessorKey: 'Set1_reps',
+        Cell: ({ cell }) => renderNullable(cell.getValue<null | number>()),
         header: 'S1 reps',
         size: 80,
-        Cell: ({ cell }) => renderNullable(cell.getValue<number | null>()),
       },
       {
         accessorKey: 'Set2_weight',
+        Cell: ({ cell }) => renderNullable(cell.getValue<null | number>()),
         header: 'S2 kg',
         size: 80,
-        Cell: ({ cell }) => renderNullable(cell.getValue<number | null>()),
       },
       {
         accessorKey: 'Set2_reps',
+        Cell: ({ cell }) => renderNullable(cell.getValue<null | number>()),
         header: 'S2 reps',
         size: 80,
-        Cell: ({ cell }) => renderNullable(cell.getValue<number | null>()),
       },
       {
         accessorKey: 'Set3_weight',
+        Cell: ({ cell }) => renderNullable(cell.getValue<null | number>()),
         header: 'S3 kg',
         size: 80,
-        Cell: ({ cell }) => renderNullable(cell.getValue<number | null>()),
       },
       {
         accessorKey: 'Set3_reps',
+        Cell: ({ cell }) => renderNullable(cell.getValue<null | number>()),
         header: 'S3 reps',
         size: 80,
-        Cell: ({ cell }) => renderNullable(cell.getValue<number | null>()),
       },
       {
         accessorKey: 'Set4_weight',
+        Cell: ({ cell }) => renderNullable(cell.getValue<null | number>()),
         header: 'S4 kg',
         size: 80,
-        Cell: ({ cell }) => renderNullable(cell.getValue<number | null>()),
       },
       {
         accessorKey: 'Set4_reps',
+        Cell: ({ cell }) => renderNullable(cell.getValue<null | number>()),
         header: 'S4 reps',
         size: 80,
-        Cell: ({ cell }) => renderNullable(cell.getValue<number | null>()),
       },
       {
         accessorKey: 'Set5_weight',
+        Cell: ({ cell }) => renderNullable(cell.getValue<null | number>()),
         header: 'S5 kg',
         size: 80,
-        Cell: ({ cell }) => renderNullable(cell.getValue<number | null>()),
       },
       {
         accessorKey: 'Set5_reps',
+        Cell: ({ cell }) => renderNullable(cell.getValue<null | number>()),
         header: 'S5 reps',
         size: 80,
-        Cell: ({ cell }) => renderNullable(cell.getValue<number | null>()),
       },
     ],
     [],
@@ -157,6 +163,18 @@ export const WorkoutTable = () => {
     columns,
     data: workouts,
     enableRowActions: true,
+    initialState: {
+      columnVisibility: {
+        Set2_reps: false,
+        Set2_weight: false,
+        Set3_reps: false,
+        Set3_weight: false,
+        Set4_reps: false,
+        Set4_weight: false,
+        Set5_reps: false,
+        Set5_weight: false,
+      },
+    },
     positionActionsColumn: 'last',
     renderRowActions: ({ row }) => (
       <Box sx={{ display: 'flex', gap: 1 }}>
@@ -183,33 +201,32 @@ export const WorkoutTable = () => {
       </Box>
     ),
     renderTopToolbarCustomActions: () => (
-      <Button onClick={openNewForm} variant="contained">
-        Add Workout
-      </Button>
+      <Box sx={{ alignItems: 'center', display: 'flex', gap: 2 }}>
+        <WorkoutDataActions />
+        <Button
+          onClick={openNewForm}
+          variant="contained"
+        >
+          Add Workout
+        </Button>
+      </Box>
     ),
-    initialState: {
-      columnVisibility: {
-        Set2_reps: false,
-        Set2_weight: false,
-        Set3_reps: false,
-        Set3_weight: false,
-        Set4_reps: false,
-        Set4_weight: false,
-        Set5_reps: false,
-        Set5_weight: false,
-      },
-    },
     state: {
       isLoading,
       showAlertBanner: loadError !== null,
     },
     ...(loadError !== null
-      ? { muiToolbarAlertBannerProps: { severity: 'error' as const, children: loadError } }
+      ? {
+          muiToolbarAlertBannerProps: {
+            children: loadError,
+            severity: 'error' as const,
+          },
+        }
       : {}),
   });
 
   return (
-    <Box sx={{ maxWidth: 1200, mx: 'auto', p: 2 }}>
+    <Box sx={{ maxWidth: 1_200, mx: 'auto', p: 2 }}>
       <MaterialReactTable table={table} />
 
       <Dialog

@@ -1,20 +1,19 @@
 <!--
 Sync Impact Report
 ==================
-Version change: 1.1.0 → 1.2.0
-Bump rationale: Added Principle VII (Component Separation of Concerns). MINOR bump per
+Version change: 1.2.0 → 1.3.0
+Bump rationale: Added Principle VIII (Code Organization & File Size). MINOR bump per
 policy — new principle added, no existing principle redefined or removed.
 Modified principles: none
 Added sections:
-  - Principle VII: Component Separation of Concerns (Containers vs. Presentational UI)
+  - Principle VIII: Code Organization & File Size (~200-line soft limit, utility files)
 Removed sections: none
 Templates audited:
-  - .specify/templates/plan-template.md       ✅ no changes needed (principles already checked)
+  - .specify/templates/plan-template.md       ✅ no changes needed
   - .specify/templates/spec-template.md       ✅ no changes needed
-  - .specify/templates/tasks-template.md      ✅ no changes needed (architecture principles
-    covered by existing guidance)
-  - CLAUDE.md                                 ⚠ pending (consider adding component architecture
-    guidance when next revised)
+  - .specify/templates/tasks-template.md      ✅ no changes needed
+  - CLAUDE.md                                 ⚠ pending (consider noting the 200-line
+    soft limit and utility file convention when next revised)
 Follow-up TODOs: none
 -->
 
@@ -116,6 +115,19 @@ hard to reuse, and embeds domain knowledge in presentation code. This discipline
 makes the codebase more navigable: readers know where to find business rules (containers)
 vs. styling and layout (presentational).
 
+### VIII. Code Organization & File Size
+
+Files MUST NOT exceed a soft limit of ~200 lines. When a file approaches this limit,
+logic MUST be extracted into focused utility files rather than grown in place.
+Shared helpers SHOULD live in a global utility file (e.g., `src/utils.ts`); logic
+shared within a single domain SHOULD live in a co-located utility file
+(e.g., `src/components/workoutUtils.ts`). Every utility function MUST be a pure,
+named export with a single, clearly named responsibility.
+
+Rationale: Files beyond ~200 lines become hard to review, navigate, and reason about.
+Keeping files small forces decomposition early, surfaces reuse opportunities naturally,
+and makes individual responsibilities easy to test in isolation.
+
 ## Technical Constraints
 
 - **Cross-origin isolation**: COOP/COEP headers MUST be set in `vite.config.ts`
@@ -161,4 +173,4 @@ vs. styling and layout (presentational).
   touches; any deviation MUST be justified in a Complexity Tracking entry in the
   feature's plan.md.
 
-**Version**: 1.2.0 | **Ratified**: 2026-05-18 | **Last Amended**: 2026-05-18
+**Version**: 1.3.0 | **Ratified**: 2026-05-18 | **Last Amended**: 2026-05-22
