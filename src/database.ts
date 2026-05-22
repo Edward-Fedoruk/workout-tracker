@@ -1,8 +1,18 @@
 import { sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm';
 
+type CloseResult = {
+  ok: boolean;
+};
+
 type ExecResult<Row = unknown> = {
   columnNames?: string[];
   resultRows: Row[];
+};
+
+type ExportResult = {
+  byteArray: Uint8Array;
+  filename: string;
+  mimetype: string;
 };
 
 type OpenResult = {
@@ -24,6 +34,14 @@ type Promiser = {
       sql: string;
     },
   ): Promise<PromiserResponse<ExecResult<Row>>>;
+  (
+    command: 'export',
+    parameters: { dbId: string },
+  ): Promise<PromiserResponse<ExportResult>>;
+  (
+    command: 'close',
+    parameters: { dbId: string },
+  ): Promise<PromiserResponse<CloseResult>>;
 };
 
 type PromiserResponse<T> = {
@@ -340,4 +358,62 @@ export const deleteWorkout = async (id: number): Promise<void> => {
     dbId: requireDatabaseId(),
     sql: 'DELETE FROM workout_log WHERE id = ?',
   });
+};
+
+export const exportDatabaseBytes = async (): Promise<Uint8Array> => {
+  const promiser = await initDatabase();
+  const result = await promiser('export', {
+    dbId: requireDatabaseId(),
+  });
+  const bytes = result.result.byteArray;
+  if (bytes instanceof Uint8Array) {
+    return bytes;
+  }
+
+  return new Uint8Array(bytes as ArrayBuffer);
+};
+
+export const replaceDatabaseAndReload = async (
+  bytes: Uint8Array,
+): Promise<never> => {
+  await initDatabase();
+
+  const headerBytes = bytes.slice(0, 16);
+  const headerText = new TextDecoder('latin1').decode(headerBytes);
+
+  if (!headerText.includes('SQLite format 3')) {
+    throw new Error('Selected file is not a SQLite database.');
+  }
+
+  try {
+    await (
+      await initDatabase()
+    )('close', {
+      dbId: requireDatabaseId(),
+    });
+  } catch {
+    // Log but don't abort — reload will reset the worker
+  }
+
+  if (navigator.storage) {
+    const root = await navigator.storage.getDirectory();
+    for (const name of [
+      'app.sqlite3',
+      'app.sqlite3-journal',
+      'app.sqlite3-wal',
+      'app.sqlite3-shm',
+    ]) {
+      await root.removeEntry(name).catch(() => undefined);
+    }
+
+    const fileHandle = await root.getFileHandle('app.sqlite3', {
+      create: true,
+    });
+    const writable = await fileHandle.createWritable();
+    await writable.write(bytes);
+    await writable.close();
+  }
+
+  location.reload();
+  throw new Error('Reload failed');
 };
