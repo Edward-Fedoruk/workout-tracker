@@ -102,10 +102,11 @@ main thread (React)  ──►  promiser (async API)  ──►  Web Worker  ─
 - On unsupported browsers, the OPFS open throws and the fallback to `:memory:` is silent (a `console.warn` is logged). The app appears to work but data is lost on reload — check the console if persistence seems broken.
 
 <!-- SPECKIT START -->
-**Active Feature**: Export & Import Workout Data via SQLite Dump File (branch `002-export-import-sqlite-dump`)  
+**Active Feature**: Drizzle ORM with Database Migrations (branch `003-orm-migrations`)  
 For implementation context, design decisions, data model, and step-by-step quickstart, see:
-- **Plan**: `specs/002-export-import-sqlite-dump/plan.md`
-- **Data Model**: `specs/002-export-import-sqlite-dump/data-model.md`
-- **Quickstart**: `specs/002-export-import-sqlite-dump/quickstart.md`
-- **Contracts**: `specs/002-export-import-sqlite-dump/contracts/database.ts.md`
+- **Plan**: `specs/003-orm-migrations/plan.md`
+- **Research**: `specs/003-orm-migrations/research.md`
+- **Data Model**: `specs/003-orm-migrations/data-model.md`
+- **Quickstart**: `specs/003-orm-migrations/quickstart.md`
+- **Contracts**: `specs/003-orm-migrations/contracts/database.ts.md`
 <!-- SPECKIT END -->
