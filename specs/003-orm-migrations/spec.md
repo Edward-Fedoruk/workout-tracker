@@ -7,6 +7,14 @@
 
 ## Clarifications
 
+### Session 2026-05-25
+
+- Q1: What happens if the app starts with a database schema newer than the code expects (e.g., after a code rollback)? → A: Same blocking modal as a migration failure — offer retry or reset database
+- Q2: What should the system do when a migration file has been deleted but its name still appears in the applied migrations table? → A: Fail startup with an error — treat missing applied migration as a data integrity violation
+- Q3: Where should FR-007 migration logs be written? → A: Console only — successes recorded in __drizzle_migrations with applied_at timestamp; failures logged to console and surfaced via error modal
+- Q4: Should FR-004 permit documented exceptions for queries not expressible in Drizzle? → A: Yes — update FR-004 to permit narrow, documented exceptions (pivot queries, sqlite-wasm binary operations)
+- Q5: How should data transformation migrations be structured? → A: Single .sql file with DDL and DML in sequence, executed as one transaction (all-or-nothing)
+
 ### Session 2026-05-22
 
 - Q1: What should happen if a migration fails at startup? → A: Block startup with clear error; offer user choice to retry or instantiate fresh empty database
@@ -68,9 +76,9 @@ The database schema is defined using Drizzle's schema definition API instead of 
 ### Edge Cases
 
 - **Migration Failure Recovery**: If a migration fails at startup (syntax error, constraint violation), the app shows a clear error message and offers the user two options: (1) retry after fixing the migration, or (2) instantiate a fresh empty database and proceed. This allows recovery without data loss while preventing inconsistent schema states.
-- What happens if the app starts with a newer database schema than the code expects?
-- How does the system handle schema changes that require data transformation?
-- What happens if a migration is deleted after it's been applied?
+- **Schema Ahead of Code**: If the database schema is newer than the code expects (e.g., after rolling back to an older app version), FR-010 validation fails and the app shows the same blocking modal as a migration failure — the user can retry (update the app) or reset the database.
+- **Data Transformation Migrations**: Schema changes requiring data transformation (e.g., backfilling a new column, splitting a field) are written as a single `.sql` file containing both DDL and DML statements in sequence. The migration runner wraps the entire file in a transaction — all statements apply or none do.
+- **Deleted Applied Migration**: If a migration file is absent from the codebase but its name appears in `__drizzle_migrations`, the system MUST fail startup with a data integrity error (same blocking modal). The missing file indicates a code/database divergence that requires developer intervention.
 
 ## Requirements *(mandatory)*
 
@@ -79,13 +87,14 @@ The database schema is defined using Drizzle's schema definition API instead of 
 - **FR-001**: System MUST automatically discover and execute all pending migrations when the application starts
 - **FR-002**: System MUST prevent re-running migrations that have already been applied
 - **FR-003**: Database schema MUST be defined using Drizzle ORM's schema definition API
-- **FR-004**: All database queries MUST use Drizzle ORM instead of raw SQL strings
+- **FR-004**: All database queries MUST use Drizzle ORM instead of raw SQL strings; narrow documented exceptions are permitted for (a) queries not expressible in Drizzle's query builder (e.g., multi-column pivot queries) and (b) sqlite-wasm-specific binary operations (`export`, `close`) that have no Drizzle equivalent — each exception MUST be commented in code
 - **FR-005**: System MUST generate migration files when schema changes are made
 - **FR-006**: Developers MUST be able to rollback migrations locally during development for testing and schema iteration
-- **FR-007**: System MUST log migration execution with timestamps and success/failure status
-- **FR-008**: System MUST handle migration errors gracefully with clear error messages for debugging
-- **FR-009**: Migrations MUST support data transformation operations (e.g., backfilling columns, renaming fields) via raw SQL execution
-- **FR-010**: System MUST validate at startup that the applied database schema matches the code's Drizzle schema definition; fail with clear error if mismatch detected
+- **FR-007**: System MUST log migration execution with timestamps and success/failure status to the browser console; successful migrations are additionally recorded in `__drizzle_migrations` with an `applied_at` timestamp; no separate persistent log table is required
+- **FR-008**: System MUST handle migration errors gracefully with clear error messages for debugging; this includes missing applied migration files, which are treated as data integrity violations
+- **FR-011**: System MUST fail startup if a migration file referenced in `__drizzle_migrations` is no longer present in the codebase
+- **FR-009**: Migrations MUST support data transformation operations (e.g., backfilling columns, renaming fields) via raw SQL; DDL and DML MUST be colocated in the same `.sql` file and executed within a single transaction
+- **FR-010**: System MUST validate at startup that the applied database schema matches the code's Drizzle schema definition; fail with clear error and blocking retry/reset modal if mismatch detected (including when the database schema is ahead of the code)
 
 ### Key Entities
 

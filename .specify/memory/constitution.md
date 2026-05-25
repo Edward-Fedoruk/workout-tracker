@@ -1,20 +1,33 @@
 <!--
 Sync Impact Report
 ==================
-Version change: 1.2.0 → 1.3.0
-Bump rationale: Added Principle VIII (Code Organization & File Size). MINOR bump per
-policy — new principle added, no existing principle redefined or removed.
+Version change: 1.4.0 → 1.5.0
+Bump rationale: New Principle IX added — Strong TypeScript Types. Prohibits resolving
+type errors with `any`, `unknown`, or `as unknown as X` casts; requires genuine type
+definitions instead. MINOR bump per policy — new principle added.
+
 Modified principles: none
+
 Added sections:
-  - Principle VIII: Code Organization & File Size (~200-line soft limit, utility files)
+  - Principle IX: Strong TypeScript Types
+
 Removed sections: none
+
 Templates audited:
-  - .specify/templates/plan-template.md       ✅ no changes needed
-  - .specify/templates/spec-template.md       ✅ no changes needed
-  - .specify/templates/tasks-template.md      ✅ no changes needed
-  - CLAUDE.md                                 ⚠ pending (consider noting the 200-line
-    soft limit and utility file convention when next revised)
-Follow-up TODOs: none
+  - .specify/templates/plan-template.md   ✅ no changes needed
+  - .specify/templates/spec-template.md   ✅ no changes needed
+  - .specify/templates/tasks-template.md  ✅ no changes needed
+  - CLAUDE.md                             ⚠ pending — add a note in the "Forbidden
+    moves" section that `as any`, `as unknown`, and `as unknown as X` are forbidden
+    workarounds; type errors must be fixed with real types. Update when CLAUDE.md is
+    next revised.
+
+Follow-up TODOs:
+  - Review existing uses of `as unknown as Promiser` in src/db/driver.ts and
+    `(this as unknown as Record<string, unknown>)` in src/db/migrations.ts; these are
+    genuine third-party boundary casts but should be documented with a comment citing
+    the specific reason (e.g., untyped sqlite-wasm constructor return). Tracked for
+    cleanup in a future refactor.
 -->
 
 # todo-opfs-sqlite Constitution
@@ -48,15 +61,28 @@ auditable.
 
 ### III. Schema-Complete Before Ready
 
-Every `CREATE TABLE` and migration MUST run inside `initDatabase` and MUST complete
+Every schema change and migration MUST run inside `initDatabase` and MUST complete
 before the returned promise resolves. The UI MUST gate on `isDbReady` (the resolution of
-`initDatabase()`) before rendering anything that touches the DB. Migrations MUST be
-additive and gated on `PRAGMA table_info` checks; destructive changes (DROP COLUMN,
-rename, type change) are forbidden inside `initDatabase`.
+`initDatabase()`) before rendering anything that touches the DB.
 
-Rationale: The DB runs against whatever shape the user's OPFS already has. A
-half-migrated DB or a UI that queries before schema exists causes silent data loss that
-cannot be recovered on the client.
+**All database schema changes MUST be implemented as SQL migration files.** Migration
+files are the single source of truth for DDL. The required workflow is:
+
+1. Update `src/db/schema.ts` (the Drizzle schema definition).
+2. Run `npx drizzle-kit generate` to produce a new `.sql` file in `drizzle/`.
+3. Commit both the updated schema and the generated migration file.
+4. The migration runner (`src/db/migrations.ts`) executes pending files automatically on
+   the next app start, in filename order, inside a `BEGIN`/`COMMIT` transaction.
+
+Inline `CREATE TABLE` or any other DDL written directly inside `initDatabase` is
+**forbidden**. Destructive schema changes (DROP COLUMN, rename, type change) applied to
+already-shipped migration files are also forbidden — add a new forward migration instead.
+
+Rationale: The DB runs against whatever shape the user's OPFS already has. Migration
+files give every schema change an auditable history, make idempotent replay possible
+(`CREATE TABLE IF NOT EXISTS`), and ensure the migration runner can detect gaps or
+inconsistencies before the app reaches ready state. Inline DDL cannot be versioned,
+replayed safely, or rolled back.
 
 ### IV. Parameterized SQL Only
 
@@ -128,6 +154,39 @@ Rationale: Files beyond ~200 lines become hard to review, navigate, and reason a
 Keeping files small forces decomposition early, surfaces reuse opportunities naturally,
 and makes individual responsibilities easy to test in isolation.
 
+### IX. Strong TypeScript Types
+
+TypeScript type errors MUST be resolved by writing correct types — never by casting to
+`any`, `unknown`, or using the `as unknown as X` double-cast escape hatch. When a type
+error arises, the correct fix is one of:
+
+- Define or narrow the type precisely (e.g., a typed interface, discriminated union,
+  or explicit generic parameter).
+- Correct the call site so the types align without casting.
+- Extend or narrow an existing type with `Pick`, `Omit`, `Extract`, intersection, or
+  a type guard (`is` predicate).
+
+The only permitted exception is at a genuine **untyped external boundary** — meaning a
+third-party API or browser API that returns `unknown` or has no type declarations and
+cannot be typed without a cast. In that case:
+
+- The cast MUST be localized to the narrowest possible scope (a single return line or
+  assignment, not a function signature).
+- A short inline comment MUST explain why no real type is available (e.g.,
+  `// sqlite3Worker1Promiser returns a loosely-typed object; cast is required until
+  the library ships types`).
+- The cast MUST use the most specific target type available, not `any`.
+
+`as any` is forbidden in all circumstances. `as unknown` alone (without immediately
+narrowing to a specific type) is forbidden. Suppressing type errors via `// @ts-ignore`
+or `// @ts-expect-error` without a cited reason and a tracking comment is forbidden.
+
+Rationale: `as unknown as X` silences the compiler without proving correctness — it
+converts a compile-time guarantee into a runtime assumption with no safety net. Every
+such cast is a latent bug waiting for a refactor to expose it. Real types are
+discoverable, refactor-safe, and self-documenting; casts are invisible technical debt
+that compounds over time.
+
 ## Technical Constraints
 
 - **Cross-origin isolation**: COOP/COEP headers MUST be set in `vite.config.ts`
@@ -149,6 +208,8 @@ and makes individual responsibilities easy to test in isolation.
   `vite build`), `npm run preview` (serve production build), `npm run lint` and
   `npm run lint:fix` (ESLint via `eslint-config-canonical`), `npm run typecheck`
   (`tsc -b`).
+- **Schema changes**: run `npx drizzle-kit generate` after editing `src/db/schema.ts`;
+  commit both the schema file and the generated `drizzle/*.sql` file together.
 - **Lint + typecheck MUST pass before commit.** A repo stop-hook enforces this.
 - **No test runner is configured.** Per Principle V, do not add one ad-hoc.
 - **CLAUDE.md is authoritative runtime guidance** for any Claude-driven contribution.
@@ -173,4 +234,4 @@ and makes individual responsibilities easy to test in isolation.
   touches; any deviation MUST be justified in a Complexity Tracking entry in the
   feature's plan.md.
 
-**Version**: 1.3.0 | **Ratified**: 2026-05-18 | **Last Amended**: 2026-05-22
+**Version**: 1.5.0 | **Ratified**: 2026-05-18 | **Last Amended**: 2026-05-25

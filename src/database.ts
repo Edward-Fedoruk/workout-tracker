@@ -1,188 +1,14 @@
-import { sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm';
+import { getDatabaseId, getPromiser, initDriver } from './db/driver';
+import { MigrationError, runMigrations } from './db/migrations';
+import { database } from './db/orm';
+import { workoutLog, workoutSet } from './db/schema';
+import { validateSchema } from './db/validator';
+import { eq, sql } from 'drizzle-orm';
 
-type CloseResult = {
-  ok: boolean;
-};
+export { MigrationError } from './db/migrations';
 
-type ExecResult<Row = unknown> = {
-  columnNames?: string[];
-  resultRows: Row[];
-};
-
-type ExportResult = {
-  byteArray: Uint8Array;
-  filename: string;
-  mimetype: string;
-};
-
-type OpenResult = {
-  dbId: string;
-  filename: string;
-};
-
-type Promiser = {
-  (
-    command: 'open',
-    parameters: { filename: string },
-  ): Promise<PromiserResponse<OpenResult>>;
-  <Row = unknown>(
-    command: 'exec',
-    parameters: {
-      bind?: readonly unknown[];
-      dbId: string;
-      rowMode?: 'array' | 'object';
-      sql: string;
-    },
-  ): Promise<PromiserResponse<ExecResult<Row>>>;
-  (
-    command: 'export',
-    parameters: { dbId: string },
-  ): Promise<PromiserResponse<ExportResult>>;
-  (
-    command: 'close',
-    parameters: { dbId: string },
-  ): Promise<PromiserResponse<CloseResult>>;
-};
-
-type PromiserResponse<T> = {
-  result: T;
-};
-
-let databasePromise: null | Promise<Promiser> = null;
-let databaseId: null | string = null;
-
-export type KVRow = {
-  key: string;
-  value: string;
-};
-
-const createPromiser = (): Promise<Promiser> => {
-  return new Promise<Promiser>((resolve) => {
-    const promiser = sqlite3Worker1Promiser({
-      onready: () => {
-        resolve(promiser as unknown as Promiser);
-      },
-    }) as unknown as Promiser;
-  });
-};
-
-const open = async (promiser: Promiser): Promise<string> => {
-  try {
-    const opened = await promiser('open', {
-      filename: 'file:app.sqlite3?vfs=opfs',
-    });
-    return opened.result.dbId;
-  } catch {
-    const opened = await promiser('open', { filename: ':memory:' });
-    return opened.result.dbId;
-  }
-};
-
-const createSchema = async (promiser: Promiser, id: string): Promise<void> => {
-  await promiser('exec', {
-    dbId: id,
-    sql: 'PRAGMA foreign_keys = ON',
-  });
-
-  await promiser('exec', {
-    dbId: id,
-    sql: `
-      CREATE TABLE IF NOT EXISTS kv (
-        key TEXT PRIMARY KEY,
-        value TEXT NOT NULL
-      )
-    `,
-  });
-
-  await promiser('exec', {
-    dbId: id,
-    sql: `
-      CREATE TABLE IF NOT EXISTS workout_log (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        workout_date DATE NOT NULL,
-        exercise_name TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `,
-  });
-
-  await promiser('exec', {
-    dbId: id,
-    sql: `
-      CREATE TABLE IF NOT EXISTS workout_set (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        workout_id INTEGER NOT NULL REFERENCES workout_log(id) ON DELETE CASCADE,
-        set_number INTEGER NOT NULL CHECK (set_number BETWEEN 1 AND 5),
-        weight REAL NOT NULL CHECK (weight > 0),
-        reps INTEGER NOT NULL CHECK (reps > 0),
-        UNIQUE(workout_id, set_number)
-      )
-    `,
-  });
-};
-
-const requireDatabaseId = (): string => {
-  if (databaseId === null) {
-    throw new Error('Database not initialized: call initDatabase() first');
-  }
-
-  return databaseId;
-};
-
-export const initDatabase = (): Promise<Promiser> => {
-  if (databasePromise) {
-    return databasePromise;
-  }
-
-  databasePromise = (async () => {
-    const promiser = await createPromiser();
-    const id = await open(promiser);
-    databaseId = id;
-    await createSchema(promiser, id);
-    return promiser;
-  })();
-  return databasePromise;
-};
-
-export const getKV = async (key: string): Promise<null | string> => {
-  const promiser = await initDatabase();
-  const result = await promiser<{ value: string }>('exec', {
-    bind: [key],
-    dbId: requireDatabaseId(),
-    rowMode: 'object',
-    sql: 'SELECT value FROM kv WHERE key = ?',
-  });
-  const row = result.result.resultRows[0];
-  return row ? row.value : null;
-};
-
-export const listKV = async (): Promise<KVRow[]> => {
-  const promiser = await initDatabase();
-  const result = await promiser<KVRow>('exec', {
-    dbId: requireDatabaseId(),
-    rowMode: 'object',
-    sql: 'SELECT key, value FROM kv ORDER BY key ASC',
-  });
-  return result.result.resultRows;
-};
-
-export const setKV = async (key: string, value: string): Promise<void> => {
-  const promiser = await initDatabase();
-  await promiser('exec', {
-    bind: [key, value],
-    dbId: requireDatabaseId(),
-    sql: 'INSERT INTO kv (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
-  });
-};
-
-export type WorkoutSet = {
-  id: number;
-  reps: number;
-  set_number: number;
-  weight: number;
-  workout_id: number;
-};
+export type WorkoutLog = typeof workoutLog.$inferSelect;
+export type WorkoutSet = typeof workoutSet.$inferSelect;
 
 export type WorkoutTableRow = {
   exercise_name: string;
@@ -200,13 +26,35 @@ export type WorkoutTableRow = {
   workout_date: string;
 };
 
-export type WorkoutWithSets = {
-  created_at: string;
-  exercise_name: string;
-  id: number;
-  sets: WorkoutSet[];
-  updated_at: string;
-  workout_date: string;
+export type WorkoutWithSets = WorkoutLog & { sets: WorkoutSet[] };
+
+let initPromise: null | Promise<void> = null;
+
+export const initDatabase = (): Promise<void> => {
+  if (initPromise) {
+    return initPromise;
+  }
+
+  initPromise = (async () => {
+    const promiser = await initDriver();
+    const databaseId = getDatabaseId();
+    await promiser('exec', {
+      dbId: databaseId,
+      sql: 'PRAGMA foreign_keys = ON',
+    });
+    try {
+      await runMigrations(promiser, databaseId);
+      await validateSchema(promiser, databaseId);
+    } catch (error) {
+      if (error instanceof MigrationError) {
+        throw error;
+      }
+
+      throw new MigrationError('unknown', error);
+    }
+  })();
+
+  return initPromise;
 };
 
 export const createWorkout = async (
@@ -214,44 +62,48 @@ export const createWorkout = async (
   exerciseName: string,
   sets: Array<{ reps: number; weight: number }>,
 ): Promise<number> => {
-  const promiser = await initDatabase();
+  await initDatabase();
 
-  await promiser('exec', {
-    bind: [workoutDate, exerciseName],
-    dbId: requireDatabaseId(),
-    sql: 'INSERT INTO workout_log (workout_date, exercise_name) VALUES (?, ?)',
-  });
+  const inserted = await database
+    .insert(workoutLog)
+    .values({ exerciseName, workoutDate })
+    .returning({ id: workoutLog.id });
 
-  const idResult = await promiser<{ last_id: number }>('exec', {
-    dbId: requireDatabaseId(),
-    rowMode: 'object',
-    sql: 'SELECT last_insert_rowid() AS last_id',
-  });
+  const id = inserted[0]?.id;
+  if (id === undefined) {
+    const promiser = await getPromiser();
+    const idResult = await promiser<{ last_id: number }>('exec', {
+      dbId: getDatabaseId(),
+      rowMode: 'object',
+      sql: 'SELECT last_insert_rowid() AS last_id',
+    });
+    const row = idResult.result.resultRows[0];
+    if (row === undefined) {
+      throw new Error('INSERT failed: no rowid returned');
+    }
 
-  const row = idResult.result.resultRows[0];
-  if (row === undefined) {
-    throw new Error('INSERT failed: no rowid returned');
+    return row.last_id;
   }
 
-  const workoutId = row.last_id;
-
-  await Promise.all(
-    sets.map((set, index) =>
-      promiser('exec', {
-        bind: [workoutId, index + 1, set.weight, set.reps],
-        dbId: requireDatabaseId(),
-        sql: 'INSERT INTO workout_set (workout_id, set_number, weight, reps) VALUES (?, ?, ?, ?)',
-      }),
-    ),
+  await database.insert(workoutSet).values(
+    sets.map((set, index) => ({
+      reps: set.reps,
+      setNumber: index + 1,
+      weight: set.weight,
+      workoutId: id,
+    })),
   );
 
-  return workoutId;
+  return id;
 };
 
+// listWorkouts uses a MAX(CASE...) pivot query not expressible in Drizzle's query
+// builder. Raw SQL is the documented exception — see contracts/database.ts.md FR-004.
 export const listWorkouts = async (): Promise<WorkoutTableRow[]> => {
-  const promiser = await initDatabase();
+  await initDatabase();
+  const promiser = await getPromiser();
   const result = await promiser<WorkoutTableRow>('exec', {
-    dbId: requireDatabaseId(),
+    dbId: getDatabaseId(),
     rowMode: 'object',
     sql: `
       SELECT
@@ -280,37 +132,25 @@ export const listWorkouts = async (): Promise<WorkoutTableRow[]> => {
 export const getWorkoutById = async (
   id: number,
 ): Promise<null | WorkoutWithSets> => {
-  const promiser = await initDatabase();
+  await initDatabase();
 
-  const workoutResult = await promiser<{
-    created_at: string;
-    exercise_name: string;
-    id: number;
-    updated_at: string;
-    workout_date: string;
-  }>('exec', {
-    bind: [id],
-    dbId: requireDatabaseId(),
-    rowMode: 'object',
-    sql: 'SELECT id, workout_date, exercise_name, created_at, updated_at FROM workout_log WHERE id = ?',
-  });
+  const workouts = await database
+    .select()
+    .from(workoutLog)
+    .where(eq(workoutLog.id, id));
 
-  const workout = workoutResult.result.resultRows[0];
+  const workout = workouts[0];
   if (!workout) {
     return null;
   }
 
-  const setsResult = await promiser<WorkoutSet>('exec', {
-    bind: [id],
-    dbId: requireDatabaseId(),
-    rowMode: 'object',
-    sql: 'SELECT id, workout_id, set_number, weight, reps FROM workout_set WHERE workout_id = ? ORDER BY set_number ASC',
-  });
+  const sets = await database
+    .select()
+    .from(workoutSet)
+    .where(eq(workoutSet.workoutId, id))
+    .orderBy(workoutSet.setNumber);
 
-  return {
-    ...workout,
-    sets: setsResult.result.resultRows || [],
-  };
+  return { ...workout, sets };
 };
 
 export const updateWorkout = async (
@@ -319,52 +159,38 @@ export const updateWorkout = async (
   exerciseName: string,
   sets: Array<{ reps: number; weight: number }>,
 ): Promise<void> => {
-  const promiser = await initDatabase();
+  await initDatabase();
 
-  await promiser('exec', {
-    bind: [workoutDate, exerciseName, id],
-    dbId: requireDatabaseId(),
-    sql: 'UPDATE workout_log SET workout_date = ?, exercise_name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-  });
+  await database
+    .update(workoutLog)
+    .set({ exerciseName, updatedAt: sql`CURRENT_TIMESTAMP`, workoutDate })
+    .where(eq(workoutLog.id, id));
 
-  await promiser('exec', {
-    bind: [id],
-    dbId: requireDatabaseId(),
-    sql: 'DELETE FROM workout_set WHERE workout_id = ?',
-  });
+  await database.delete(workoutSet).where(eq(workoutSet.workoutId, id));
 
-  await Promise.all(
-    sets.map((set, index) =>
-      promiser('exec', {
-        bind: [id, index + 1, set.weight, set.reps],
-        dbId: requireDatabaseId(),
-        sql: 'INSERT INTO workout_set (workout_id, set_number, weight, reps) VALUES (?, ?, ?, ?)',
-      }),
-    ),
-  );
+  if (sets.length > 0) {
+    await database.insert(workoutSet).values(
+      sets.map((set, index) => ({
+        reps: set.reps,
+        setNumber: index + 1,
+        weight: set.weight,
+        workoutId: id,
+      })),
+    );
+  }
 };
 
 export const deleteWorkout = async (id: number): Promise<void> => {
-  const promiser = await initDatabase();
+  await initDatabase();
 
-  await promiser('exec', {
-    bind: [id],
-    dbId: requireDatabaseId(),
-    sql: 'DELETE FROM workout_set WHERE workout_id = ?',
-  });
-
-  await promiser('exec', {
-    bind: [id],
-    dbId: requireDatabaseId(),
-    sql: 'DELETE FROM workout_log WHERE id = ?',
-  });
+  await database.delete(workoutSet).where(eq(workoutSet.workoutId, id));
+  await database.delete(workoutLog).where(eq(workoutLog.id, id));
 };
 
 export const exportDatabaseBytes = async (): Promise<Uint8Array> => {
-  const promiser = await initDatabase();
-  const result = await promiser('export', {
-    dbId: requireDatabaseId(),
-  });
+  await initDatabase();
+  const promiser = await getPromiser();
+  const result = await promiser('export', { dbId: getDatabaseId() });
   const bytes = result.result.byteArray;
   if (bytes instanceof Uint8Array) {
     return bytes;
@@ -385,12 +211,10 @@ export const replaceDatabaseAndReload = async (
     throw new Error('Selected file is not a SQLite database.');
   }
 
+  const promiser = await getPromiser();
+
   try {
-    await (
-      await initDatabase()
-    )('close', {
-      dbId: requireDatabaseId(),
-    });
+    await promiser('close', { dbId: getDatabaseId() });
   } catch {
     // Log but don't abort — reload will reset the worker
   }
@@ -416,4 +240,44 @@ export const replaceDatabaseAndReload = async (
 
   location.reload();
   throw new Error('Reload failed');
+};
+
+// eslint-disable-next-line canonical/id-match, unicorn/prevent-abbreviations, @typescript-eslint/naming-convention -- contract specifies __devRollback as the exported name
+export const __devRollback = async (migrationName: string): Promise<void> => {
+  if (!import.meta.env.DEV) {
+    return;
+  }
+
+  await initDatabase();
+  const promiser = await getPromiser();
+  const databaseId = getDatabaseId();
+
+  const downFiles = import.meta.glob('../../drizzle/*_down.sql', {
+    eager: true,
+    import: 'default',
+    query: '?raw',
+  }) as Record<string, string>;
+
+  const base = migrationName.replace(/\.sql$/u, '');
+  const downKey = Object.keys(downFiles).find((key) =>
+    key.includes(`${base}_down.sql`),
+  );
+  const downSql = downKey ? downFiles[downKey] : null;
+
+  if (downSql) {
+    const statements = downSql
+      .split('--> statement-breakpoint')
+      .map((statement) => statement.trim())
+      .filter(Boolean);
+
+    for (const statement of statements) {
+      await promiser('exec', { dbId: databaseId, sql: statement });
+    }
+  }
+
+  await promiser('exec', {
+    bind: [migrationName],
+    dbId: databaseId,
+    sql: 'DELETE FROM __drizzle_migrations WHERE name = ?',
+  });
 };

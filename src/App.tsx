@@ -1,21 +1,28 @@
+import { MigrationErrorDialog } from './components/MigrationErrorDialog';
 import { WorkoutTable } from './components/WorkoutTable';
-import { initDatabase } from './database';
-import { Box, ThemeProvider, createTheme } from '@mui/material';
+import { initDatabase, MigrationError } from './database';
+import { Box, createTheme, ThemeProvider } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 const muiTheme = createTheme();
 
 export const App = () => {
   const [isDatabaseReady, setIsDatabaseReady] = useState(false);
-  const [error, setError] = useState<null | string>(null);
+  const [migrationError, setMigrationError] = useState<MigrationError | null>(
+    null,
+  );
 
   useEffect(() => {
     const run = async () => {
       try {
         await initDatabase();
         setIsDatabaseReady(true);
-      } catch {
-        setError('Failed to initialize the database. See console for details.');
+      } catch (error) {
+        if (error instanceof MigrationError) {
+          setMigrationError(error);
+        } else {
+          setMigrationError(new MigrationError('unknown', error));
+        }
       }
     };
 
@@ -23,19 +30,43 @@ export const App = () => {
     run().catch(() => undefined);
   }, []);
 
-  if (error !== null) {
+  const handleReset = async () => {
+    if (navigator.storage) {
+      const root = await navigator.storage.getDirectory();
+      for (const name of [
+        'app.sqlite3',
+        'app.sqlite3-journal',
+        'app.sqlite3-wal',
+        'app.sqlite3-shm',
+      ]) {
+        await root.removeEntry(name).catch(() => undefined);
+      }
+    }
+
+    location.reload();
+  };
+
+  if (migrationError !== null) {
     return (
       <ThemeProvider theme={muiTheme}>
-        <Box sx={{ color: 'error.main', p: 2 }}>
-          {error}
-        </Box>
+        <MigrationErrorDialog
+          error={migrationError}
+          onReset={() => {
+            // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync callback
+            handleReset().catch(() => undefined);
+          }}
+        />
       </ThemeProvider>
     );
   }
 
   return (
     <ThemeProvider theme={muiTheme}>
-      {isDatabaseReady ? <WorkoutTable /> : <Box sx={{ p: 2 }}>Loading...</Box>}
+      {isDatabaseReady ? (
+        <WorkoutTable />
+      ) : (
+        <Box sx={{ padding: 2 }}>Loading...</Box>
+      )}
     </ThemeProvider>
   );
 };

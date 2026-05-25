@@ -49,10 +49,10 @@ export const WorkoutForm = ({ initialData, onCancel, onSave }: Props) => {
   const isEditing = initialData !== undefined;
 
   const [workoutDate, setWorkoutDate] = useState(
-    initialData ? initialData.workout_date : getToday(),
+    initialData ? initialData.workoutDate : getToday(),
   );
   const [exerciseName, setExerciseName] = useState(
-    initialData ? initialData.exercise_name : '',
+    initialData ? initialData.exerciseName : '',
   );
   const [sets, setSets] = useState<SetInput[]>(() => {
     if (initialData && initialData.sets.length > 0) {
@@ -135,7 +135,7 @@ export const WorkoutForm = ({ initialData, onCancel, onSave }: Props) => {
       }
 
       onSave();
-    } catch (e) {
+    } catch {
       setSubmitError('Failed to save workout. Please try again.');
     } finally {
       setIsLoading(false);
@@ -201,9 +201,7 @@ export const WorkoutForm = ({ initialData, onCancel, onSave }: Props) => {
       />
 
       <Box>
-        <Typography sx={{ fontWeight: 600, mb: 1 }}>
-          Sets
-        </Typography>
+        <Typography sx={{ fontWeight: 600, mb: 1 }}>Sets</Typography>
         {sets.map((set, index) => (
           <Stack
             direction="row"
@@ -211,7 +209,10 @@ export const WorkoutForm = ({ initialData, onCancel, onSave }: Props) => {
             spacing={1}
             sx={{ alignItems: 'flex-start', mb: 1 }}
           >
-            <Typography color="text.secondary" sx={{ minWidth: 20, pt: 1.5 }}>
+            <Typography
+              color="text.secondary"
+              sx={{ minWidth: 20, pt: 1.5 }}
+            >
               {index + 1}.
             </Typography>
             <TextField
@@ -242,12 +243,19 @@ export const WorkoutForm = ({ initialData, onCancel, onSave }: Props) => {
         ))}
 
         {errors.general && (
-          <FormHelperText error sx={{ mb: 1 }}>
+          <FormHelperText
+            error
+            sx={{ mb: 1 }}
+          >
             {errors.general}
           </FormHelperText>
         )}
 
-        <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{ mt: 1 }}
+        >
           <Button
             disabled={sets.length >= 5}
             onClick={addSet}
@@ -257,7 +265,10 @@ export const WorkoutForm = ({ initialData, onCancel, onSave }: Props) => {
             + Add Set
           </Button>
           {sets.length > 1 && (
-            <Button onClick={removeLastSet} size="small">
+            <Button
+              onClick={removeLastSet}
+              size="small"
+            >
               − Remove Last Set
             </Button>
           )}
@@ -266,7 +277,11 @@ export const WorkoutForm = ({ initialData, onCancel, onSave }: Props) => {
 
       {submitError && <Typography color="error">{submitError}</Typography>}
 
-      <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{ justifyContent: 'flex-end' }}
+      >
         <Button onClick={onCancel}>Cancel</Button>
         <Button
           disabled={isLoading}

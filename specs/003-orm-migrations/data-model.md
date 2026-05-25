@@ -6,23 +6,6 @@
 
 ## Existing Tables (migrated to Drizzle schema definitions)
 
-### `kv`
-
-| Column | SQLite Type | Drizzle | Constraints |
-|--------|-------------|---------|-------------|
-| `key` | TEXT | `text('key')` | PRIMARY KEY |
-| `value` | TEXT | `text('value')` | NOT NULL |
-
-**Drizzle schema**:
-```ts
-export const kv = sqliteTable('kv', {
-  key: text('key').primaryKey(),
-  value: text('value').notNull(),
-});
-```
-
----
-
 ### `workout_log`
 
 | Column | SQLite Type | Drizzle | Constraints |
@@ -110,7 +93,7 @@ CREATE TABLE IF NOT EXISTS __drizzle_migrations (
 
 ```
 drizzle/                         ← Drizzle Kit output folder (committed)
-├── 0001_init.sql                ← First migration: creates kv, workout_log, workout_set
+├── 0001_init.sql                ← First migration: creates workout_log, workout_set
 └── meta/
     ├── _journal.json            ← Drizzle Kit migration journal (tooling only)
     └── 0001_snapshot.json       ← Schema snapshot for diffing
@@ -120,7 +103,7 @@ The `0001_init.sql` migration replaces the current `createSchema()` inline DDL i
 
 ### Existing OPFS databases: upgrade path
 
-Users with an existing OPFS database (pre-migration-runner) will **not** have the `__drizzle_migrations` table. The migration runner creates it on first access (`CREATE TABLE IF NOT EXISTS`). It then checks which migrations have been applied. Since `kv`, `workout_log`, and `workout_set` already exist, `0001_init.sql` will use `CREATE TABLE IF NOT EXISTS` for each table — it is safe to re-run.
+Users with an existing OPFS database (pre-migration-runner) will **not** have the `__drizzle_migrations` table. The migration runner creates it on first access (`CREATE TABLE IF NOT EXISTS`). It then checks which migrations have been applied. Since `workout_log` and `workout_set` already exist, `0001_init.sql` will use `CREATE TABLE IF NOT EXISTS` for each table — it is safe to re-run.
 
 > **Important**: `0001_init.sql` MUST use `CREATE TABLE IF NOT EXISTS` (not `CREATE TABLE`) so it is idempotent on databases that already have the tables. This matches the existing `createSchema` behaviour.
 
@@ -149,7 +132,6 @@ After migrations, `validateSchema()` checks each table:
 
 | Table | Drizzle export | Columns validated |
 |-------|---------------|-------------------|
-| `kv` | `kv` | `key`, `value` |
 | `workout_log` | `workoutLog` | `id`, `workout_date`, `exercise_name`, `created_at`, `updated_at` |
 | `workout_set` | `workoutSet` | `id`, `workout_id`, `set_number`, `weight`, `reps` |
 

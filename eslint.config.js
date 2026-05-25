@@ -2,21 +2,25 @@ import auto from 'eslint-config-canonical/auto';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 
-export default tseslint.config({ ignores: ['dist', 'dev-dist'] }, ...auto, {
-  files: ['**/*.{ts,tsx}'],
-  languageOptions: {
-    parserOptions: {
-      project: ['./tsconfig.app.json', './tsconfig.node.json'],
-      tsconfigRootDir: import.meta.dirname,
+export default tseslint.config(
+  { ignores: ['dist', 'dev-dist', 'drizzle', 'package-lock.json'] },
+  ...auto,
+  {
+    files: ['**/*.{ts,tsx}'],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.app.json', './tsconfig.node.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    plugins: {
+      'react-refresh': reactRefresh,
+    },
+    rules: {
+      'react-refresh/only-export-components': [
+        'warn',
+        { allowConstantExport: true },
+      ],
     },
   },
-  plugins: {
-    'react-refresh': reactRefresh,
-  },
-  rules: {
-    'react-refresh/only-export-components': [
-      'warn',
-      { allowConstantExport: true },
-    ],
-  },
-});
+);

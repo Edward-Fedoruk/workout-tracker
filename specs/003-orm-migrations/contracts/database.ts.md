@@ -10,9 +10,6 @@ This file is the **sole public API** for all database access. No other file in `
 
 ```ts
 // Inferred from Drizzle schema (replaces hand-written types)
-export type KVRow = typeof kv.$inferSelect;
-// { key: string; value: string }
-
 export type WorkoutSet = typeof workoutSet.$inferSelect;
 // { id: number; workoutId: number; setNumber: number; weight: number; reps: number }
 
@@ -51,18 +48,6 @@ Initializes the SQLite worker, opens the OPFS (or `:memory:`) database, runs pen
 **Called by**: `App.tsx` `useEffect` (already gates on this). `isDbReady` state is set to `true` on resolution.
 
 **Changed from current**: Return type changes from `Promise<Promiser>` to `Promise<void>`. Callers no longer receive or use the promiser directly; all query helpers are self-contained.
-
----
-
-### KV helpers (unchanged signatures)
-
-```ts
-export function getKV(key: string): Promise<string | null>
-export function listKV(): Promise<KVRow[]>
-export function setKV(key: string, value: string): Promise<void>
-```
-
-Implementation migrated from raw SQL promiser calls to Drizzle query builder.
 
 ---
 

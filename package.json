@@ -7,6 +7,7 @@
     "@mui/x-date-pickers": "^9.2.0",
     "@sqlite.org/sqlite-wasm": "^3.46.1-build2",
     "@tanstack/react-table": "^8.21.3",
+    "drizzle-orm": "^0.45.2",
     "material-react-table": "^3.2.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
@@ -16,6 +17,7 @@
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
+    "drizzle-kit": "^0.31.10",
     "eslint": "^9.9.0",
     "eslint-config-canonical": "^47.4.2",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",

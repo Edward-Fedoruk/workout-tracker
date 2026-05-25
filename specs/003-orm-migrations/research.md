@@ -37,7 +37,7 @@
 **Rationale**: Drizzle Kit's journal (`drizzle/meta/_journal.json`) is for the CLI toolchain, not the runtime. The runtime needs its own record of what has been applied. Using a dedicated table in the same SQLite file is idiomatic (matches how Drizzle's Node.js migrator works) and keeps state in the single source of truth.
 
 **Alternatives considered**:
-- Storing applied migration names in the `kv` table — would work but conflates infrastructure with app data; makes `kv` harder to wipe cleanly.
+- Storing applied migration names in a general-purpose key-value table — would conflate infrastructure with app data.
 - PRAGMA `user_version` — limited to a single integer, cannot track individual migration names.
 
 ---
@@ -62,7 +62,7 @@
 ```
 src/db/
 ├── driver.ts       # promiser factory, open(), dbId state, requireDatabaseId()
-├── schema.ts       # Drizzle table definitions (kv, workout_log, workout_set)
+├── schema.ts       # Drizzle table definitions (workout_log, workout_set)
 ├── orm.ts          # drizzle() instance wrapping the driver
 ├── migrations.ts   # runMigrations() — reads glob-bundled SQL, tracks in __drizzle_migrations
 └── validator.ts    # validateSchema() — PRAGMA table_info checks per Drizzle table

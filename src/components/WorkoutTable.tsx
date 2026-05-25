@@ -49,7 +49,7 @@ export const WorkoutTable = () => {
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync useEffect callback
+    // eslint-disable-next-line promise/prefer-await-to-then, react-hooks/set-state-in-effect -- fire-and-forget from sync useEffect callback; setState calls happen in async callback, not synchronously in effect body
     loadWorkouts().catch(() => undefined);
   }, [loadWorkouts]);
 
@@ -215,18 +215,18 @@ export const WorkoutTable = () => {
       isLoading,
       showAlertBanner: loadError !== null,
     },
-    ...(loadError !== null
-      ? {
+    ...(loadError === null
+      ? {}
+      : {
           muiToolbarAlertBannerProps: {
             children: loadError,
             severity: 'error' as const,
           },
-        }
-      : {}),
+        }),
   });
 
   return (
-    <Box sx={{ maxWidth: 1_200, mx: 'auto', p: 2 }}>
+    <Box sx={{ maxWidth: 1_200, mx: 'auto', padding: 2 }}>
       <MaterialReactTable table={table} />
 
       <Dialog
