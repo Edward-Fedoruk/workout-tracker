@@ -102,11 +102,11 @@ main thread (React)  ──►  promiser (async API)  ──►  Web Worker  ─
 - On unsupported browsers, the OPFS open throws and the fallback to `:memory:` is silent (a `console.warn` is logged). The app appears to work but data is lost on reload — check the console if persistence seems broken.
 
 <!-- SPECKIT START -->
-**Active Feature**: Drizzle ORM with Database Migrations (branch `003-orm-migrations`)  
+**Active Feature**: Workout Routines (branch `004-workout-routines`)  
 For implementation context, design decisions, data model, and step-by-step quickstart, see:
-- **Plan**: `specs/003-orm-migrations/plan.md`
-- **Research**: `specs/003-orm-migrations/research.md`
-- **Data Model**: `specs/003-orm-migrations/data-model.md`
-- **Quickstart**: `specs/003-orm-migrations/quickstart.md`
-- **Contracts**: `specs/003-orm-migrations/contracts/database.ts.md`
+- **Plan**: `specs/004-workout-routines/plan.md`
+- **Research**: `specs/004-workout-routines/research.md`
+- **Data Model**: `specs/004-workout-routines/data-model.md`
+- **Quickstart**: `specs/004-workout-routines/quickstart.md`
+- **Contracts**: `specs/004-workout-routines/contracts/database.ts.md`
 <!-- SPECKIT END -->

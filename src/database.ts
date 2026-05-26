@@ -1,11 +1,29 @@
-import { getDatabaseId, getPromiser, initDriver } from './db/driver';
-import { MigrationError, runMigrations } from './db/migrations';
+import { getDatabaseId, getPromiser } from './db/driver';
 import { database } from './db/orm';
 import { workoutLog, workoutSet } from './db/schema';
-import { validateSchema } from './db/validator';
 import { eq, sql } from 'drizzle-orm';
+import { initDatabase } from './db/initDatabase';
 
-export { MigrationError } from './db/migrations';
+export { MigrationError } from './db/initDatabase';
+export { initDatabase } from './db/initDatabase';
+export {
+  addRoutineExercise,
+  createRoutine,
+  deleteRoutine,
+  deleteRoutineExercise,
+  getLastExerciseSets,
+  getRoutineById,
+  listRoutines,
+  moveRoutineExercise,
+  updateRoutine,
+  updateRoutineExercise,
+} from './db/routineHelpers';
+export type {
+  LastExerciseSets,
+  Routine,
+  RoutineExercise,
+  RoutineWithExercises,
+} from './db/routineHelpers';
 
 export type WorkoutLog = typeof workoutLog.$inferSelect;
 export type WorkoutSet = typeof workoutSet.$inferSelect;
@@ -28,34 +46,6 @@ export type WorkoutTableRow = {
 
 export type WorkoutWithSets = WorkoutLog & { sets: WorkoutSet[] };
 
-let initPromise: null | Promise<void> = null;
-
-export const initDatabase = (): Promise<void> => {
-  if (initPromise) {
-    return initPromise;
-  }
-
-  initPromise = (async () => {
-    const promiser = await initDriver();
-    const databaseId = getDatabaseId();
-    await promiser('exec', {
-      dbId: databaseId,
-      sql: 'PRAGMA foreign_keys = ON',
-    });
-    try {
-      await runMigrations(promiser, databaseId);
-      await validateSchema(promiser, databaseId);
-    } catch (error) {
-      if (error instanceof MigrationError) {
-        throw error;
-      }
-
-      throw new MigrationError('unknown', error);
-    }
-  })();
-
-  return initPromise;
-};
 
 export const createWorkout = async (
   workoutDate: string,

@@ -1,8 +1,17 @@
 import { MigrationErrorDialog } from './components/MigrationErrorDialog';
+import { RoutineEditor } from './components/routines/RoutineEditor';
+import { RoutineList } from './components/routines/RoutineList';
+import { RoutineWorkoutForm } from './components/routines/RoutineWorkoutForm';
 import { WorkoutTable } from './components/WorkoutTable';
 import { initDatabase, MigrationError } from './database';
-import { Box, createTheme, ThemeProvider } from '@mui/material';
+import { Box, createTheme, Tab, Tabs, ThemeProvider } from '@mui/material';
 import { useEffect, useState } from 'react';
+
+type ActiveView =
+  | { routineId: null | number; type: 'edit-routine' }
+  | { routineId: number; type: 'start-routine' }
+  | { type: 'log' }
+  | { type: 'routines' };
 
 const muiTheme = createTheme();
 
@@ -11,6 +20,7 @@ export const App = () => {
   const [migrationError, setMigrationError] = useState<MigrationError | null>(
     null,
   );
+  const [activeView, setActiveView] = useState<ActiveView>({ type: 'log' });
 
   useEffect(() => {
     const run = async () => {
@@ -60,13 +70,80 @@ export const App = () => {
     );
   }
 
+  const showTabBar =
+    activeView.type === 'log' || activeView.type === 'routines';
+
+  const renderContent = () => {
+    if (!isDatabaseReady) {
+      return <Box sx={{ padding: 2 }}>Loading...</Box>;
+    }
+
+    if (activeView.type === 'log') {
+      return <WorkoutTable />;
+    }
+
+    if (activeView.type === 'routines') {
+      return (
+        <RoutineList
+          onAdd={() => setActiveView({ routineId: null, type: 'edit-routine' })}
+          onEdit={(routineId) =>
+            setActiveView({ routineId, type: 'edit-routine' })
+          }
+          onStart={(routineId) =>
+            setActiveView({ routineId, type: 'start-routine' })
+          }
+        />
+      );
+    }
+
+    if (activeView.type === 'edit-routine') {
+      return (
+        <RoutineEditor
+          onBack={() => setActiveView({ type: 'routines' })}
+          routineId={activeView.routineId}
+        />
+      );
+    }
+
+    if (activeView.type === 'start-routine') {
+      return (
+        <RoutineWorkoutForm
+          onBack={() => setActiveView({ type: 'routines' })}
+          routineId={activeView.routineId}
+        />
+      );
+    }
+
+    return null;
+  };
+
   return (
     <ThemeProvider theme={muiTheme}>
-      {isDatabaseReady ? (
-        <WorkoutTable />
-      ) : (
-        <Box sx={{ padding: 2 }}>Loading...</Box>
+      {showTabBar && isDatabaseReady && (
+        <Tabs
+          onChange={(_, value: string) => {
+            if (value === 'log') {
+              setActiveView({ type: 'log' });
+            }
+
+            if (value === 'routines') {
+              setActiveView({ type: 'routines' });
+            }
+          }}
+          sx={{ borderBottom: 1, borderColor: 'divider' }}
+          value={activeView.type}
+        >
+          <Tab
+            label="Log"
+            value="log"
+          />
+          <Tab
+            label="Routines"
+            value="routines"
+          />
+        </Tabs>
       )}
+      {renderContent()}
     </ThemeProvider>
   );
 };
