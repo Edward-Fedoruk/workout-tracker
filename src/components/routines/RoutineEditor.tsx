@@ -95,7 +95,6 @@ export const RoutineEditor = ({ onBack, routineId }: Props) => {
       return;
     }
 
-    debugger
     setSavingName(true);
     if (currentRoutineId === null) {
       const newId = await createRoutine(routineName.trim());
