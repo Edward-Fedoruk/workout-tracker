@@ -8,6 +8,13 @@
       "when": 1779688124456,
       "tag": "0000_absurd_earthquake",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1779774580127,
+      "tag": "0001_skinny_eternity",
+      "breakpoints": true
     }
   ]
 }

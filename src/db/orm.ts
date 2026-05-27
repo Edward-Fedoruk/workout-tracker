@@ -7,20 +7,18 @@ export const database = drizzle(
     const promiser = await getPromiser();
     const databaseId = getDatabaseId();
 
-    const result = await promiser('exec', {
+    const result = await promiser<unknown[]>('exec', {
       bind: parameters as unknown[],
       dbId: databaseId,
-      rowMode: 'object',
+      rowMode: 'array',
       sql,
     });
-
-    const rows = result.result.resultRows ?? [];
 
     if (method === 'run') {
       return { rows: [] };
     }
 
-    return { rows };
+    return { rows: result.result.resultRows ?? [] };
   },
   { schema },
 );
