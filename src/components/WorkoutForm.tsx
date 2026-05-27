@@ -1,8 +1,11 @@
 import {
   createWorkout,
+  type Exercise,
+  listExercises,
   updateWorkout,
   type WorkoutWithSets,
 } from '../database';
+import { ExercisePicker } from './exercises/ExercisePicker';
 import {
   Box,
   Button,
@@ -11,7 +14,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 type FormErrors = {
   exerciseName?: string;
@@ -63,7 +66,17 @@ export const WorkoutForm = ({ initialData, onCancel, onSave }: Props) => {
 
     return [makeSetInput()];
   });
+  const [exercises, setExercises] = useState<Exercise[]>([]);
   const [errors, setErrors] = useState<FormErrors>({ sets: [] });
+
+  useEffect(() => {
+    const loadLibrary = async () => {
+      setExercises(await listExercises());
+    };
+
+    // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync useEffect callback
+    loadLibrary().catch(() => undefined);
+  }, []);
   const [isLoading, setIsLoading] = useState(false);
   const [submitError, setSubmitError] = useState<null | string>(null);
 
@@ -188,16 +201,14 @@ export const WorkoutForm = ({ initialData, onCancel, onSave }: Props) => {
         value={workoutDate}
       />
 
-      <TextField
+      <ExercisePicker
         error={Boolean(errors.exerciseName)}
-        fullWidth
+        exercises={exercises}
         helperText={errors.exerciseName}
-        label="Exercise"
-        onChange={(event) => {
-          setExerciseName(event.target.value);
+        onChange={(next) => {
+          setExerciseName(next ? next.name : '');
         }}
-        placeholder="e.g. Bench Press"
-        value={exerciseName}
+        value={exercises.find((option) => option.name === exerciseName) ?? null}
       />
 
       <Box>

@@ -15,6 +15,13 @@
       "when": 1779774580127,
       "tag": "0001_skinny_eternity",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1779859687838,
+      "tag": "0002_worried_iron_patriot",
+      "breakpoints": true
     }
   ]
 }
