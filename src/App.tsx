@@ -1,3 +1,4 @@
+import { ExerciseLibrary } from './components/exercises/ExerciseLibrary';
 import { MigrationErrorDialog } from './components/MigrationErrorDialog';
 import { RoutineEditor } from './components/routines/RoutineEditor';
 import { RoutineList } from './components/routines/RoutineList';
@@ -10,6 +11,7 @@ import { useEffect, useState } from 'react';
 type ActiveView =
   | { routineId: null | number; type: 'edit-routine' }
   | { routineId: number; type: 'start-routine' }
+  | { type: 'exercises' }
   | { type: 'log' }
   | { type: 'routines' };
 
@@ -71,7 +73,9 @@ export const App = () => {
   }
 
   const showTabBar =
-    activeView.type === 'log' || activeView.type === 'routines';
+    activeView.type === 'log' ||
+    activeView.type === 'routines' ||
+    activeView.type === 'exercises';
 
   const renderContent = () => {
     if (!isDatabaseReady) {
@@ -105,6 +109,10 @@ export const App = () => {
       );
     }
 
+    if (activeView.type === 'exercises') {
+      return <ExerciseLibrary />;
+    }
+
     if (activeView.type === 'start-routine') {
       return (
         <RoutineWorkoutForm
@@ -129,6 +137,10 @@ export const App = () => {
             if (value === 'routines') {
               setActiveView({ type: 'routines' });
             }
+
+            if (value === 'exercises') {
+              setActiveView({ type: 'exercises' });
+            }
           }}
           sx={{ borderBottom: 1, borderColor: 'divider' }}
           value={activeView.type}
@@ -140,6 +152,10 @@ export const App = () => {
           <Tab
             label="Routines"
             value="routines"
+          />
+          <Tab
+            label="Exercises"
+            value="exercises"
           />
         </Tabs>
       )}

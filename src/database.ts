@@ -1,9 +1,20 @@
 import { getDatabaseId, getPromiser } from './db/driver';
+import { initDatabase } from './db/initDatabase';
 import { database } from './db/orm';
 import { workoutLog, workoutSet } from './db/schema';
 import { eq, sql } from 'drizzle-orm';
-import { initDatabase } from './db/initDatabase';
 
+export {
+  createExercise,
+  createMuscleGroup,
+  deleteExercise,
+  deleteMuscleGroup,
+  listExercises,
+  listMuscleGroups,
+  updateExercise,
+  updateMuscleGroup,
+} from './db/exerciseHelpers';
+export type { Exercise, MuscleGroup } from './db/exerciseHelpers';
 export { MigrationError } from './db/initDatabase';
 export { initDatabase } from './db/initDatabase';
 export {
@@ -45,7 +56,6 @@ export type WorkoutTableRow = {
 };
 
 export type WorkoutWithSets = WorkoutLog & { sets: WorkoutSet[] };
-
 
 export const createWorkout = async (
   workoutDate: string,

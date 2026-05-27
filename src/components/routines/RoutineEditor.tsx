@@ -2,13 +2,16 @@ import {
   addRoutineExercise,
   createRoutine,
   deleteRoutineExercise,
+  type Exercise,
   getRoutineById,
+  listExercises,
   moveRoutineExercise,
   type RoutineExercise,
   type RoutineWithExercises,
   updateRoutine,
   updateRoutineExercise,
 } from '../../database';
+import { ExercisePicker } from '../exercises/ExercisePicker';
 import { ExerciseRow } from './ExerciseRow';
 import { validateExercise, validateRoutineName } from './routineUtilities';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -62,6 +65,17 @@ export const RoutineEditor = ({ onBack, routineId }: Props) => {
   const [currentRoutineId, setCurrentRoutineId] = useState<null | number>(
     routineId,
   );
+
+  const [libraryExercises, setLibraryExercises] = useState<Exercise[]>([]);
+
+  useEffect(() => {
+    const loadLibrary = async () => {
+      setLibraryExercises(await listExercises());
+    };
+
+    // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync useEffect callback
+    loadLibrary().catch(() => undefined);
+  }, []);
 
   const load = async (id: number) => {
     const data = await getRoutineById(id);
@@ -295,20 +309,23 @@ export const RoutineEditor = ({ onBack, routineId }: Props) => {
             pt: '16px !important',
           }}
         >
-          <TextField
-            autoFocus
+          <ExercisePicker
             error={Boolean(exerciseErrors.name)}
-            fullWidth
+            exercises={libraryExercises}
             helperText={exerciseErrors.name ?? ''}
-            label="Exercise name"
-            onChange={(event) => {
+            label="Exercise"
+            onChange={(next) => {
               setExerciseForm((previous) => ({
                 ...previous,
-                name: event.target.value,
+                name: next ? next.name : '',
               }));
               setExerciseErrors((previous) => ({ ...previous, name: '' }));
             }}
-            value={exerciseForm.name}
+            value={
+              libraryExercises.find(
+                (option) => option.name === exerciseForm.name,
+              ) ?? null
+            }
           />
           <Box sx={{ display: 'flex', gap: 2 }}>
             <TextField

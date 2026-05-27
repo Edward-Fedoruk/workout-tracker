@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import {
   check,
   integer,
+  primaryKey,
   real,
   sqliteTable,
   text,
@@ -11,9 +12,9 @@ import {
 export const routine = sqliteTable(
   'routine',
   {
+    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
     id: integer('id').primaryKey({ autoIncrement: true }),
     name: text('name').notNull(),
-    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
     updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => [check('routine_name_length', sql`length(${table.name}) <= 100`)],
@@ -22,25 +23,19 @@ export const routine = sqliteTable(
 export const routineExercise = sqliteTable(
   'routine_exercise',
   {
+    exerciseName: text('exercise_name').notNull(),
     id: integer('id').primaryKey({ autoIncrement: true }),
+    position: integer('position').notNull(),
     routineId: integer('routine_id')
       .notNull()
       .references(() => routine.id, { onDelete: 'cascade' }),
-    exerciseName: text('exercise_name').notNull(),
-    suggestedSets: integer('suggested_sets').notNull(),
     suggestedReps: integer('suggested_reps').notNull(),
-    position: integer('position').notNull(),
+    suggestedSets: integer('suggested_sets').notNull(),
   },
   (table) => [
     unique().on(table.routineId, table.position),
-    check(
-      'suggested_sets_check',
-      sql`${table.suggestedSets} BETWEEN 1 AND 5`,
-    ),
-    check(
-      'suggested_reps_check',
-      sql`${table.suggestedReps} BETWEEN 1 AND 99`,
-    ),
+    check('suggested_sets_check', sql`${table.suggestedSets} BETWEEN 1 AND 5`),
+    check('suggested_reps_check', sql`${table.suggestedReps} BETWEEN 1 AND 99`),
     check('position_check', sql`${table.position} >= 1`),
   ],
 );
@@ -52,6 +47,30 @@ export const workoutLog = sqliteTable('workout_log', {
   updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
   workoutDate: text('workout_date').notNull(),
 });
+
+export const exercise = sqliteTable('exercise', {
+  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name').notNull(),
+});
+
+export const muscleGroup = sqliteTable('muscle_group', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name').notNull(),
+});
+
+export const exerciseMuscleGroup = sqliteTable(
+  'exercise_muscle_group',
+  {
+    exerciseId: integer('exercise_id')
+      .notNull()
+      .references(() => exercise.id, { onDelete: 'cascade' }),
+    muscleGroupId: integer('muscle_group_id')
+      .notNull()
+      .references(() => muscleGroup.id, { onDelete: 'cascade' }),
+  },
+  (table) => [primaryKey({ columns: [table.exerciseId, table.muscleGroupId] })],
+);
 
 export const workoutSet = sqliteTable(
   'workout_set',
