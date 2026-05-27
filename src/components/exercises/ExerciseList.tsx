@@ -1,4 +1,5 @@
 import { type Exercise } from '../../database';
+import { contrastText } from './muscleGroupColors';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
@@ -80,7 +81,11 @@ export const ExerciseList = ({ exercises, onDelete, onEdit }: Props) => {
                   key={group.id}
                   label={group.name}
                   size="small"
-                  sx={{ mb: 0.5 }}
+                  sx={{
+                    backgroundColor: group.color,
+                    color: contrastText(group.color),
+                    mb: 0.5,
+                  }}
                 />
               ))}
             </Stack>

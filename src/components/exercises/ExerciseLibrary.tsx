@@ -143,7 +143,7 @@ export const ExerciseLibrary = () => {
     setMuscleGroupDialogOpen(true);
   };
 
-  const handleSaveMuscleGroup = async (name: string) => {
+  const handleSaveMuscleGroup = async (name: string, color: string) => {
     const lowerName = name.toLowerCase();
     const duplicate = muscleGroups.some(
       (item) =>
@@ -160,9 +160,9 @@ export const ExerciseLibrary = () => {
     setMuscleGroupDuplicateError(null);
 
     if (muscleGroupDialogMode === 'edit' && editingMuscleGroup) {
-      await updateMuscleGroup(editingMuscleGroup.id, name);
+      await updateMuscleGroup(editingMuscleGroup.id, name, color);
     } else {
-      await createMuscleGroup(name);
+      await createMuscleGroup(name, color);
     }
 
     await refreshMuscleGroups();
@@ -274,12 +274,13 @@ export const ExerciseLibrary = () => {
 
       <MuscleGroupForm
         duplicateError={muscleGroupDuplicateError}
+        initialColor={editingMuscleGroup?.color}
         initialName={editingMuscleGroup?.name}
         mode={muscleGroupDialogMode}
         onCancel={() => setMuscleGroupDialogOpen(false)}
-        onSave={(name) => {
+        onSave={(name, color) => {
           // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync event handler
-          handleSaveMuscleGroup(name).catch(() => undefined);
+          handleSaveMuscleGroup(name, color).catch(() => undefined);
         }}
         open={muscleGroupDialogOpen}
       />

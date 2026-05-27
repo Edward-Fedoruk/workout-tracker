@@ -2,6 +2,7 @@ import { type MuscleGroup } from '../../database';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import {
+  Box,
   IconButton,
   List,
   ListItem,
@@ -55,7 +56,23 @@ export const MuscleGroupList = ({
             </Stack>
           }
         >
-          <ListItemText primary={group.name} />
+          <Stack
+            direction="row"
+            spacing={1.5}
+            sx={{ alignItems: 'center' }}
+          >
+            <Box
+              aria-hidden
+              sx={{
+                backgroundColor: group.color,
+                borderRadius: '50%',
+                flexShrink: 0,
+                height: 18,
+                width: 18,
+              }}
+            />
+            <ListItemText primary={group.name} />
+          </Stack>
         </ListItem>
       ))}
     </List>
