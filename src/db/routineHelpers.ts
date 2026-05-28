@@ -112,7 +112,8 @@ export const addRoutineExercise = async (
   routineId: number,
   exerciseName: string,
   suggestedSets: number,
-  suggestedReps: number,
+  minReps: number,
+  maxReps: number,
 ): Promise<number> => {
   await initDatabase();
   const promiser = await getPromiser();
@@ -129,7 +130,14 @@ export const addRoutineExercise = async (
 
   const inserted = await database
     .insert(routineExercise)
-    .values({ exerciseName, position, routineId, suggestedReps, suggestedSets })
+    .values({
+      exerciseName,
+      maxReps,
+      minReps,
+      position,
+      routineId,
+      suggestedSets,
+    })
     .returning({ id: routineExercise.id });
 
   const id = inserted[0]?.id;
@@ -154,13 +162,14 @@ export const updateRoutineExercise = async (
   id: number,
   exerciseName: string,
   suggestedSets: number,
-  suggestedReps: number,
+  minReps: number,
+  maxReps: number,
 ): Promise<void> => {
   await initDatabase();
 
   await database
     .update(routineExercise)
-    .set({ exerciseName, suggestedReps, suggestedSets })
+    .set({ exerciseName, maxReps, minReps, suggestedSets })
     .where(eq(routineExercise.id, id));
 };
 

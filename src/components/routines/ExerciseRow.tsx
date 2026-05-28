@@ -1,4 +1,5 @@
 import { type RoutineExercise } from '../../database';
+import { formatRepRange } from './routineUtilities';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -40,7 +41,8 @@ export const ExerciseRow = ({
         color="text.secondary"
         variant="body2"
       >
-        {exercise.suggestedSets} × {exercise.suggestedReps}
+        {exercise.suggestedSets} ×{' '}
+        {formatRepRange(exercise.minReps, exercise.maxReps)}
       </Typography>
     </Box>
     <IconButton
