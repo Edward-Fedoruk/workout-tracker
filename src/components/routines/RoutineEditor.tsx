@@ -29,9 +29,17 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 
+type ExerciseErrors = {
+  maxReps?: string;
+  minReps?: string;
+  name?: string;
+  sets?: string;
+};
+
 type ExerciseFormState = {
+  maxReps: string;
+  minReps: string;
   name: string;
-  reps: string;
   sets: string;
 };
 
@@ -51,15 +59,12 @@ export const RoutineEditor = ({ onBack, routineId }: Props) => {
   const [editingExercise, setEditingExercise] =
     useState<null | RoutineExercise>(null);
   const [exerciseForm, setExerciseForm] = useState<ExerciseFormState>({
+    maxReps: '12',
+    minReps: '8',
     name: '',
-    reps: '10',
     sets: '3',
   });
-  const [exerciseErrors, setExerciseErrors] = useState<{
-    name?: string;
-    reps?: string;
-    sets?: string;
-  }>({});
+  const [exerciseErrors, setExerciseErrors] = useState<ExerciseErrors>({});
   const [submittingExercise, setSubmittingExercise] = useState(false);
 
   const [currentRoutineId, setCurrentRoutineId] = useState<null | number>(
@@ -124,7 +129,7 @@ export const RoutineEditor = ({ onBack, routineId }: Props) => {
 
   const openAddExercise = () => {
     setEditingExercise(null);
-    setExerciseForm({ name: '', reps: '10', sets: '3' });
+    setExerciseForm({ maxReps: '12', minReps: '8', name: '', sets: '3' });
     setExerciseErrors({});
     setExerciseDialogOpen(true);
   };
@@ -132,8 +137,9 @@ export const RoutineEditor = ({ onBack, routineId }: Props) => {
   const openEditExercise = (exercise: RoutineExercise) => {
     setEditingExercise(exercise);
     setExerciseForm({
+      maxReps: String(exercise.maxReps),
+      minReps: String(exercise.minReps),
       name: exercise.exerciseName,
-      reps: String(exercise.suggestedReps),
       sets: String(exercise.suggestedSets),
     });
     setExerciseErrors({});
@@ -142,8 +148,14 @@ export const RoutineEditor = ({ onBack, routineId }: Props) => {
 
   const handleExerciseSubmit = async () => {
     const setsNumber = Number.parseInt(exerciseForm.sets, 10);
-    const repsNumber = Number.parseInt(exerciseForm.reps, 10);
-    const errors = validateExercise(exerciseForm.name, setsNumber, repsNumber);
+    const minRepsNumber = Number.parseInt(exerciseForm.minReps, 10);
+    const maxRepsNumber = Number.parseInt(exerciseForm.maxReps, 10);
+    const errors = validateExercise(
+      exerciseForm.name,
+      setsNumber,
+      minRepsNumber,
+      maxRepsNumber,
+    );
     if (Object.keys(errors).length > 0) {
       setExerciseErrors(errors);
       return;
@@ -160,14 +172,16 @@ export const RoutineEditor = ({ onBack, routineId }: Props) => {
         editingExercise.id,
         exerciseForm.name.trim(),
         setsNumber,
-        repsNumber,
+        minRepsNumber,
+        maxRepsNumber,
       );
     } else {
       await addRoutineExercise(
         currentRoutineId,
         exerciseForm.name.trim(),
         setsNumber,
-        repsNumber,
+        minRepsNumber,
+        maxRepsNumber,
       );
     }
 
@@ -327,38 +341,53 @@ export const RoutineEditor = ({ onBack, routineId }: Props) => {
               ) ?? null
             }
           />
+          <TextField
+            error={Boolean(exerciseErrors.sets)}
+            helperText={exerciseErrors.sets || '(1–5)'}
+            label="Suggested sets"
+            onChange={(event) => {
+              setExerciseForm((previous) => ({
+                ...previous,
+                sets: event.target.value,
+              }));
+              setExerciseErrors((previous) => ({ ...previous, sets: '' }));
+            }}
+            slotProps={{ htmlInput: { max: 5, min: 1 } }}
+            type="number"
+            value={exerciseForm.sets}
+          />
           <Box sx={{ display: 'flex', gap: 2 }}>
             <TextField
-              error={Boolean(exerciseErrors.sets)}
-              helperText={exerciseErrors.sets || '(1–5)'}
-              label="Suggested sets"
+              error={Boolean(exerciseErrors.minReps)}
+              helperText={exerciseErrors.minReps || '(1–99)'}
+              label="Min reps"
               onChange={(event) => {
                 setExerciseForm((previous) => ({
                   ...previous,
-                  sets: event.target.value,
+                  minReps: event.target.value,
                 }));
-                setExerciseErrors((previous) => ({ ...previous, sets: '' }));
-              }}
-              slotProps={{ htmlInput: { max: 5, min: 1 } }}
-              sx={{ flex: 1 }}
-              type="number"
-              value={exerciseForm.sets}
-            />
-            <TextField
-              error={Boolean(exerciseErrors.reps)}
-              helperText={exerciseErrors.reps || '(1–99)'}
-              label="Suggested reps"
-              onChange={(event) => {
-                setExerciseForm((previous) => ({
-                  ...previous,
-                  reps: event.target.value,
-                }));
-                setExerciseErrors((previous) => ({ ...previous, reps: '' }));
+                setExerciseErrors((previous) => ({ ...previous, minReps: '' }));
               }}
               slotProps={{ htmlInput: { max: 99, min: 1 } }}
               sx={{ flex: 1 }}
               type="number"
-              value={exerciseForm.reps}
+              value={exerciseForm.minReps}
+            />
+            <TextField
+              error={Boolean(exerciseErrors.maxReps)}
+              helperText={exerciseErrors.maxReps || '(1–99)'}
+              label="Max reps"
+              onChange={(event) => {
+                setExerciseForm((previous) => ({
+                  ...previous,
+                  maxReps: event.target.value,
+                }));
+                setExerciseErrors((previous) => ({ ...previous, maxReps: '' }));
+              }}
+              slotProps={{ htmlInput: { max: 99, min: 1 } }}
+              sx={{ flex: 1 }}
+              type="number"
+              value={exerciseForm.maxReps}
             />
           </Box>
         </DialogContent>

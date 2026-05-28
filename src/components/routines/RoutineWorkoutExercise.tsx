@@ -1,4 +1,5 @@
 import { type LastExerciseSets, type RoutineExercise } from '../../database';
+import { formatRepRange } from './routineUtilities';
 import { Box, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
 
@@ -47,7 +48,8 @@ export const RoutineWorkoutExercise = ({
         sx={{ mb: 1 }}
         variant="body2"
       >
-        Suggested: {exercise.suggestedSets} × {exercise.suggestedReps}
+        Target: {exercise.suggestedSets} ×{' '}
+        {formatRepRange(exercise.minReps, exercise.maxReps)}
       </Typography>
       {values.map((setEntry, index) => {
         const prefillEntry = prefill[index];
