@@ -3,12 +3,16 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  base: '/workout-tracker/',
   optimizeDeps: {
     exclude: ['@sqlite.org/sqlite-wasm'],
   },
   plugins: [
     react(),
     VitePWA({
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
       includeAssets: ['favicon.svg'],
       manifest: {
         background_color: '#1a202c',
@@ -40,9 +44,9 @@ export default defineConfig({
         ],
         name: 'Workout Log',
         orientation: 'portrait',
-        scope: '/',
+        scope: '/workout-tracker/',
         short_name: 'Workout',
-        start_url: '/',
+        start_url: '/workout-tracker/',
         theme_color: '#1a202c',
       },
       registerType: 'autoUpdate',
