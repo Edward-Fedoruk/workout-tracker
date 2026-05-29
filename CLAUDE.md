@@ -102,11 +102,12 @@ main thread (React)  ──►  promiser (async API)  ──►  Web Worker  ─
 - On unsupported browsers, the OPFS open throws and the fallback to `:memory:` is silent (a `console.warn` is logged). The app appears to work but data is lost on reload — check the console if persistence seems broken.
 
 <!-- SPECKIT START -->
-**Active Feature**: Rep Range for Routine Exercises (branch `006-reps-range`)  
+**Active Feature**: eRM & Body Weight Settings (branch `007-erm-bodyweight`)  
 For implementation context, design decisions, data model, and step-by-step quickstart, see:
-- **Plan**: `specs/006-reps-range/plan.md`
-- **Research**: `specs/006-reps-range/research.md`
-- **Data Model**: `specs/006-reps-range/data-model.md`
-- **Quickstart**: `specs/006-reps-range/quickstart.md`
-- **Contracts**: `specs/006-reps-range/contracts/routineHelpers.ts.md`
+- **Plan**: `specs/007-erm-bodyweight/plan.md`
+- **Research**: `specs/007-erm-bodyweight/research.md`
+- **Data Model**: `specs/007-erm-bodyweight/data-model.md`
+- **Quickstart**: `specs/007-erm-bodyweight/quickstart.md`
+- **Contracts**: `specs/007-erm-bodyweight/contracts/settingsHelpers.ts.md`
+- **Contracts**: `specs/007-erm-bodyweight/contracts/erm.ts.md`
 <!-- SPECKIT END -->

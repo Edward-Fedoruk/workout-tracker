@@ -4,6 +4,7 @@ import {
   deleteExercise,
   deleteMuscleGroup,
   type Exercise,
+  type ExerciseClassification,
   listExercises,
   listMuscleGroups,
   type MuscleGroup,
@@ -94,7 +95,11 @@ export const ExerciseLibrary = () => {
     setExerciseDialogOpen(true);
   };
 
-  const handleSaveExercise = async (name: string, muscleGroupIds: number[]) => {
+  const handleSaveExercise = async (
+    name: string,
+    muscleGroupIds: number[],
+    classification: ExerciseClassification,
+  ) => {
     const lowerName = name.toLowerCase();
     const duplicate = exercises.some(
       (item) =>
@@ -109,9 +114,14 @@ export const ExerciseLibrary = () => {
     setExerciseDuplicateError(null);
 
     if (exerciseDialogMode === 'edit' && editingExercise) {
-      await updateExercise(editingExercise.id, name, muscleGroupIds);
+      await updateExercise(
+        editingExercise.id,
+        name,
+        muscleGroupIds,
+        classification,
+      );
     } else {
-      await createExercise(name, muscleGroupIds);
+      await createExercise(name, muscleGroupIds, classification);
     }
 
     await refreshExercises();
@@ -255,6 +265,7 @@ export const ExerciseLibrary = () => {
         initialValues={
           editingExercise
             ? {
+                classification: editingExercise.classification,
                 muscleGroupIds: editingExercise.muscleGroups.map(
                   (group) => group.id,
                 ),
@@ -265,9 +276,9 @@ export const ExerciseLibrary = () => {
         mode={exerciseDialogMode}
         muscleGroups={muscleGroups}
         onCancel={() => setExerciseDialogOpen(false)}
-        onSave={(name, ids) => {
+        onSave={(name, ids, classification) => {
           // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync event handler
-          handleSaveExercise(name, ids).catch(() => undefined);
+          handleSaveExercise(name, ids, classification).catch(() => undefined);
         }}
         open={exerciseDialogOpen}
       />

@@ -14,7 +14,11 @@ export {
   updateExercise,
   updateMuscleGroup,
 } from './db/exerciseHelpers';
-export type { Exercise, MuscleGroup } from './db/exerciseHelpers';
+export type {
+  Exercise,
+  ExerciseClassification,
+  MuscleGroup,
+} from './db/exerciseHelpers';
 export { MigrationError } from './db/initDatabase';
 export { initDatabase } from './db/initDatabase';
 export {
@@ -35,6 +39,7 @@ export type {
   RoutineExercise,
   RoutineWithExercises,
 } from './db/routineHelpers';
+export { getBodyWeight, setBodyWeight } from './db/settingsHelpers';
 
 export type WorkoutLog = typeof workoutLog.$inferSelect;
 export type WorkoutSet = typeof workoutSet.$inferSelect;
