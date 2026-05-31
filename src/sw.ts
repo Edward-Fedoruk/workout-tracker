@@ -1,10 +1,11 @@
 import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching';
 
-declare let worker: ServiceWorkerGlobalScope;
+// eslint-disable-next-line consistent-this
+declare let self: ServiceWorkerGlobalScope;
 
 // Inject COOP/COEP headers on every response so the page is cross-origin
 // isolated on GitHub Pages (which cannot set these headers server-side).
-worker.addEventListener('fetch', (event) => {
+self.addEventListener('fetch', (event) => {
   event.respondWith(
     // eslint-disable-next-line promise/prefer-await-to-then
     fetch(event.request).then((response) => {
@@ -21,4 +22,4 @@ worker.addEventListener('fetch', (event) => {
 });
 
 cleanupOutdatedCaches();
-precacheAndRoute(worker.__WB_MANIFEST);
+precacheAndRoute(self.__WB_MANIFEST);
