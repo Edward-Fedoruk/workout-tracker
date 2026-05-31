@@ -69,7 +69,13 @@ export const RoutineWorkoutExercise = ({
               onChange={(event) =>
                 handleChange(index, 'weight', event.target.value)
               }
-              placeholder={prefillEntry ? String(prefillEntry.weight) : ''}
+              placeholder={
+                prefillEntry
+                  ? prefillEntry.weight === null
+                    ? ''
+                    : String(prefillEntry.weight)
+                  : ''
+              }
               size="small"
               slotProps={{ htmlInput: { min: 0, step: 0.5 } }}
               sx={{ flex: 1 }}

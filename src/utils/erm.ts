@@ -3,26 +3,21 @@ export type ExerciseClassification = 'assisted' | 'bodyweight' | 'standard';
 export const computeEffectiveWeight = (parameters: {
   bodyWeight: null | number;
   classification: ExerciseClassification;
-  loggedWeight: number;
+  loggedWeight: null | number;
 }): null | number => {
   const { bodyWeight, classification, loggedWeight } = parameters;
+  const weight = loggedWeight ?? 0;
 
-  let effective: number;
   if (classification === 'standard') {
-    effective = loggedWeight;
-  } else {
-    if (bodyWeight === null) {
-      return null;
-    }
-
-    effective = bodyWeight + loggedWeight;
+    return weight <= 0 ? null : weight;
   }
 
-  if (effective <= 0) {
+  if (bodyWeight === null) {
     return null;
   }
 
-  return effective;
+  const effective = bodyWeight + weight;
+  return effective <= 0 ? null : effective;
 };
 
 export const computeERM = (effectiveWeight: number, reps: number): number => {

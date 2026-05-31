@@ -1,11 +1,16 @@
 import {
   createWorkout,
   type Exercise,
+  getBodyWeight,
   listExercises,
   updateWorkout,
   type WorkoutWithSets,
 } from '../database';
-import { type ExerciseClassification } from '../utils/erm';
+import {
+  computeEffectiveWeight,
+  computeERM,
+  type ExerciseClassification,
+} from '../utils/erm';
 import { ExercisePicker } from './exercises/ExercisePicker';
 import {
   type FormErrors,
@@ -45,20 +50,29 @@ export const WorkoutForm = ({ initialData, onCancel, onSave }: Props) => {
   const [sets, setSets] = useState<SetInput[]>(() => {
     if (initialData && initialData.sets.length > 0) {
       return initialData.sets.map((workoutSet) =>
-        makeSetInput(String(workoutSet.weight), String(workoutSet.reps)),
+        makeSetInput(
+          workoutSet.weight === null ? '' : String(workoutSet.weight),
+          String(workoutSet.reps),
+        ),
       );
     }
 
     return [makeSetInput()];
   });
   const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [bodyWeight, setBodyWeight] = useState<null | number>(null);
   const [errors, setErrors] = useState<FormErrors>({ sets: [] });
   const [isLoading, setIsLoading] = useState(false);
   const [submitError, setSubmitError] = useState<null | string>(null);
 
   useEffect(() => {
     const loadLibrary = async () => {
-      setExercises(await listExercises());
+      const [exerciseList, bw] = await Promise.all([
+        listExercises(),
+        getBodyWeight(),
+      ]);
+      setExercises(exerciseList);
+      setBodyWeight(bw);
     };
 
     // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync useEffect callback
@@ -71,6 +85,7 @@ export const WorkoutForm = ({ initialData, onCancel, onSave }: Props) => {
 
   const validate = useCallback((): boolean => {
     const newErrors = validateWorkoutForm({
+      bodyWeight,
       classification,
       exerciseName,
       sets,
@@ -78,7 +93,25 @@ export const WorkoutForm = ({ initialData, onCancel, onSave }: Props) => {
     });
     setErrors(newErrors);
     return !hasFormErrors(newErrors);
-  }, [classification, exerciseName, sets, workoutDate]);
+  }, [bodyWeight, classification, exerciseName, sets, workoutDate]);
+
+  const computeSetERM = useCallback(
+    (rawWeight: string, reps: number): null | number => {
+      const loggedWeight =
+        rawWeight.trim() === '' ? null : Number.parseFloat(rawWeight);
+      const effective = computeEffectiveWeight({
+        bodyWeight,
+        classification,
+        loggedWeight,
+      });
+      if (effective === null) {
+        return null;
+      }
+
+      return computeERM(effective, reps);
+    },
+    [bodyWeight, classification],
+  );
 
   const handleSave = useCallback(async () => {
     if (!validate()) {
@@ -88,10 +121,15 @@ export const WorkoutForm = ({ initialData, onCancel, onSave }: Props) => {
     setIsLoading(true);
     setSubmitError(null);
 
-    const parsedSets = sets.map((setInput) => ({
-      reps: Number.parseInt(setInput.reps, 10),
-      weight: Number.parseFloat(setInput.weight),
-    }));
+    const parsedSets = sets.map((setInput) => {
+      const reps = Number.parseInt(setInput.reps, 10);
+      const weight =
+        setInput.weight.trim() === ''
+          ? null
+          : Number.parseFloat(setInput.weight);
+      const erm = computeSetERM(setInput.weight, reps);
+      return { erm, reps, weight };
+    });
 
     try {
       if (isEditing && initialData) {
@@ -112,6 +150,7 @@ export const WorkoutForm = ({ initialData, onCancel, onSave }: Props) => {
       setIsLoading(false);
     }
   }, [
+    computeSetERM,
     exerciseName,
     initialData,
     isEditing,

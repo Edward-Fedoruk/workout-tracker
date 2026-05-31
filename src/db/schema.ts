@@ -12,9 +12,9 @@ import {
 export const routine = sqliteTable(
   'routine',
   {
-    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
     id: integer('id').primaryKey({ autoIncrement: true }),
     name: text('name').notNull(),
+    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
     updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => [check('routine_name_length', sql`length(${table.name}) <= 100`)],
@@ -23,15 +23,15 @@ export const routine = sqliteTable(
 export const routineExercise = sqliteTable(
   'routine_exercise',
   {
-    exerciseName: text('exercise_name').notNull(),
     id: integer('id').primaryKey({ autoIncrement: true }),
-    maxReps: integer('max_reps').notNull(),
+    exerciseName: text('exercise_name').notNull(),
     minReps: integer('min_reps').notNull(),
+    maxReps: integer('max_reps').notNull(),
+    suggestedSets: integer('suggested_sets').notNull(),
     position: integer('position').notNull(),
     routineId: integer('routine_id')
       .notNull()
       .references(() => routine.id, { onDelete: 'cascade' }),
-    suggestedSets: integer('suggested_sets').notNull(),
   },
   (table) => [
     unique().on(table.routineId, table.position),
@@ -43,24 +43,24 @@ export const routineExercise = sqliteTable(
 );
 
 export const workoutLog = sqliteTable('workout_log', {
-  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
-  exerciseName: text('exercise_name').notNull(),
   id: integer('id').primaryKey({ autoIncrement: true }),
-  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
+  exerciseName: text('exercise_name').notNull(),
   workoutDate: text('workout_date').notNull(),
+  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const exercise = sqliteTable(
   'exercise',
   {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    name: text('name').notNull(),
     classification: text('classification', {
       enum: ['standard', 'bodyweight', 'assisted'],
     })
       .notNull()
       .default('standard'),
     createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
-    id: integer('id').primaryKey({ autoIncrement: true }),
-    name: text('name').notNull(),
   },
   (table) => [
     check(
@@ -76,9 +76,9 @@ export const appSetting = sqliteTable('app_setting', {
 });
 
 export const muscleGroup = sqliteTable('muscle_group', {
-  color: text('color').notNull().default('#757575'),
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
+  color: text('color').notNull().default('#757575'),
 });
 
 export const exerciseMuscleGroup = sqliteTable(
@@ -99,8 +99,9 @@ export const workoutSet = sqliteTable(
   {
     id: integer('id').primaryKey({ autoIncrement: true }),
     reps: integer('reps').notNull(),
+    weight: real('weight'),
+    erm: real('erm'),
     setNumber: integer('set_number').notNull(),
-    weight: real('weight').notNull(),
     workoutId: integer('workout_id')
       .notNull()
       .references(() => workoutLog.id, { onDelete: 'cascade' }),

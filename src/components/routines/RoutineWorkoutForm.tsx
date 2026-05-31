@@ -1,11 +1,15 @@
 import {
   createWorkout,
+  type Exercise,
+  getBodyWeight,
   getLastExerciseSets,
   getRoutineById,
   type LastExerciseSets,
+  listExercises,
   type RoutineExercise,
   type RoutineWithExercises,
 } from '../../database';
+import { computeEffectiveWeight, computeERM } from '../../utils/erm';
 import { RoutineWorkoutExercise } from './RoutineWorkoutExercise';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import {
@@ -30,6 +34,8 @@ export const RoutineWorkoutForm = ({ onBack, routineId }: Props) => {
   const [prefills, setPrefills] = useState<Map<number, LastExerciseSets>>(
     new Map(),
   );
+  const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [bodyWeight, setBodyWeight] = useState<null | number>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<null | string>(null);
@@ -38,12 +44,19 @@ export const RoutineWorkoutForm = ({ onBack, routineId }: Props) => {
 
   useEffect(() => {
     const init = async () => {
-      const data = await getRoutineById(routineId);
+      const [data, bw, exList] = await Promise.all([
+        getRoutineById(routineId),
+        getBodyWeight(),
+        listExercises(),
+      ]);
+
       if (!data) {
         return;
       }
 
       setRoutine(data);
+      setBodyWeight(bw);
+      setExercises(exList);
 
       const prefillMap = new Map<number, LastExerciseSets>();
       await Promise.all(
@@ -79,13 +92,37 @@ export const RoutineWorkoutForm = ({ onBack, routineId }: Props) => {
     try {
       for (const exercise of routine.exercises) {
         const sets = exerciseSets.current.get(exercise.id) ?? [];
+        const classification =
+          exercises.find((ex) => ex.name === exercise.exerciseName)
+            ?.classification ?? 'standard';
+
         const filledSets = sets
-          .filter((setEntry) => setEntry.weight !== '' && setEntry.reps !== '')
-          .map((setEntry) => ({
-            reps: Number(setEntry.reps),
-            weight: Number(setEntry.weight),
-          }))
-          .filter((setEntry) => setEntry.weight > 0 && setEntry.reps > 0);
+          .filter(
+            (setEntry) => setEntry.reps !== '' && Number(setEntry.reps) > 0,
+          )
+          .filter((setEntry) => {
+            if (classification === 'standard') {
+              return setEntry.weight !== '' && Number(setEntry.weight) > 0;
+            }
+
+            if (setEntry.weight === '' || Number(setEntry.weight) === 0) {
+              return bodyWeight !== null;
+            }
+
+            return true;
+          })
+          .map((setEntry) => {
+            const weight =
+              setEntry.weight.trim() === '' ? null : Number(setEntry.weight);
+            const reps = Number(setEntry.reps);
+            const effective = computeEffectiveWeight({
+              bodyWeight,
+              classification,
+              loggedWeight: weight,
+            });
+            const erm = effective === null ? null : computeERM(effective, reps);
+            return { erm, reps, weight };
+          });
 
         if (filledSets.length > 0) {
           await createWorkout(today, exercise.exerciseName, filledSets);

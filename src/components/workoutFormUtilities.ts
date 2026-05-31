@@ -29,31 +29,38 @@ export const makeSetInput = (weight = '', reps = ''): SetInput => ({
 const validateWeight = (
   rawWeight: string,
   classification: ExerciseClassification,
+  bodyWeight: null | number,
 ): string | undefined => {
   const parsed = Number.parseFloat(rawWeight);
+  const isEmpty = rawWeight.trim() === '';
 
-  if (classification === 'assisted') {
-    if (rawWeight.trim() === '') {
-      return 'Weight is required';
-    }
-
-    if (!Number.isFinite(parsed)) {
-      return 'Weight must be a number';
+  if (classification === 'standard') {
+    if (isEmpty || !Number.isFinite(parsed) || parsed <= 0) {
+      return 'Weight must be greater than 0';
     }
 
     return undefined;
   }
 
   if (classification === 'bodyweight') {
-    if (rawWeight === '' || Number.isNaN(parsed) || parsed < 0) {
+    if (!isEmpty && Number.isFinite(parsed) && parsed < 0) {
       return 'Weight must be 0 or greater';
+    }
+
+    if ((isEmpty || parsed === 0) && bodyWeight === null) {
+      return 'Body weight not set — add it in Settings to log this exercise';
     }
 
     return undefined;
   }
 
-  if (rawWeight === '' || Number.isNaN(parsed) || parsed <= 0) {
-    return 'Weight must be greater than 0';
+  // assisted
+  if (isEmpty && bodyWeight === null) {
+    return 'Body weight not set — add it in Settings to log this exercise';
+  }
+
+  if (!isEmpty && !Number.isFinite(parsed)) {
+    return 'Weight must be a number';
   }
 
   return undefined;
@@ -69,12 +76,14 @@ const validateReps = (rawReps: string): string | undefined => {
 };
 
 export const validateWorkoutForm = (parameters: {
+  bodyWeight: null | number;
   classification: ExerciseClassification;
   exerciseName: string;
   sets: SetInput[];
   workoutDate: string;
 }): FormErrors => {
-  const { classification, exerciseName, sets, workoutDate } = parameters;
+  const { bodyWeight, classification, exerciseName, sets, workoutDate } =
+    parameters;
   const today = getToday();
   const errors: FormErrors = { sets: [] };
 
@@ -92,7 +101,7 @@ export const validateWorkoutForm = (parameters: {
 
   for (const set of sets) {
     const setError: SetErrors = {};
-    const weightError = validateWeight(set.weight, classification);
+    const weightError = validateWeight(set.weight, classification, bodyWeight);
     if (weightError !== undefined) {
       setError.weight = weightError;
     }
