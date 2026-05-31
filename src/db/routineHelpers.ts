@@ -7,7 +7,7 @@ import { eq, sql } from 'drizzle-orm';
 export type LastExerciseSets = Array<{
   reps: number;
   setNumber: number;
-  weight: number;
+  weight: null | number;
 }>;
 export type Routine = typeof routine.$inferSelect;
 export type RoutineExercise = typeof routineExercise.$inferSelect;
@@ -272,7 +272,7 @@ export const getLastExerciseSets = async (
   const result = await promiser<{
     reps: number;
     set_number: number;
-    weight: number;
+    weight: null | number;
   }>('exec', {
     bind: [exerciseName, exerciseName, setCount],
     dbId: getDatabaseId(),

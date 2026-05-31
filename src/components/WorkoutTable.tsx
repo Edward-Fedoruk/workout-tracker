@@ -1,13 +1,10 @@
 import {
   deleteWorkout,
-  getBodyWeight,
   getWorkoutById,
-  listExercises,
   listWorkouts,
   type WorkoutTableRow,
   type WorkoutWithSets,
 } from '../database';
-import { type ExerciseClassification } from '../utils/erm';
 import { DeleteWorkoutDialog } from './DeleteWorkoutDialog';
 import { WorkoutDataActions } from './WorkoutDataActions';
 import { WorkoutForm } from './WorkoutForm';
@@ -30,27 +27,13 @@ export const WorkoutTable = () => {
   const [showForm, setShowForm] = useState(false);
   const [loadError, setLoadError] = useState<null | string>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<null | number>(null);
-  const [bodyWeight, setBodyWeight] = useState<null | number>(null);
-  const [classificationByName, setClassificationByName] = useState<
-    Map<string, ExerciseClassification>
-  >(new Map());
 
   const loadAll = useCallback(async () => {
     setIsLoading(true);
     setLoadError(null);
     try {
-      const [rows, weight, exercises] = await Promise.all([
-        listWorkouts(),
-        getBodyWeight(),
-        listExercises(),
-      ]);
+      const rows = await listWorkouts();
       setWorkouts(rows);
-      setBodyWeight(weight);
-      setClassificationByName(
-        new Map(
-          exercises.map((exercise) => [exercise.name, exercise.classification]),
-        ),
-      );
     } catch {
       setLoadError('Failed to load workouts. Please reload the page.');
     } finally {
@@ -96,7 +79,7 @@ export const WorkoutTable = () => {
     setEditingWorkout(null);
   }, []);
 
-  const setColumns = useSetColumns({ bodyWeight, classificationByName });
+  const setColumns = useSetColumns();
 
   const columns = useMemo<Array<MRT_ColumnDef<WorkoutTableRow>>>(
     () => [

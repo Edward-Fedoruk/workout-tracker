@@ -47,14 +47,19 @@ export type WorkoutSet = typeof workoutSet.$inferSelect;
 export type WorkoutTableRow = {
   exercise_name: string;
   id: number;
+  Set1_erm: null | number;
   Set1_reps: null | number;
   Set1_weight: null | number;
+  Set2_erm: null | number;
   Set2_reps: null | number;
   Set2_weight: null | number;
+  Set3_erm: null | number;
   Set3_reps: null | number;
   Set3_weight: null | number;
+  Set4_erm: null | number;
   Set4_reps: null | number;
   Set4_weight: null | number;
+  Set5_erm: null | number;
   Set5_reps: null | number;
   Set5_weight: null | number;
   workout_date: string;
@@ -65,7 +70,7 @@ export type WorkoutWithSets = WorkoutLog & { sets: WorkoutSet[] };
 export const createWorkout = async (
   workoutDate: string,
   exerciseName: string,
-  sets: Array<{ reps: number; weight: number }>,
+  sets: Array<{ erm: null | number; reps: number; weight: null | number }>,
 ): Promise<number> => {
   await initDatabase();
 
@@ -92,6 +97,7 @@ export const createWorkout = async (
 
   await database.insert(workoutSet).values(
     sets.map((set, index) => ({
+      erm: set.erm,
       reps: set.reps,
       setNumber: index + 1,
       weight: set.weight,
@@ -116,15 +122,20 @@ export const listWorkouts = async (): Promise<WorkoutTableRow[]> => {
         w.workout_date,
         w.exercise_name,
         MAX(CASE WHEN s.set_number = 1 THEN s.weight END) AS Set1_weight,
-        MAX(CASE WHEN s.set_number = 1 THEN s.reps END) AS Set1_reps,
+        MAX(CASE WHEN s.set_number = 1 THEN s.reps   END) AS Set1_reps,
+        MAX(CASE WHEN s.set_number = 1 THEN s.erm    END) AS Set1_erm,
         MAX(CASE WHEN s.set_number = 2 THEN s.weight END) AS Set2_weight,
-        MAX(CASE WHEN s.set_number = 2 THEN s.reps END) AS Set2_reps,
+        MAX(CASE WHEN s.set_number = 2 THEN s.reps   END) AS Set2_reps,
+        MAX(CASE WHEN s.set_number = 2 THEN s.erm    END) AS Set2_erm,
         MAX(CASE WHEN s.set_number = 3 THEN s.weight END) AS Set3_weight,
-        MAX(CASE WHEN s.set_number = 3 THEN s.reps END) AS Set3_reps,
+        MAX(CASE WHEN s.set_number = 3 THEN s.reps   END) AS Set3_reps,
+        MAX(CASE WHEN s.set_number = 3 THEN s.erm    END) AS Set3_erm,
         MAX(CASE WHEN s.set_number = 4 THEN s.weight END) AS Set4_weight,
-        MAX(CASE WHEN s.set_number = 4 THEN s.reps END) AS Set4_reps,
+        MAX(CASE WHEN s.set_number = 4 THEN s.reps   END) AS Set4_reps,
+        MAX(CASE WHEN s.set_number = 4 THEN s.erm    END) AS Set4_erm,
         MAX(CASE WHEN s.set_number = 5 THEN s.weight END) AS Set5_weight,
-        MAX(CASE WHEN s.set_number = 5 THEN s.reps END) AS Set5_reps
+        MAX(CASE WHEN s.set_number = 5 THEN s.reps   END) AS Set5_reps,
+        MAX(CASE WHEN s.set_number = 5 THEN s.erm    END) AS Set5_erm
       FROM workout_log w
       LEFT JOIN workout_set s ON s.workout_id = w.id
       GROUP BY w.id, w.workout_date, w.exercise_name
@@ -162,7 +173,7 @@ export const updateWorkout = async (
   id: number,
   workoutDate: string,
   exerciseName: string,
-  sets: Array<{ reps: number; weight: number }>,
+  sets: Array<{ erm: null | number; reps: number; weight: null | number }>,
 ): Promise<void> => {
   await initDatabase();
 
@@ -176,6 +187,7 @@ export const updateWorkout = async (
   if (sets.length > 0) {
     await database.insert(workoutSet).values(
       sets.map((set, index) => ({
+        erm: set.erm,
         reps: set.reps,
         setNumber: index + 1,
         weight: set.weight,

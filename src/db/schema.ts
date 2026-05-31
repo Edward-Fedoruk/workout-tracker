@@ -97,10 +97,11 @@ export const exerciseMuscleGroup = sqliteTable(
 export const workoutSet = sqliteTable(
   'workout_set',
   {
+    erm: real('erm'),
     id: integer('id').primaryKey({ autoIncrement: true }),
     reps: integer('reps').notNull(),
     setNumber: integer('set_number').notNull(),
-    weight: real('weight').notNull(),
+    weight: real('weight'),
     workoutId: integer('workout_id')
       .notNull()
       .references(() => workoutLog.id, { onDelete: 'cascade' }),

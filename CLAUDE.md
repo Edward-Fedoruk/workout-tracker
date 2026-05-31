@@ -102,12 +102,13 @@ main thread (React)  ──►  promiser (async API)  ──►  Web Worker  ─
 - On unsupported browsers, the OPFS open throws and the fallback to `:memory:` is silent (a `console.warn` is logged). The app appears to work but data is lost on reload — check the console if persistence seems broken.
 
 <!-- SPECKIT START -->
-**Active Feature**: eRM & Body Weight Settings (branch `007-erm-bodyweight`)  
+**Active Feature**: Persisted eRM & Optional Weight Entry (branch `008-bodyweight-erm-weight`)  
 For implementation context, design decisions, data model, and step-by-step quickstart, see:
-- **Plan**: `specs/007-erm-bodyweight/plan.md`
-- **Research**: `specs/007-erm-bodyweight/research.md`
-- **Data Model**: `specs/007-erm-bodyweight/data-model.md`
-- **Quickstart**: `specs/007-erm-bodyweight/quickstart.md`
-- **Contracts**: `specs/007-erm-bodyweight/contracts/settingsHelpers.ts.md`
-- **Contracts**: `specs/007-erm-bodyweight/contracts/erm.ts.md`
+- **Plan**: `specs/008-bodyweight-erm-weight/plan.md`
+- **Research**: `specs/008-bodyweight-erm-weight/research.md`
+- **Data Model**: `specs/008-bodyweight-erm-weight/data-model.md`
+- **Quickstart**: `specs/008-bodyweight-erm-weight/quickstart.md`
+- **Contracts**: `specs/008-bodyweight-erm-weight/contracts/database.ts.md`
+- **Contracts**: `specs/008-bodyweight-erm-weight/contracts/erm.ts.md`
+- **Contracts**: `specs/008-bodyweight-erm-weight/contracts/workoutFormUtilities.ts.md`
 <!-- SPECKIT END -->
