@@ -27,6 +27,7 @@ export default tseslint.config(
       'react-refresh': reactRefresh,
     },
     rules: {
+      'promise/prefer-await-to-then': 'off',
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },

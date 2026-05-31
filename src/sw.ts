@@ -7,7 +7,6 @@ declare let self: ServiceWorkerGlobalScope;
 // isolated on GitHub Pages (which cannot set these headers server-side).
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    // eslint-disable-next-line promise/prefer-await-to-then
     fetch(event.request).then((response) => {
       const headers = new Headers(response.headers);
       headers.set('Cross-Origin-Opener-Policy', 'same-origin');

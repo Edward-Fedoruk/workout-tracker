@@ -1,3 +1,4 @@
+import { DialogActionButtons, FormDialog } from '../../components';
 import {
   addRoutineExercise,
   createRoutine,
@@ -19,15 +20,12 @@ import {
   Box,
   Button,
   CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   IconButton,
   TextField,
   Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 type ExerciseErrors = {
   maxReps?: string;
@@ -43,12 +41,11 @@ type ExerciseFormState = {
   sets: string;
 };
 
-type Props = {
-  readonly onBack: () => void;
-  readonly routineId: null | number;
-};
-
-export const RoutineEditor = ({ onBack, routineId }: Props) => {
+export const RoutineEditor = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const onBack = () => navigate('/routines');
+  const routineId = id === undefined ? null : Number.parseInt(id, 10);
   const [routine, setRoutine] = useState<null | RoutineWithExercises>(null);
   const [loading, setLoading] = useState(true);
   const [routineName, setRoutineName] = useState('');
@@ -78,18 +75,18 @@ export const RoutineEditor = ({ onBack, routineId }: Props) => {
       setLibraryExercises(await listExercises());
     };
 
-    // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync useEffect callback
     loadLibrary().catch(() => undefined);
   }, []);
 
-  const load = async (id: number) => {
-    const data = await getRoutineById(id);
+  const load = async (rid: number) => {
+    const data = await getRoutineById(rid);
     if (data) {
       setRoutine(data);
       setRoutineName(data.name);
+      setLoading(false);
+    } else {
+      navigate('/routines', { replace: true });
     }
-
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -100,11 +97,16 @@ export const RoutineEditor = ({ onBack, routineId }: Props) => {
         return;
       }
 
+      if (Number.isNaN(currentRoutineId)) {
+        navigate('/routines', { replace: true });
+        return;
+      }
+
       await load(currentRoutineId);
     };
 
-    // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync useEffect callback
     initialize().catch(() => undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- load and navigate are stable; currentRoutineId is the real dependency
   }, [currentRoutineId]);
 
   const handleSaveName = async () => {
@@ -251,7 +253,6 @@ export const RoutineEditor = ({ onBack, routineId }: Props) => {
         />
         <Button
           disabled={savingName}
-          // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync event handler
           onClick={() => handleSaveName().catch(() => undefined)}
           variant="contained"
         >
@@ -281,16 +282,13 @@ export const RoutineEditor = ({ onBack, routineId }: Props) => {
             isLast={index === exercises.length - 1}
             key={exercise.id}
             onDelete={() => {
-              // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync event handler
               handleDeleteExercise(exercise).catch(() => undefined);
             }}
             onEdit={() => openEditExercise(exercise)}
             onMoveDown={() => {
-              // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync event handler
               handleMove(exercise, 'down').catch(() => undefined);
             }}
             onMoveUp={() => {
-              // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync event handler
               handleMove(exercise, 'up').catch(() => undefined);
             }}
           />
@@ -306,21 +304,25 @@ export const RoutineEditor = ({ onBack, routineId }: Props) => {
         Add Exercise
       </Button>
 
-      <Dialog
-        fullWidth
-        maxWidth="xs"
+      <FormDialog
+        actions={
+          <DialogActionButtons
+            confirmDisabled={submittingExercise}
+            confirmLabel={editingExercise ? 'Save' : 'Add'}
+            onCancel={() => setExerciseDialogOpen(false)}
+            onConfirm={() => handleExerciseSubmit().catch(() => undefined)}
+          />
+        }
         onClose={() => setExerciseDialogOpen(false)}
         open={exerciseDialogOpen}
+        title={editingExercise ? 'Edit Exercise' : 'Add Exercise'}
       >
-        <DialogTitle>
-          {editingExercise ? 'Edit Exercise' : 'Add Exercise'}
-        </DialogTitle>
-        <DialogContent
+        <Box
           sx={{
             display: 'flex',
             flexDirection: 'column',
             gap: 2,
-            pt: '16px !important',
+            pt: '4px',
           }}
         >
           <ExercisePicker
@@ -390,19 +392,8 @@ export const RoutineEditor = ({ onBack, routineId }: Props) => {
               value={exerciseForm.maxReps}
             />
           </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setExerciseDialogOpen(false)}>Cancel</Button>
-          <Button
-            disabled={submittingExercise}
-            // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync event handler
-            onClick={() => handleExerciseSubmit().catch(() => undefined)}
-            variant="contained"
-          >
-            {editingExercise ? 'Save' : 'Add'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        </Box>
+      </FormDialog>
     </Box>
   );
 };

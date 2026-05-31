@@ -1,29 +1,16 @@
+import { ConfirmDialog } from '../../components';
 import {
   deleteRoutine,
   listRoutines,
   type RoutineWithExercises,
 } from '../../database';
 import { RoutineCard } from './RoutineCard';
-import {
-  Box,
-  Button,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Typography,
-} from '@mui/material';
+import { Box, Button, CircularProgress, Typography } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-type Props = {
-  readonly onAdd: () => void;
-  readonly onEdit: (routineId: number) => void;
-  readonly onStart: (routineId: number) => void;
-};
-
-export const RoutineList = ({ onAdd, onEdit, onStart }: Props) => {
+export const RoutineList = () => {
+  const navigate = useNavigate();
   const [routines, setRoutines] = useState<RoutineWithExercises[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<null | number>(null);
@@ -40,7 +27,6 @@ export const RoutineList = ({ onAdd, onEdit, onStart }: Props) => {
       await load();
     };
 
-    // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync useEffect callback
     initialize().catch(() => undefined);
   }, [load]);
 
@@ -74,7 +60,7 @@ export const RoutineList = ({ onAdd, onEdit, onStart }: Props) => {
       >
         <Typography variant="h5">Routines</Typography>
         <Button
-          onClick={onAdd}
+          onClick={() => navigate('/routines/new')}
           variant="contained"
         >
           Add Routine
@@ -90,35 +76,25 @@ export const RoutineList = ({ onAdd, onEdit, onStart }: Props) => {
           <RoutineCard
             key={routine.id}
             onDelete={() => setDeleteId(routine.id)}
-            onEdit={() => onEdit(routine.id)}
-            onStart={() => onStart(routine.id)}
+            onEdit={() => navigate(`/routines/${routine.id}/edit`)}
+            onStart={() => navigate(`/routines/${routine.id}/start`)}
             routine={routine}
           />
         ))
       )}
 
-      <Dialog
-        onClose={() => setDeleteId(null)}
+      <ConfirmDialog
+        confirmColor="error"
+        confirmLabel="Delete"
+        onCancel={() => setDeleteId(null)}
+        onConfirm={() => handleDeleteConfirm().catch(() => undefined)}
         open={deleteId !== null}
+        title="Delete Routine"
       >
-        <DialogTitle>Delete Routine</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Delete &ldquo;
-            {routines.find((routine) => routine.id === deleteId)?.name}
-            &rdquo;? This cannot be undone.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteId(null)}>Cancel</Button>
-          <Button
-            color="error"
-            onClick={async () => handleDeleteConfirm()}
-          >
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
+        Delete &ldquo;
+        {routines.find((routine) => routine.id === deleteId)?.name}
+        &rdquo;? This cannot be undone.
+      </ConfirmDialog>
     </Box>
   );
 };
