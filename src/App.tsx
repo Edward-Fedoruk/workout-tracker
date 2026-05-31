@@ -3,6 +3,7 @@ import { MigrationErrorDialog } from './components/MigrationErrorDialog';
 import { RoutineEditor } from './components/routines/RoutineEditor';
 import { RoutineList } from './components/routines/RoutineList';
 import { RoutineWorkoutForm } from './components/routines/RoutineWorkoutForm';
+import { SettingsPage } from './components/settings/SettingsPage';
 import { WorkoutTable } from './components/WorkoutTable';
 import { initDatabase, MigrationError } from './database';
 import { Box, createTheme, Tab, Tabs, ThemeProvider } from '@mui/material';
@@ -13,7 +14,8 @@ type ActiveView =
   | { routineId: number; type: 'start-routine' }
   | { type: 'exercises' }
   | { type: 'log' }
-  | { type: 'routines' };
+  | { type: 'routines' }
+  | { type: 'settings' };
 
 const muiTheme = createTheme();
 
@@ -75,7 +77,8 @@ export const App = () => {
   const showTabBar =
     activeView.type === 'log' ||
     activeView.type === 'routines' ||
-    activeView.type === 'exercises';
+    activeView.type === 'exercises' ||
+    activeView.type === 'settings';
 
   const renderContent = () => {
     if (!isDatabaseReady) {
@@ -122,6 +125,10 @@ export const App = () => {
       );
     }
 
+    if (activeView.type === 'settings') {
+      return <SettingsPage />;
+    }
+
     return null;
   };
 
@@ -141,6 +148,10 @@ export const App = () => {
             if (value === 'exercises') {
               setActiveView({ type: 'exercises' });
             }
+
+            if (value === 'settings') {
+              setActiveView({ type: 'settings' });
+            }
           }}
           sx={{ borderBottom: 1, borderColor: 'divider' }}
           value={activeView.type}
@@ -156,6 +167,10 @@ export const App = () => {
           <Tab
             label="Exercises"
             value="exercises"
+          />
+          <Tab
+            label="Settings"
+            value="settings"
           />
         </Tabs>
       )}

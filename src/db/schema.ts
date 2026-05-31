@@ -50,10 +50,29 @@ export const workoutLog = sqliteTable('workout_log', {
   workoutDate: text('workout_date').notNull(),
 });
 
-export const exercise = sqliteTable('exercise', {
-  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  name: text('name').notNull(),
+export const exercise = sqliteTable(
+  'exercise',
+  {
+    classification: text('classification', {
+      enum: ['standard', 'bodyweight', 'assisted'],
+    })
+      .notNull()
+      .default('standard'),
+    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    name: text('name').notNull(),
+  },
+  (table) => [
+    check(
+      'exercise_classification_check',
+      sql`${table.classification} IN ('standard', 'bodyweight', 'assisted')`,
+    ),
+  ],
+);
+
+export const appSetting = sqliteTable('app_setting', {
+  key: text('key').notNull().primaryKey(),
+  value: text('value').notNull(),
 });
 
 export const muscleGroup = sqliteTable('muscle_group', {
@@ -89,7 +108,6 @@ export const workoutSet = sqliteTable(
   (table) => [
     unique().on(table.workoutId, table.setNumber),
     check('set_number_check', sql`${table.setNumber} BETWEEN 1 AND 5`),
-    check('weight_check', sql`${table.weight} > 0`),
     check('reps_check', sql`${table.reps} > 0`),
   ],
 );

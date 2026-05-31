@@ -1,4 +1,4 @@
-import { type MuscleGroup } from '../../database';
+import { type ExerciseClassification, type MuscleGroup } from '../../database';
 import {
   Autocomplete,
   Button,
@@ -6,12 +6,17 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
   Stack,
   TextField,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 export type ExerciseFormInitial = {
+  classification: ExerciseClassification;
   muscleGroupIds: number[];
   name: string;
 };
@@ -22,7 +27,11 @@ type Props = {
   readonly mode: 'create' | 'edit';
   readonly muscleGroups: MuscleGroup[];
   readonly onCancel: () => void;
-  readonly onSave: (name: string, muscleGroupIds: number[]) => void;
+  readonly onSave: (
+    name: string,
+    muscleGroupIds: number[],
+    classification: ExerciseClassification,
+  ) => void;
   readonly open: boolean;
 };
 
@@ -37,6 +46,8 @@ export const ExerciseForm = ({
 }: Props) => {
   const [name, setName] = useState('');
   const [selectedGroups, setSelectedGroups] = useState<MuscleGroup[]>([]);
+  const [classification, setClassification] =
+    useState<ExerciseClassification>('standard');
   const [nameError, setNameError] = useState<null | string>(null);
   const [groupsError, setGroupsError] = useState<null | string>(null);
 
@@ -54,6 +65,7 @@ export const ExerciseForm = ({
           )
         : [],
     );
+    setClassification(initialValues?.classification ?? 'standard');
     setNameError(null);
     setGroupsError(null);
     /* eslint-enable react-hooks/set-state-in-effect */
@@ -87,6 +99,7 @@ export const ExerciseForm = ({
     onSave(
       trimmed,
       selectedGroups.map((group) => group.id),
+      classification,
     );
   };
 
@@ -140,6 +153,23 @@ export const ExerciseForm = ({
             )}
             value={selectedGroups}
           />
+          <FormControl fullWidth>
+            <InputLabel id="exercise-classification-label">
+              Classification
+            </InputLabel>
+            <Select
+              label="Classification"
+              labelId="exercise-classification-label"
+              onChange={(event) => {
+                setClassification(event.target.value as ExerciseClassification);
+              }}
+              value={classification}
+            >
+              <MenuItem value="standard">Standard</MenuItem>
+              <MenuItem value="bodyweight">Body weight</MenuItem>
+              <MenuItem value="assisted">Assisted</MenuItem>
+            </Select>
+          </FormControl>
         </Stack>
       </DialogContent>
       <DialogActions>

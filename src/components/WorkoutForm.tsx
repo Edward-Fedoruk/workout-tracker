@@ -5,7 +5,18 @@ import {
   updateWorkout,
   type WorkoutWithSets,
 } from '../database';
+import { type ExerciseClassification } from '../utils/erm';
 import { ExercisePicker } from './exercises/ExercisePicker';
+import {
+  type FormErrors,
+  getToday,
+  getWeightInputMin,
+  hasFormErrors,
+  makeSetInput,
+  type SetInput,
+  validateWorkoutForm,
+} from './workoutFormUtilities';
+import { WorkoutSetInputRow } from './WorkoutSetInputRow';
 import {
   Box,
   Button,
@@ -16,37 +27,11 @@ import {
 } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 
-type FormErrors = {
-  exerciseName?: string;
-  general?: string;
-  sets: SetErrors[];
-  workoutDate?: string;
-};
-
 type Props = {
   readonly initialData?: WorkoutWithSets;
   readonly onCancel: () => void;
   readonly onSave: () => void;
 };
-
-type SetErrors = {
-  reps?: string;
-  weight?: string;
-};
-
-type SetInput = {
-  _key: string;
-  reps: string;
-  weight: string;
-};
-
-const getToday = () => new Date().toISOString().slice(0, 10);
-
-const makeSetInput = (weight = '', reps = ''): SetInput => ({
-  _key: crypto.randomUUID(),
-  reps,
-  weight,
-});
 
 export const WorkoutForm = ({ initialData, onCancel, onSave }: Props) => {
   const isEditing = initialData !== undefined;
@@ -68,6 +53,8 @@ export const WorkoutForm = ({ initialData, onCancel, onSave }: Props) => {
   });
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [errors, setErrors] = useState<FormErrors>({ sets: [] });
+  const [isLoading, setIsLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<null | string>(null);
 
   useEffect(() => {
     const loadLibrary = async () => {
@@ -77,50 +64,21 @@ export const WorkoutForm = ({ initialData, onCancel, onSave }: Props) => {
     // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync useEffect callback
     loadLibrary().catch(() => undefined);
   }, []);
-  const [isLoading, setIsLoading] = useState(false);
-  const [submitError, setSubmitError] = useState<null | string>(null);
+
+  const classification: ExerciseClassification =
+    exercises.find((option) => option.name === exerciseName)?.classification ??
+    'standard';
 
   const validate = useCallback((): boolean => {
-    const today = getToday();
-    const newErrors: FormErrors = { sets: [] };
-
-    if (workoutDate > today) {
-      newErrors.workoutDate = 'Cannot log future workouts';
-    }
-
-    if (!exerciseName.trim()) {
-      newErrors.exerciseName = 'Exercise name is required';
-    }
-
-    if (sets.length === 0) {
-      newErrors.general = 'Must have at least 1 set';
-    }
-
-    for (const set of sets) {
-      const setError: SetErrors = {};
-      const weightValue = Number.parseFloat(set.weight);
-      const repsValue = Number.parseInt(set.reps, 10);
-
-      if (!set.weight || Number.isNaN(weightValue) || weightValue <= 0) {
-        setError.weight = 'Weight must be greater than 0';
-      }
-
-      if (!set.reps || Number.isNaN(repsValue) || repsValue <= 0) {
-        setError.reps = 'Reps must be greater than 0';
-      }
-
-      newErrors.sets.push(setError);
-    }
-
+    const newErrors = validateWorkoutForm({
+      classification,
+      exerciseName,
+      sets,
+      workoutDate,
+    });
     setErrors(newErrors);
-
-    return (
-      !newErrors.workoutDate &&
-      !newErrors.exerciseName &&
-      !newErrors.general &&
-      newErrors.sets.every((setError) => !setError.weight && !setError.reps)
-    );
-  }, [exerciseName, sets, workoutDate]);
+    return !hasFormErrors(newErrors);
+  }, [classification, exerciseName, sets, workoutDate]);
 
   const handleSave = useCallback(async () => {
     if (!validate()) {
@@ -186,6 +144,10 @@ export const WorkoutForm = ({ initialData, onCancel, onSave }: Props) => {
     [],
   );
 
+  const weightMin = getWeightInputMin(classification);
+  const weightInputProps =
+    weightMin === undefined ? { step: '0.1' } : { min: weightMin, step: '0.1' };
+
   return (
     <Stack spacing={2}>
       <TextField
@@ -214,43 +176,15 @@ export const WorkoutForm = ({ initialData, onCancel, onSave }: Props) => {
       <Box>
         <Typography sx={{ fontWeight: 600, mb: 1 }}>Sets</Typography>
         {sets.map((set, index) => (
-          <Stack
-            direction="row"
+          <WorkoutSetInputRow
+            errors={errors.sets[index]}
+            index={index}
             key={set._key}
-            spacing={1}
-            sx={{ alignItems: 'flex-start', mb: 1 }}
-          >
-            <Typography
-              color="text.secondary"
-              sx={{ minWidth: 20, pt: 1.5 }}
-            >
-              {index + 1}.
-            </Typography>
-            <TextField
-              error={Boolean(errors.sets[index]?.weight)}
-              helperText={errors.sets[index]?.weight}
-              onChange={(event) => {
-                updateSet(index, 'weight', event.target.value);
-              }}
-              placeholder="kg"
-              size="small"
-              slotProps={{ htmlInput: { min: '0.1', step: '0.1' } }}
-              type="number"
-              value={set.weight}
-            />
-            <TextField
-              error={Boolean(errors.sets[index]?.reps)}
-              helperText={errors.sets[index]?.reps}
-              onChange={(event) => {
-                updateSet(index, 'reps', event.target.value);
-              }}
-              placeholder="reps"
-              size="small"
-              slotProps={{ htmlInput: { min: '1', step: '1' } }}
-              type="number"
-              value={set.reps}
-            />
-          </Stack>
+            onChange={(field, value) => updateSet(index, field, value)}
+            reps={set.reps}
+            weight={set.weight}
+            weightInputProps={weightInputProps}
+          />
         ))}
 
         {errors.general && (

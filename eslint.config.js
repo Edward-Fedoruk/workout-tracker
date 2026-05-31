@@ -3,7 +3,17 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist', 'dev-dist', 'drizzle', 'package-lock.json'] },
+  {
+    ignores: [
+      'dist',
+      'dev-dist',
+      'drizzle',
+      'package-lock.json',
+      'node_modules',
+      '.claude',
+      '.specify',
+    ],
+  },
   ...auto,
   {
     files: ['**/*.{ts,tsx}'],

@@ -2,11 +2,14 @@ import { getDatabaseId, getPromiser } from './driver';
 import { initDatabase } from './initDatabase';
 
 export type Exercise = {
+  classification: ExerciseClassification;
   createdAt: string;
   id: number;
   muscleGroups: MuscleGroup[];
   name: string;
 };
+
+export type ExerciseClassification = 'assisted' | 'bodyweight' | 'standard';
 
 export type MuscleGroup = {
   color: string;
@@ -22,6 +25,7 @@ type ExerciseMuscleGroupRow = {
 };
 
 type ExerciseRow = {
+  classification: ExerciseClassification;
   created_at: string;
   id: number;
   name: string;
@@ -41,7 +45,7 @@ export const listExercises = async (): Promise<Exercise[]> => {
   const exercisesResult = await promiser<ExerciseRow>('exec', {
     dbId: databaseId,
     rowMode: 'object',
-    sql: 'SELECT id, name, created_at FROM exercise ORDER BY name COLLATE NOCASE ASC',
+    sql: 'SELECT id, name, created_at, classification FROM exercise ORDER BY name COLLATE NOCASE ASC',
   });
 
   const joinResult = await promiser<ExerciseMuscleGroupRow>('exec', {
@@ -58,11 +62,16 @@ export const listExercises = async (): Promise<Exercise[]> => {
   const groupsByExerciseId = new Map<number, MuscleGroup[]>();
   for (const row of joinResult.result.resultRows || []) {
     const list = groupsByExerciseId.get(row.exercise_id) ?? [];
-    list.push({ color: row.muscle_group_color, id: row.muscle_group_id, name: row.muscle_group_name });
+    list.push({
+      color: row.muscle_group_color,
+      id: row.muscle_group_id,
+      name: row.muscle_group_name,
+    });
     groupsByExerciseId.set(row.exercise_id, list);
   }
 
   return (exercisesResult.result.resultRows || []).map((row) => ({
+    classification: row.classification,
     createdAt: row.created_at,
     id: row.id,
     muscleGroups: groupsByExerciseId.get(row.id) ?? [],
@@ -88,6 +97,7 @@ const insertMuscleGroupAssignments = async (
 export const createExercise = async (
   name: string,
   muscleGroupIds: number[],
+  classification: ExerciseClassification,
 ): Promise<number> => {
   await initDatabase();
   const promiser = await getPromiser();
@@ -96,9 +106,9 @@ export const createExercise = async (
   await promiser('exec', { dbId: databaseId, sql: 'BEGIN' });
   try {
     await promiser('exec', {
-      bind: [name],
+      bind: [name, classification],
       dbId: databaseId,
-      sql: 'INSERT INTO exercise (name) VALUES (?)',
+      sql: 'INSERT INTO exercise (name, classification) VALUES (?, ?)',
     });
 
     const idResult = await promiser<{ last_id: number }>('exec', {
@@ -131,6 +141,7 @@ export const updateExercise = async (
   id: number,
   name: string,
   muscleGroupIds: number[],
+  classification: ExerciseClassification,
 ): Promise<void> => {
   await initDatabase();
   const promiser = await getPromiser();
@@ -150,9 +161,9 @@ export const updateExercise = async (
   await promiser('exec', { dbId: databaseId, sql: 'BEGIN' });
   try {
     await promiser('exec', {
-      bind: [name, id],
+      bind: [name, classification, id],
       dbId: databaseId,
-      sql: 'UPDATE exercise SET name = ? WHERE id = ?',
+      sql: 'UPDATE exercise SET name = ?, classification = ? WHERE id = ?',
     });
 
     if (oldName !== name) {
@@ -241,7 +252,10 @@ export const listMuscleGroups = async (): Promise<MuscleGroup[]> => {
   }));
 };
 
-export const createMuscleGroup = async (name: string, color: string): Promise<number> => {
+export const createMuscleGroup = async (
+  name: string,
+  color: string,
+): Promise<number> => {
   await initDatabase();
   const promiser = await getPromiser();
   const databaseId = getDatabaseId();
