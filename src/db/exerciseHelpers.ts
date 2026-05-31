@@ -62,7 +62,11 @@ export const listExercises = async (): Promise<Exercise[]> => {
   const groupsByExerciseId = new Map<number, MuscleGroup[]>();
   for (const row of joinResult.result.resultRows || []) {
     const list = groupsByExerciseId.get(row.exercise_id) ?? [];
-    list.push({ color: row.muscle_group_color, id: row.muscle_group_id, name: row.muscle_group_name });
+    list.push({
+      color: row.muscle_group_color,
+      id: row.muscle_group_id,
+      name: row.muscle_group_name,
+    });
     groupsByExerciseId.set(row.exercise_id, list);
   }
 
@@ -248,7 +252,10 @@ export const listMuscleGroups = async (): Promise<MuscleGroup[]> => {
   }));
 };
 
-export const createMuscleGroup = async (name: string, color: string): Promise<number> => {
+export const createMuscleGroup = async (
+  name: string,
+  color: string,
+): Promise<number> => {
   await initDatabase();
   const promiser = await getPromiser();
   const databaseId = getDatabaseId();

@@ -10,8 +10,6 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      strategies: 'injectManifest',
-      srcDir: 'src',
       filename: 'sw.ts',
       includeAssets: ['favicon.svg'],
       manifest: {
@@ -50,6 +48,8 @@ export default defineConfig({
         theme_color: '#1a202c',
       },
       registerType: 'autoUpdate',
+      srcDir: 'src',
+      strategies: 'injectManifest',
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,wasm}'],
         maximumFileSizeToCacheInBytes: 10 * 1_024 * 1_024,

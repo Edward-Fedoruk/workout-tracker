@@ -6,6 +6,7 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "lib": [
+      "webworker",
       "ES2020",
       "DOM",
       "DOM.Iterable"

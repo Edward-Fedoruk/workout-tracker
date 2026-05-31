@@ -122,9 +122,7 @@ export const MuscleGroupForm = ({
                   display: 'flex',
                   justifyContent: 'center',
                   outline:
-                    color === swatch
-                      ? '3px solid'
-                      : '2px solid transparent',
+                    color === swatch ? '3px solid' : '2px solid transparent',
                   outlineColor:
                     color === swatch ? 'text.primary' : 'transparent',
                   outlineOffset: '2px',
