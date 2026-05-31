@@ -5,13 +5,13 @@ import {
   listExercises,
   updateWorkout,
   type WorkoutWithSets,
-} from '../database';
+} from '../../database';
 import {
   computeEffectiveWeight,
   computeERM,
   type ExerciseClassification,
-} from '../utils/erm';
-import { ExercisePicker } from './exercises/ExercisePicker';
+} from '../../utils/erm';
+import { ExercisePicker } from '../exercises/ExercisePicker';
 import {
   type FormErrors,
   getToday,
@@ -75,7 +75,6 @@ export const WorkoutForm = ({ initialData, onCancel, onSave }: Props) => {
       setBodyWeight(bw);
     };
 
-    // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync useEffect callback
     loadLibrary().catch(() => undefined);
   }, []);
 
@@ -270,7 +269,6 @@ export const WorkoutForm = ({ initialData, onCancel, onSave }: Props) => {
         <Button
           disabled={isLoading}
           onClick={() => {
-            // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync handler
             handleSave().catch(() => undefined);
           }}
           variant="contained"

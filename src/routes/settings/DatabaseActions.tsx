@@ -1,4 +1,4 @@
-import { exportDatabaseBytes, replaceDatabaseAndReload } from '../database';
+import { exportDatabaseBytes, replaceDatabaseAndReload } from '../../database';
 import { ConfirmImportDialog } from './ConfirmImportDialog';
 import {
   Download as DownloadIcon,
@@ -7,7 +7,7 @@ import {
 import { Alert, Button, Snackbar, Stack } from '@mui/material';
 import { useRef, useState } from 'react';
 
-export const WorkoutDataActions = () => {
+export const DatabaseActions = () => {
   const [errorMessage, setErrorMessage] = useState<null | string>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);

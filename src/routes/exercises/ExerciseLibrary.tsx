@@ -77,7 +77,6 @@ export const ExerciseLibrary = () => {
       await Promise.all([refreshExercises(), refreshMuscleGroups()]);
     };
 
-    // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync useEffect callback
     initialize().catch(() => undefined);
   }, []);
 
@@ -277,7 +276,6 @@ export const ExerciseLibrary = () => {
         muscleGroups={muscleGroups}
         onCancel={() => setExerciseDialogOpen(false)}
         onSave={(name, ids, classification) => {
-          // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync event handler
           handleSaveExercise(name, ids, classification).catch(() => undefined);
         }}
         open={exerciseDialogOpen}
@@ -290,7 +288,6 @@ export const ExerciseLibrary = () => {
         mode={muscleGroupDialogMode}
         onCancel={() => setMuscleGroupDialogOpen(false)}
         onSave={(name, color) => {
-          // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync event handler
           handleSaveMuscleGroup(name, color).catch(() => undefined);
         }}
         open={muscleGroupDialogOpen}
@@ -317,7 +314,6 @@ export const ExerciseLibrary = () => {
           <Button
             color="error"
             onClick={() => {
-              // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync event handler
               handleConfirmDeleteExercise().catch(() => undefined);
             }}
             sx={{ minHeight: 44 }}
@@ -349,7 +345,6 @@ export const ExerciseLibrary = () => {
           <Button
             color="error"
             onClick={() => {
-              // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync event handler
               handleConfirmDeleteMuscleGroup().catch(() => undefined);
             }}
             sx={{ minHeight: 44 }}

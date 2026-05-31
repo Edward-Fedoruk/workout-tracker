@@ -1,8 +1,10 @@
 import { getBodyWeight, setBodyWeight } from '../../database';
+import { DatabaseActions } from './DatabaseActions';
 import {
   Alert,
   Box,
   Button,
+  Divider,
   Stack,
   TextField,
   Typography,
@@ -30,7 +32,6 @@ export const SettingsPage = () => {
       }
     };
 
-    // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync useEffect callback
     load().catch(() => undefined);
   }, []);
 
@@ -99,7 +100,6 @@ export const SettingsPage = () => {
           <Button
             disabled={isLoading || isSaving}
             onClick={() => {
-              // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync handler
               handleSave().catch(() => undefined);
             }}
             sx={{ minHeight: 44, minWidth: 96 }}
@@ -108,6 +108,18 @@ export const SettingsPage = () => {
             Save
           </Button>
         </Box>
+
+        <Divider />
+
+        <Typography variant="subtitle1">Data</Typography>
+        <Typography
+          color="text.secondary"
+          variant="body2"
+        >
+          Export your database as a backup or import a previously exported file.
+          Importing will replace all current data.
+        </Typography>
+        <DatabaseActions />
       </Stack>
     </Box>
   );

@@ -21,15 +21,14 @@ import {
   Typography,
 } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
-
-type Props = {
-  readonly onBack: () => void;
-  readonly routineId: number;
-};
+import { useNavigate, useParams } from 'react-router-dom';
 
 type SetValue = { reps: string; weight: string };
 
-export const RoutineWorkoutForm = ({ onBack, routineId }: Props) => {
+export const RoutineWorkoutForm = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const routineId = id === undefined ? Number.NaN : Number.parseInt(id, 10);
   const [routine, setRoutine] = useState<null | RoutineWithExercises>(null);
   const [prefills, setPrefills] = useState<Map<number, LastExerciseSets>>(
     new Map(),
@@ -43,6 +42,11 @@ export const RoutineWorkoutForm = ({ onBack, routineId }: Props) => {
   const exerciseSets = useRef<Map<number, SetValue[]>>(new Map());
 
   useEffect(() => {
+    if (Number.isNaN(routineId)) {
+      navigate('/routines', { replace: true });
+      return;
+    }
+
     const init = async () => {
       const [data, bw, exList] = await Promise.all([
         getRoutineById(routineId),
@@ -51,6 +55,7 @@ export const RoutineWorkoutForm = ({ onBack, routineId }: Props) => {
       ]);
 
       if (!data) {
+        navigate('/routines', { replace: true });
         return;
       }
 
@@ -72,8 +77,8 @@ export const RoutineWorkoutForm = ({ onBack, routineId }: Props) => {
       setLoading(false);
     };
 
-    // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync useEffect callback
     init().catch(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- navigate is stable; routineId is the real dependency
   }, [routineId]);
 
   const handleChange = (exerciseId: number, sets: SetValue[]) => {
@@ -129,7 +134,7 @@ export const RoutineWorkoutForm = ({ onBack, routineId }: Props) => {
         }
       }
 
-      onBack();
+      navigate('/log');
     } catch {
       setError('Failed to save workout. Please try again.');
       setSubmitting(false);
@@ -145,12 +150,7 @@ export const RoutineWorkoutForm = ({ onBack, routineId }: Props) => {
   }
 
   if (!routine) {
-    return (
-      <Box sx={{ padding: 2 }}>
-        <Typography>Routine not found.</Typography>
-        <Button onClick={onBack}>Back</Button>
-      </Box>
-    );
+    return null;
   }
 
   return (
@@ -158,7 +158,7 @@ export const RoutineWorkoutForm = ({ onBack, routineId }: Props) => {
       <Box sx={{ alignItems: 'center', display: 'flex', gap: 1, mb: 2 }}>
         <IconButton
           aria-label="Go back"
-          onClick={onBack}
+          onClick={() => navigate('/routines')}
           sx={{ minHeight: 44, minWidth: 44 }}
         >
           <ArrowBackIcon />
@@ -187,7 +187,6 @@ export const RoutineWorkoutForm = ({ onBack, routineId }: Props) => {
       <Button
         disabled={submitting}
         fullWidth
-        // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync event handler
         onClick={() => handleSubmit().catch(() => undefined)}
         size="large"
         sx={{ mt: 2 }}

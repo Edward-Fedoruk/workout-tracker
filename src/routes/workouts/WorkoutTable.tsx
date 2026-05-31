@@ -1,16 +1,16 @@
+import { FormDialog } from '../../components';
 import {
   deleteWorkout,
   getWorkoutById,
   listWorkouts,
   type WorkoutTableRow,
   type WorkoutWithSets,
-} from '../database';
+} from '../../database';
 import { DeleteWorkoutDialog } from './DeleteWorkoutDialog';
-import { WorkoutDataActions } from './WorkoutDataActions';
 import { WorkoutForm } from './WorkoutForm';
 import { WorkoutRowActions } from './WorkoutRowActions';
 import { HIDDEN_SET_COLUMNS, useSetColumns } from './WorkoutSetRow';
-import { Box, Button, Dialog, DialogContent, DialogTitle } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import {
   MaterialReactTable,
   type MRT_ColumnDef,
@@ -42,7 +42,7 @@ export const WorkoutTable = () => {
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line promise/prefer-await-to-then, react-hooks/set-state-in-effect -- fire-and-forget from sync useEffect callback; setState calls happen in async callback
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- setState calls happen in async callback
     loadAll().catch(() => undefined);
   }, [loadAll]);
 
@@ -70,7 +70,6 @@ export const WorkoutTable = () => {
   const handleFormSave = useCallback(() => {
     setShowForm(false);
     setEditingWorkout(null);
-    // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync callback
     loadAll().catch(() => undefined);
   }, [loadAll]);
 
@@ -100,14 +99,12 @@ export const WorkoutTable = () => {
       <WorkoutRowActions
         onDelete={() => setConfirmDeleteId(row.original.id)}
         onEdit={() => {
-          // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync handler
           openEditForm(row.original.id).catch(() => undefined);
         }}
       />
     ),
     renderTopToolbarCustomActions: () => (
       <Box sx={{ alignItems: 'center', display: 'flex', gap: 2 }}>
-        <WorkoutDataActions />
         <Button
           onClick={() => {
             setEditingWorkout(null);
@@ -134,28 +131,22 @@ export const WorkoutTable = () => {
     <Box sx={{ maxWidth: 1_200, mx: 'auto', padding: 2 }}>
       <MaterialReactTable table={table} />
 
-      <Dialog
-        fullWidth
+      <FormDialog
         maxWidth="sm"
         onClose={handleFormCancel}
         open={showForm}
+        title={editingWorkout ? 'Edit Workout' : 'Add Workout'}
       >
-        <DialogTitle>
-          {editingWorkout ? 'Edit Workout' : 'Add Workout'}
-        </DialogTitle>
-        <DialogContent>
-          <WorkoutForm
-            onCancel={handleFormCancel}
-            onSave={handleFormSave}
-            {...(editingWorkout ? { initialData: editingWorkout } : {})}
-          />
-        </DialogContent>
-      </Dialog>
+        <WorkoutForm
+          onCancel={handleFormCancel}
+          onSave={handleFormSave}
+          {...(editingWorkout ? { initialData: editingWorkout } : {})}
+        />
+      </FormDialog>
 
       <DeleteWorkoutDialog
         onCancel={() => setConfirmDeleteId(null)}
         onConfirm={() => {
-          // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget from sync handler
           handleDeleteConfirm().catch(() => undefined);
         }}
         open={confirmDeleteId !== null}

@@ -1,4 +1,4 @@
-import { type ExerciseClassification } from '../utils/erm';
+import { type ExerciseClassification } from '../../utils/erm';
 
 export type FormErrors = {
   exerciseName?: string;

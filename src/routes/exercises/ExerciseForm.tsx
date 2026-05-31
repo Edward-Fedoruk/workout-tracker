@@ -1,11 +1,7 @@
+import { DialogActionButtons, FormDialog } from '../../components';
 import { type ExerciseClassification, type MuscleGroup } from '../../database';
 import {
   Autocomplete,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   FormControl,
   InputLabel,
   MenuItem,
@@ -104,89 +100,71 @@ export const ExerciseForm = ({
   };
 
   return (
-    <Dialog
-      fullWidth
-      maxWidth="xs"
+    <FormDialog
+      actions={
+        <DialogActionButtons
+          confirmLabel={mode === 'create' ? 'Add' : 'Save'}
+          onCancel={onCancel}
+          onConfirm={handleSave}
+        />
+      }
       onClose={onCancel}
       open={open}
+      title={mode === 'create' ? 'Add Exercise' : 'Edit Exercise'}
     >
-      <DialogTitle>
-        {mode === 'create' ? 'Add Exercise' : 'Edit Exercise'}
-      </DialogTitle>
-      <DialogContent
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 2,
-          pt: '16px !important',
-        }}
+      <Stack
+        spacing={2}
+        sx={{ pt: '4px' }}
       >
-        <Stack spacing={2}>
-          <TextField
-            autoFocus
-            error={Boolean(nameError) || Boolean(duplicateError)}
-            fullWidth
-            helperText={nameError ?? duplicateError ?? ''}
-            label="Exercise name"
+        <TextField
+          autoFocus
+          error={Boolean(nameError) || Boolean(duplicateError)}
+          fullWidth
+          helperText={nameError ?? duplicateError ?? ''}
+          label="Exercise name"
+          onChange={(event) => {
+            setName(event.target.value);
+            setNameError(null);
+          }}
+          value={name}
+        />
+        <Autocomplete
+          getOptionLabel={(option) => option.name}
+          isOptionEqualToValue={(option, value) => option.id === value.id}
+          multiple
+          onChange={(_event, next) => {
+            setSelectedGroups(next);
+            setGroupsError(null);
+          }}
+          options={muscleGroups}
+          renderInput={(parameters) => (
+            <TextField
+              {...parameters}
+              error={Boolean(groupsError)}
+              helperText={groupsError ?? ''}
+              label="Muscle groups"
+            />
+          )}
+          value={selectedGroups}
+        />
+        <FormControl fullWidth>
+          <InputLabel id="exercise-classification-label">
+            Classification
+          </InputLabel>
+          <Select
+            label="Classification"
+            labelId="exercise-classification-label"
             onChange={(event) => {
-              setName(event.target.value);
-              setNameError(null);
+              setClassification(event.target.value as ExerciseClassification);
             }}
-            value={name}
-          />
-          <Autocomplete
-            getOptionLabel={(option) => option.name}
-            isOptionEqualToValue={(option, value) => option.id === value.id}
-            multiple
-            onChange={(_event, next) => {
-              setSelectedGroups(next);
-              setGroupsError(null);
-            }}
-            options={muscleGroups}
-            renderInput={(parameters) => (
-              <TextField
-                {...parameters}
-                error={Boolean(groupsError)}
-                helperText={groupsError ?? ''}
-                label="Muscle groups"
-              />
-            )}
-            value={selectedGroups}
-          />
-          <FormControl fullWidth>
-            <InputLabel id="exercise-classification-label">
-              Classification
-            </InputLabel>
-            <Select
-              label="Classification"
-              labelId="exercise-classification-label"
-              onChange={(event) => {
-                setClassification(event.target.value as ExerciseClassification);
-              }}
-              value={classification}
-            >
-              <MenuItem value="standard">Standard</MenuItem>
-              <MenuItem value="bodyweight">Body weight</MenuItem>
-              <MenuItem value="assisted">Assisted</MenuItem>
-            </Select>
-          </FormControl>
-        </Stack>
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={onCancel}
-          sx={{ minHeight: 44 }}
-        >
-          Cancel
-        </Button>
-        <Button
-          onClick={handleSave}
-          sx={{ minHeight: 44 }}
-          variant="contained"
-        >
-          {mode === 'create' ? 'Add' : 'Save'}
-        </Button>
-      </DialogActions>
-    </Dialog>
+            value={classification}
+          >
+            <MenuItem value="standard">Standard</MenuItem>
+            <MenuItem value="bodyweight">Body weight</MenuItem>
+            <MenuItem value="assisted">Assisted</MenuItem>
+          </Select>
+        </FormControl>
+      </Stack>
+    </FormDialog>
   );
 };
