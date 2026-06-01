@@ -6,7 +6,7 @@ import {
 } from '@mui/material';
 import React from 'react';
 
-type FormDialogProps = {
+export type FormDialogProps = {
   readonly actions?: React.ReactNode;
   readonly children: React.ReactNode;
   readonly fullWidth?: boolean;

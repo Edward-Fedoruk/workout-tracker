@@ -1,7 +1,7 @@
 import { type Exercise } from '../../database';
 import { Autocomplete, TextField } from '@mui/material';
 
-type Props = {
+export type ExercisePickerProps = {
   readonly disabled?: boolean | undefined;
   readonly error?: boolean | undefined;
   readonly exercises: Exercise[];
@@ -19,7 +19,7 @@ export const ExercisePicker = ({
   label = 'Exercise',
   onChange,
   value,
-}: Props) => {
+}: ExercisePickerProps) => {
   return (
     <Autocomplete
       disabled={disabled}

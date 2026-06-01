@@ -3,7 +3,7 @@ import { formatRepRange } from './routineUtilities';
 import { Box, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
 
-type Props = {
+export type RoutineWorkoutExerciseProps = {
   readonly exercise: RoutineExercise;
   readonly onChange: (sets: SetValue[]) => void;
   readonly prefill: LastExerciseSets;
@@ -15,7 +15,7 @@ export const RoutineWorkoutExercise = ({
   exercise,
   onChange,
   prefill,
-}: Props) => {
+}: RoutineWorkoutExerciseProps) => {
   const [values, setValues] = useState<SetValue[]>(() =>
     Array.from({ length: exercise.suggestedSets }, () => ({
       reps: '',

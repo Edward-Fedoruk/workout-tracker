@@ -5,7 +5,7 @@ import { type UseMuscleGroupsReturn } from '../hooks/useMuscleGroups';
 import AddIcon from '@mui/icons-material/Add';
 import { Button, DialogContentText, Stack } from '@mui/material';
 
-type Props = UseMuscleGroupsReturn & {
+export type MuscleGroupsSubViewProps = UseMuscleGroupsReturn & {
   readonly onAfterDelete: () => Promise<void>;
 };
 
@@ -24,7 +24,7 @@ export const MuscleGroupsSubView = ({
   openRename,
   pendingDelete,
   requestDelete,
-}: Props) => (
+}: MuscleGroupsSubViewProps) => (
   <>
     <Stack
       direction="row"

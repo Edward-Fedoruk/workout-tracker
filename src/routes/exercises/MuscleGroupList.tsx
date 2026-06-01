@@ -11,7 +11,7 @@ import {
   Typography,
 } from '@mui/material';
 
-type Props = {
+export type MuscleGroupListProps = {
   readonly muscleGroups: MuscleGroup[];
   readonly onDelete: (group: MuscleGroup) => void;
   readonly onRename: (group: MuscleGroup) => void;
@@ -21,7 +21,7 @@ export const MuscleGroupList = ({
   muscleGroups,
   onDelete,
   onRename,
-}: Props) => {
+}: MuscleGroupListProps) => {
   if (muscleGroups.length === 0) {
     return (
       <Typography color="text.secondary">No muscle groups yet.</Typography>

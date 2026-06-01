@@ -1,4 +1,4 @@
-export type ExerciseClassification = 'assisted' | 'bodyweight' | 'standard';
+export type ExerciseClassification = 'bodyweight' | 'standard';
 
 export const computeEffectiveWeight = (parameters: {
   bodyWeight: null | number;

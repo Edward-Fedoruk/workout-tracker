@@ -1,7 +1,7 @@
 import { type SetErrors } from './workoutFormUtilities';
 import { Stack, TextField, Typography } from '@mui/material';
 
-type Props = {
+export type WorkoutSetInputRowProps = {
   readonly errors: SetErrors | undefined;
   readonly index: number;
   readonly onChange: (field: 'reps' | 'weight', value: string) => void;
@@ -17,7 +17,7 @@ export const WorkoutSetInputRow = ({
   reps,
   weight,
   weightInputProps,
-}: Props) => (
+}: WorkoutSetInputRowProps) => (
   <Stack
     direction="row"
     spacing={1}

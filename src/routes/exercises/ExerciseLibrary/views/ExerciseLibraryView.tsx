@@ -1,19 +1,19 @@
 import { Box, Tab, Tabs, Typography } from '@mui/material';
 import { type ReactNode } from 'react';
 
-export type SubView = 'exercises' | 'muscle-groups';
-
-type Props = {
+export type ExerciseLibraryViewProps = {
   readonly children: ReactNode;
   readonly onSubViewChange: (view: SubView) => void;
   readonly subView: SubView;
 };
 
+export type SubView = 'exercises' | 'muscle-groups';
+
 export const ExerciseLibraryView = ({
   children,
   onSubViewChange,
   subView,
-}: Props) => (
+}: ExerciseLibraryViewProps) => (
   <Box sx={{ padding: 2 }}>
     <Typography
       sx={{ mb: 2 }}

@@ -1,13 +1,16 @@
 import { ConfirmDialog } from '../../components';
-import { type MigrationError } from '../../db/migrations';
+import { type MigrationError } from '../../database';
 import { Button, DialogContentText } from '@mui/material';
 
-type Props = {
+export type MigrationErrorDialogProps = {
   readonly error: MigrationError;
   readonly onReset: () => void;
 };
 
-export const MigrationErrorDialog = ({ error, onReset }: Props) => (
+export const MigrationErrorDialog = ({
+  error,
+  onReset,
+}: MigrationErrorDialogProps) => (
   <ConfirmDialog
     confirmColor="error"
     confirmLabel="Reset Database"

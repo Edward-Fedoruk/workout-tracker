@@ -8,7 +8,7 @@ import {
 } from '@mui/material';
 import React from 'react';
 
-type ConfirmDialogProps = {
+export type ConfirmDialogProps = {
   readonly cancelLabel?: string;
   readonly children: React.ReactNode;
   readonly confirmColor?: 'error' | 'primary' | 'warning';

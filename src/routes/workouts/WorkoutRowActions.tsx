@@ -1,11 +1,14 @@
 import { Box, Button } from '@mui/material';
 
-type Props = {
+export type WorkoutRowActionsProps = {
   readonly onDelete: () => void;
   readonly onEdit: () => void;
 };
 
-export const WorkoutRowActions = ({ onDelete, onEdit }: Props) => (
+export const WorkoutRowActions = ({
+  onDelete,
+  onEdit,
+}: WorkoutRowActionsProps) => (
   <Box sx={{ display: 'flex', gap: 1 }}>
     <Button
       onClick={onEdit}

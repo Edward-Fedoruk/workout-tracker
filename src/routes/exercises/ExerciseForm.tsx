@@ -17,7 +17,7 @@ export type ExerciseFormInitial = {
   name: string;
 };
 
-type Props = {
+export type ExerciseFormProps = {
   readonly duplicateError?: null | string | undefined;
   readonly initialValues?: ExerciseFormInitial | undefined;
   readonly mode: 'create' | 'edit';
@@ -39,7 +39,7 @@ export const ExerciseForm = ({
   onCancel,
   onSave,
   open,
-}: Props) => {
+}: ExerciseFormProps) => {
   const [name, setName] = useState('');
   const [selectedGroups, setSelectedGroups] = useState<MuscleGroup[]>([]);
   const [classification, setClassification] =
@@ -161,7 +161,6 @@ export const ExerciseForm = ({
           >
             <MenuItem value="standard">Standard</MenuItem>
             <MenuItem value="bodyweight">Body weight</MenuItem>
-            <MenuItem value="assisted">Assisted</MenuItem>
           </Select>
         </FormControl>
       </Stack>

@@ -54,15 +54,6 @@ const validateWeight = (
     return undefined;
   }
 
-  // assisted
-  if (isEmpty && bodyWeight === null) {
-    return 'Body weight not set — add it in Settings to log this exercise';
-  }
-
-  if (!isEmpty && !Number.isFinite(parsed)) {
-    return 'Weight must be a number';
-  }
-
   return undefined;
 };
 
