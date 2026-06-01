@@ -6,7 +6,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { Box, IconButton, Typography } from '@mui/material';
 
-type Props = {
+export type ExerciseRowProps = {
   readonly exercise: RoutineExercise;
   readonly isFirst: boolean;
   readonly isLast: boolean;
@@ -24,7 +24,7 @@ export const ExerciseRow = ({
   onEdit,
   onMoveDown,
   onMoveUp,
-}: Props) => (
+}: ExerciseRowProps) => (
   <Box
     sx={{
       alignItems: 'center',

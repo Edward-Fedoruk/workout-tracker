@@ -9,14 +9,19 @@ import {
   Typography,
 } from '@mui/material';
 
-type Props = {
+export type RoutineCardProps = {
   readonly onDelete: () => void;
   readonly onEdit: () => void;
   readonly onStart: () => void;
   readonly routine: RoutineWithExercises;
 };
 
-export const RoutineCard = ({ onDelete, onEdit, onStart, routine }: Props) => {
+export const RoutineCard = ({
+  onDelete,
+  onEdit,
+  onStart,
+  routine,
+}: RoutineCardProps) => {
   const exerciseCount = routine.exercises.length;
   const hasExercises = exerciseCount > 0;
 

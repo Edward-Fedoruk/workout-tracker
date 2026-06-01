@@ -32,13 +32,17 @@ import {
 } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 
-type Props = {
+export type WorkoutFormProps = {
   readonly initialData?: WorkoutWithSets;
   readonly onCancel: () => void;
   readonly onSave: () => void;
 };
 
-export const WorkoutForm = ({ initialData, onCancel, onSave }: Props) => {
+export const WorkoutForm = ({
+  initialData,
+  onCancel,
+  onSave,
+}: WorkoutFormProps) => {
   const isEditing = initialData !== undefined;
 
   const [workoutDate, setWorkoutDate] = useState(

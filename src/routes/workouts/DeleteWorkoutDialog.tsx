@@ -1,12 +1,16 @@
 import { ConfirmDialog } from '../../components';
 
-type Props = {
+export type DeleteWorkoutDialogProps = {
   readonly onCancel: () => void;
   readonly onConfirm: () => void;
   readonly open: boolean;
 };
 
-export const DeleteWorkoutDialog = ({ onCancel, onConfirm, open }: Props) => (
+export const DeleteWorkoutDialog = ({
+  onCancel,
+  onConfirm,
+  open,
+}: DeleteWorkoutDialogProps) => (
   <ConfirmDialog
     confirmColor="error"
     confirmLabel="Delete"

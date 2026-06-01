@@ -1,6 +1,6 @@
 import { Button } from '@mui/material';
 
-type DialogActionButtonsProps = {
+export type DialogActionButtonsProps = {
   readonly cancelLabel?: string;
   readonly confirmColor?: 'error' | 'primary' | 'warning';
   readonly confirmDisabled?: boolean;

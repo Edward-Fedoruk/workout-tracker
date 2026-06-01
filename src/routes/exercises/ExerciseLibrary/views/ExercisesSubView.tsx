@@ -6,7 +6,7 @@ import { type UseExercisesReturn } from '../hooks/useExercises';
 import AddIcon from '@mui/icons-material/Add';
 import { Button, DialogContentText, Stack } from '@mui/material';
 
-type Props = UseExercisesReturn & {
+export type ExercisesSubViewProps = UseExercisesReturn & {
   readonly muscleGroups: MuscleGroup[];
 };
 
@@ -25,7 +25,7 @@ export const ExercisesSubView = ({
   openEdit,
   pendingDelete,
   requestDelete,
-}: Props) => (
+}: ExercisesSubViewProps) => (
   <>
     <Stack
       direction="row"

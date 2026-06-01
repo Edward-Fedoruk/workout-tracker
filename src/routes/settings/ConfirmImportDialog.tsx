@@ -1,6 +1,6 @@
 import { ConfirmDialog } from '../../components';
 
-type ConfirmImportDialogProps = {
+export type ConfirmImportDialogProps = {
   readonly filename: string;
   readonly onCancel: () => void;
   readonly onConfirm: () => void;

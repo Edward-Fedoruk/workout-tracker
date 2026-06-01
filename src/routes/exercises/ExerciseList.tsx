@@ -14,13 +14,17 @@ import {
   Typography,
 } from '@mui/material';
 
-type Props = {
+export type ExerciseListProps = {
   readonly exercises: Exercise[];
   readonly onDelete: (exercise: Exercise) => void;
   readonly onEdit: (exercise: Exercise) => void;
 };
 
-export const ExerciseList = ({ exercises, onDelete, onEdit }: Props) => {
+export const ExerciseList = ({
+  exercises,
+  onDelete,
+  onEdit,
+}: ExerciseListProps) => {
   if (exercises.length === 0) {
     return <Typography color="text.secondary">No exercises yet.</Typography>;
   }

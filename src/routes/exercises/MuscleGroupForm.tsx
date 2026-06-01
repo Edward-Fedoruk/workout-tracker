@@ -7,7 +7,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import { Box, TextField, Tooltip, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 
-type Props = {
+export type MuscleGroupFormProps = {
   readonly duplicateError?: null | string | undefined;
   readonly initialColor?: string | undefined;
   readonly initialName?: string | undefined;
@@ -25,7 +25,7 @@ export const MuscleGroupForm = ({
   onCancel,
   onSave,
   open,
-}: Props) => {
+}: MuscleGroupFormProps) => {
   const [name, setName] = useState('');
   const [color, setColor] = useState(DEFAULT_MUSCLE_GROUP_COLOR);
   const [nameError, setNameError] = useState<null | string>(null);
