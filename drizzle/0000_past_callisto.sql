@@ -8,7 +8,7 @@ CREATE TABLE `exercise` (
 	`name` text NOT NULL,
 	`classification` text DEFAULT 'standard' NOT NULL,
 	`created_at` text DEFAULT CURRENT_TIMESTAMP,
-	CONSTRAINT "exercise_classification_check" CHECK("exercise"."classification" IN ('standard', 'bodyweight', 'assisted'))
+	CONSTRAINT "exercise_classification_check" CHECK("exercise"."classification" IN ('standard', 'bodyweight'))
 );
 --> statement-breakpoint
 CREATE TABLE `exercise_muscle_group` (
