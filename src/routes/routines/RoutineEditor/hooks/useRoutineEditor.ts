@@ -12,29 +12,9 @@ import {
   updateRoutineExercise,
 } from '../../../../database';
 import { useToggle } from '../../../../hooks/useToggle';
-import { validateExercise, validateRoutineName } from '../../routineUtilities';
+import { type FormValues as ExerciseFormValues } from '../../RoutineExerciseForm.schema';
+import { type FormValues as NameFormValues } from '../../RoutineNameForm.schema';
 import { useState } from 'react';
-
-type ExerciseErrors = {
-  maxReps?: string;
-  minReps?: string;
-  name?: string;
-  sets?: string;
-};
-
-type ExerciseFormState = {
-  maxReps: string;
-  minReps: string;
-  name: string;
-  sets: string;
-};
-
-const DEFAULT_FORM: ExerciseFormState = {
-  maxReps: '12',
-  minReps: '8',
-  name: '',
-  sets: '3',
-};
 
 export type UseRoutineEditorReturn = ReturnType<typeof useRoutineEditor>;
 
@@ -43,14 +23,10 @@ export const useRoutineEditor = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentRoutineId, setCurrentRoutineId] = useState<null | number>(null);
   const [routineName, setRoutineName] = useState('');
-  const [routineNameError, setRoutineNameError] = useState<null | string>(null);
   const [isSavingName, setIsSavingName] = useState(false);
   const [libraryExercises, setLibraryExercises] = useState<Exercise[]>([]);
   const [editingExercise, setEditingExercise] =
     useState<null | RoutineExercise>(null);
-  const [exerciseForm, setExerciseForm] =
-    useState<ExerciseFormState>(DEFAULT_FORM);
-  const [exerciseErrors, setExerciseErrors] = useState<ExerciseErrors>({});
   const [isSubmittingExercise, setIsSubmittingExercise] = useState(false);
 
   const exerciseDialog = useToggle();
@@ -82,20 +58,14 @@ export const useRoutineEditor = () => {
     return found;
   };
 
-  const handleSaveName = async () => {
-    const nameError = validateRoutineName(routineName);
-    if (nameError) {
-      setRoutineNameError(nameError);
-      return;
-    }
-
+  const handleSaveName = async (values: NameFormValues): Promise<void> => {
     setIsSavingName(true);
     if (currentRoutineId === null) {
-      const newId = await createRoutine(routineName.trim());
+      const newId = await createRoutine(values.name);
       setCurrentRoutineId(newId);
       await loadRoutine(newId);
     } else {
-      await updateRoutine(currentRoutineId, routineName.trim());
+      await updateRoutine(currentRoutineId, values.name);
       await loadRoutine(currentRoutineId);
     }
 
@@ -104,66 +74,44 @@ export const useRoutineEditor = () => {
 
   const openAddExercise = () => {
     setEditingExercise(null);
-    setExerciseForm(DEFAULT_FORM);
-    setExerciseErrors({});
     exerciseDialog.onOpen();
   };
 
   const openEditExercise = (exercise: RoutineExercise) => {
     setEditingExercise(exercise);
-    setExerciseForm({
-      maxReps: String(exercise.maxReps),
-      minReps: String(exercise.minReps),
-      name: exercise.exerciseName,
-      sets: String(exercise.suggestedSets),
-    });
-    setExerciseErrors({});
     exerciseDialog.onOpen();
   };
 
-  const handleExerciseSubmit = async () => {
-    const setsNumber = Number.parseInt(exerciseForm.sets, 10);
-    const minRepsNumber = Number.parseInt(exerciseForm.minReps, 10);
-    const maxRepsNumber = Number.parseInt(exerciseForm.maxReps, 10);
-    const errors = validateExercise(
-      exerciseForm.name,
-      setsNumber,
-      minRepsNumber,
-      maxRepsNumber,
-    );
-
-    if (Object.keys(errors).length > 0) {
-      setExerciseErrors(errors);
-      return;
-    }
-
+  const handleExerciseSave = async (
+    values: ExerciseFormValues,
+  ): Promise<null | string> => {
     if (currentRoutineId === null) {
-      setExerciseErrors({ name: 'Save the routine name first' });
-      return;
+      return 'Save the routine name first';
     }
 
     setIsSubmittingExercise(true);
     if (editingExercise) {
       await updateRoutineExercise(
         editingExercise.id,
-        exerciseForm.name.trim(),
-        setsNumber,
-        minRepsNumber,
-        maxRepsNumber,
+        values.name,
+        values.sets,
+        values.minReps,
+        values.maxReps,
       );
     } else {
       await addRoutineExercise(
         currentRoutineId,
-        exerciseForm.name.trim(),
-        setsNumber,
-        minRepsNumber,
-        maxRepsNumber,
+        values.name,
+        values.sets,
+        values.minReps,
+        values.maxReps,
       );
     }
 
     setIsSubmittingExercise(false);
     exerciseDialog.onClose();
     await loadRoutine(currentRoutineId);
+    return null;
   };
 
   const handleDeleteExercise = async (exercise: RoutineExercise) => {
@@ -191,10 +139,8 @@ export const useRoutineEditor = () => {
     currentRoutineId,
     editingExercise,
     exerciseDialog,
-    exerciseErrors,
-    exerciseForm,
     handleDeleteExercise,
-    handleExerciseSubmit,
+    handleExerciseSave,
     handleMove,
     handleSaveName,
     init,
@@ -206,10 +152,5 @@ export const useRoutineEditor = () => {
     openEditExercise,
     routine,
     routineName,
-    routineNameError,
-    setExerciseErrors,
-    setExerciseForm,
-    setRoutineName,
-    setRoutineNameError,
   };
 };

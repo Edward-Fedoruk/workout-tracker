@@ -16,7 +16,6 @@ export const ExercisesSubView = ({
   deleteConfirm,
   dialog,
   dialogMode,
-  duplicateError,
   editingExercise,
   exercises,
   handleSave,
@@ -48,7 +47,6 @@ export const ExercisesSubView = ({
     />
 
     <ExerciseForm
-      duplicateError={duplicateError}
       initialValues={
         editingExercise
           ? {
@@ -65,9 +63,7 @@ export const ExercisesSubView = ({
       onCancel={() => {
         dialog.onClose();
       }}
-      onSave={(name, ids, classification) => {
-        handleSave(name, ids, classification).catch(() => undefined);
-      }}
+      onSave={handleSave}
       open={dialog.isOpen}
     />
 

@@ -1,21 +1,20 @@
-import { type SetErrors } from './workoutFormUtilities';
+import { type FormValues } from './WorkoutForm.schema';
 import { Stack, TextField, Typography } from '@mui/material';
+import { type UseFormRegister } from 'react-hook-form';
 
 export type WorkoutSetInputRowProps = {
-  readonly errors: SetErrors | undefined;
   readonly index: number;
-  readonly onChange: (field: 'reps' | 'weight', value: string) => void;
-  readonly reps: string;
-  readonly weight: string;
+  readonly register: UseFormRegister<FormValues>;
+  readonly repsError?: string | undefined;
+  readonly weightError?: string | undefined;
   readonly weightInputProps: Record<string, string>;
 };
 
 export const WorkoutSetInputRow = ({
-  errors,
   index,
-  onChange,
-  reps,
-  weight,
+  register,
+  repsError,
+  weightError,
   weightInputProps,
 }: WorkoutSetInputRowProps) => (
   <Stack
@@ -30,24 +29,22 @@ export const WorkoutSetInputRow = ({
       {index + 1}.
     </Typography>
     <TextField
-      error={Boolean(errors?.weight)}
-      helperText={errors?.weight}
-      onChange={(event) => onChange('weight', event.target.value)}
+      error={Boolean(weightError)}
+      helperText={weightError}
       placeholder="kg"
       size="small"
       slotProps={{ htmlInput: weightInputProps }}
       type="number"
-      value={weight}
+      {...register(`sets.${index}.weight`, { valueAsNumber: true })}
     />
     <TextField
-      error={Boolean(errors?.reps)}
-      helperText={errors?.reps}
-      onChange={(event) => onChange('reps', event.target.value)}
+      error={Boolean(repsError)}
+      helperText={repsError}
       placeholder="reps"
       size="small"
       slotProps={{ htmlInput: { min: '1', step: '1' } }}
       type="number"
-      value={reps}
+      {...register(`sets.${index}.reps`, { valueAsNumber: true })}
     />
   </Stack>
 );

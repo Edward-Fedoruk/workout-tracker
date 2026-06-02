@@ -2,11 +2,11 @@ import {
   createExercise,
   deleteExercise,
   type Exercise,
-  type ExerciseClassification,
   listExercises,
   updateExercise,
 } from '../../../../database';
 import { useToggle } from '../../../../hooks/useToggle';
+import { type FormValues } from '../../ExerciseForm.schema';
 import { useState } from 'react';
 
 export type UseExercisesReturn = ReturnType<typeof useExercises>;
@@ -15,7 +15,6 @@ export const useExercises = () => {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
   const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
-  const [duplicateError, setDuplicateError] = useState<null | string>(null);
   const [pendingDelete, setPendingDelete] = useState<Exercise | null>(null);
 
   const dialog = useToggle();
@@ -29,48 +28,44 @@ export const useExercises = () => {
   const openCreate = () => {
     setEditingExercise(null);
     setDialogMode('create');
-    setDuplicateError(null);
     dialog.onOpen();
   };
 
   const openEdit = (exercise: Exercise) => {
     setEditingExercise(exercise);
     setDialogMode('edit');
-    setDuplicateError(null);
     dialog.onOpen();
   };
 
-  const handleSave = async (
-    name: string,
-    muscleGroupIds: number[],
-    classification: ExerciseClassification,
-  ) => {
-    const lowerName = name.toLowerCase();
+  const handleSave = async (values: FormValues): Promise<null | string> => {
+    const lowerName = values.name.toLowerCase();
     const isDuplicate = exercises.some(
       (item) =>
         item.name.toLowerCase() === lowerName &&
         item.id !== editingExercise?.id,
     );
     if (isDuplicate) {
-      setDuplicateError('An exercise with this name already exists');
-      return;
+      return 'An exercise with this name already exists';
     }
-
-    setDuplicateError(null);
 
     if (dialogMode === 'edit' && editingExercise) {
       await updateExercise(
         editingExercise.id,
-        name,
-        muscleGroupIds,
-        classification,
+        values.name,
+        values.muscleGroupIds,
+        values.classification,
       );
     } else {
-      await createExercise(name, muscleGroupIds, classification);
+      await createExercise(
+        values.name,
+        values.muscleGroupIds,
+        values.classification,
+      );
     }
 
     await refresh();
     dialog.onClose();
+    return null;
   };
 
   const requestDelete = (exercise: Exercise) => {
@@ -101,7 +96,6 @@ export const useExercises = () => {
     deleteConfirm,
     dialog,
     dialogMode,
-    duplicateError,
     editingExercise,
     exercises,
     handleSave,

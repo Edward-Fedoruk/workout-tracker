@@ -3,59 +3,57 @@ import {
   DEFAULT_MUSCLE_GROUP_COLOR,
   MUSCLE_GROUP_PALETTE,
 } from './muscleGroupColors';
+import { type FormValues, resolver } from './MuscleGroupForm.schema';
 import CheckIcon from '@mui/icons-material/Check';
 import { Box, TextField, Tooltip, Typography } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 
 export type MuscleGroupFormProps = {
-  readonly duplicateError?: null | string | undefined;
-  readonly initialColor?: string | undefined;
-  readonly initialName?: string | undefined;
+  readonly initialValues?: FormValues | undefined;
   readonly mode: 'create' | 'edit';
   readonly onCancel: () => void;
-  readonly onSave: (name: string, color: string) => void;
+  readonly onSave: (values: FormValues) => Promise<null | string>;
   readonly open: boolean;
 };
 
+const EMPTY_VALUES: FormValues = {
+  color: DEFAULT_MUSCLE_GROUP_COLOR,
+  name: '',
+};
+
 export const MuscleGroupForm = ({
-  duplicateError,
-  initialColor,
-  initialName,
+  initialValues,
   mode,
   onCancel,
   onSave,
   open,
 }: MuscleGroupFormProps) => {
-  const [name, setName] = useState('');
-  const [color, setColor] = useState(DEFAULT_MUSCLE_GROUP_COLOR);
-  const [nameError, setNameError] = useState<null | string>(null);
+  const {
+    control,
+    formState: { errors },
+    handleSubmit,
+    register,
+    reset,
+    setError,
+  } = useForm<FormValues>({
+    defaultValues: EMPTY_VALUES,
+    resolver,
+  });
 
   useEffect(() => {
-    if (!open) {
-      return;
+    if (open) {
+      reset(initialValues ?? EMPTY_VALUES);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reset form only when the dialog opens
+  }, [open]);
 
-    /* eslint-disable react-hooks/set-state-in-effect -- syncing dialog open/initialName into form state on each open */
-    setName(initialName ?? '');
-    setColor(initialColor ?? DEFAULT_MUSCLE_GROUP_COLOR);
-    setNameError(null);
-    /* eslint-enable react-hooks/set-state-in-effect */
-  }, [initialColor, initialName, open]);
-
-  const handleSave = () => {
-    const trimmed = name.trim();
-    if (trimmed.length === 0) {
-      setNameError('Name is required');
-      return;
+  const submit = handleSubmit(async (values) => {
+    const duplicateMessage = await onSave(values);
+    if (duplicateMessage) {
+      setError('name', { message: duplicateMessage });
     }
-
-    if (trimmed.length > 50) {
-      setNameError('Name must be 50 characters or fewer');
-      return;
-    }
-
-    onSave(trimmed, color);
-  };
+  });
 
   return (
     <FormDialog
@@ -63,7 +61,9 @@ export const MuscleGroupForm = ({
         <DialogActionButtons
           confirmLabel={mode === 'create' ? 'Add' : 'Save'}
           onCancel={onCancel}
-          onConfirm={handleSave}
+          onConfirm={() => {
+            submit().catch(() => undefined);
+          }}
         />
       }
       onClose={onCancel}
@@ -72,16 +72,12 @@ export const MuscleGroupForm = ({
     >
       <TextField
         autoFocus
-        error={Boolean(nameError) || Boolean(duplicateError)}
+        error={Boolean(errors.name)}
         fullWidth
-        helperText={nameError ?? duplicateError ?? ''}
+        helperText={errors.name?.message ?? ''}
         label="Muscle group name"
-        onChange={(event) => {
-          setName(event.target.value);
-          setNameError(null);
-        }}
         sx={{ mb: 3, mt: '4px' }}
-        value={name}
+        {...register('name')}
       />
       <Typography
         gutterBottom
@@ -89,53 +85,62 @@ export const MuscleGroupForm = ({
       >
         Colour
       </Typography>
-      <Box
-        sx={{
-          display: 'grid',
-          gap: 1,
-          gridTemplateColumns: 'repeat(7, 1fr)',
-        }}
-      >
-        {MUSCLE_GROUP_PALETTE.map((swatch) => (
-          <Tooltip
-            key={swatch}
-            title={swatch}
+      <Controller
+        control={control}
+        name="color"
+        render={({ field }) => (
+          <Box
+            sx={{
+              display: 'grid',
+              gap: 1,
+              gridTemplateColumns: 'repeat(7, 1fr)',
+            }}
           >
-            <Box
-              aria-label={`Select colour ${swatch}`}
-              component="button"
-              onClick={() => setColor(swatch)}
-              sx={{
-                alignItems: 'center',
-                aspectRatio: '1',
-                backgroundColor: swatch,
-                border: 'none',
-                borderRadius: '50%',
-                cursor: 'pointer',
-                display: 'flex',
-                justifyContent: 'center',
-                outline:
-                  color === swatch ? '3px solid' : '2px solid transparent',
-                outlineColor: color === swatch ? 'text.primary' : 'transparent',
-                outlineOffset: '2px',
-                padding: 0,
-                transition: 'outline 0.1s',
-                width: '100%',
-              }}
-            >
-              {color === swatch && (
-                <CheckIcon
+            {MUSCLE_GROUP_PALETTE.map((swatch) => (
+              <Tooltip
+                key={swatch}
+                title={swatch}
+              >
+                <Box
+                  aria-label={`Select colour ${swatch}`}
+                  component="button"
+                  onClick={() => field.onChange(swatch)}
                   sx={{
-                    color: '#fff',
-                    filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.6))',
-                    fontSize: 16,
+                    alignItems: 'center',
+                    aspectRatio: '1',
+                    backgroundColor: swatch,
+                    border: 'none',
+                    borderRadius: '50%',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    outline:
+                      field.value === swatch
+                        ? '3px solid'
+                        : '2px solid transparent',
+                    outlineColor:
+                      field.value === swatch ? 'text.primary' : 'transparent',
+                    outlineOffset: '2px',
+                    padding: 0,
+                    transition: 'outline 0.1s',
+                    width: '100%',
                   }}
-                />
-              )}
-            </Box>
-          </Tooltip>
-        ))}
-      </Box>
+                >
+                  {field.value === swatch && (
+                    <CheckIcon
+                      sx={{
+                        color: '#fff',
+                        filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.6))',
+                        fontSize: 16,
+                      }}
+                    />
+                  )}
+                </Box>
+              </Tooltip>
+            ))}
+          </Box>
+        )}
+      />
     </FormDialog>
   );
 };

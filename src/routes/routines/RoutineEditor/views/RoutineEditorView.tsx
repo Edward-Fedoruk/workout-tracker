@@ -1,6 +1,6 @@
-import { DialogActionButtons, FormDialog } from '../../../../components';
-import { ExercisePicker } from '../../../exercises/ExercisePicker';
 import { ExerciseRow } from '../../ExerciseRow';
+import { RoutineExerciseForm } from '../../RoutineExerciseForm';
+import { RoutineNameForm } from '../../RoutineNameForm';
 import { type UseRoutineEditorReturn } from '../hooks/useRoutineEditor';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import {
@@ -8,7 +8,6 @@ import {
   Button,
   CircularProgress,
   IconButton,
-  TextField,
   Typography,
 } from '@mui/material';
 
@@ -20,10 +19,8 @@ export const RoutineEditorView = ({
   currentRoutineId,
   editingExercise,
   exerciseDialog,
-  exerciseErrors,
-  exerciseForm,
   handleDeleteExercise,
-  handleExerciseSubmit,
+  handleExerciseSave,
   handleMove,
   handleSaveName,
   isLoading,
@@ -35,11 +32,6 @@ export const RoutineEditorView = ({
   openEditExercise,
   routine,
   routineName,
-  routineNameError,
-  setExerciseErrors,
-  setExerciseForm,
-  setRoutineName,
-  setRoutineNameError,
 }: RoutineEditorViewProps) => {
   if (isLoading) {
     return (
@@ -66,29 +58,11 @@ export const RoutineEditorView = ({
         </Typography>
       </Box>
 
-      <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
-        <TextField
-          error={routineNameError !== null}
-          helperText={routineNameError ?? ''}
-          label="Routine name"
-          onChange={(event) => {
-            setRoutineName(event.target.value);
-            setRoutineNameError(null);
-          }}
-          size="small"
-          sx={{ flex: 1 }}
-          value={routineName}
-        />
-        <Button
-          disabled={isSavingName}
-          onClick={() => {
-            handleSaveName().catch(() => undefined);
-          }}
-          variant="contained"
-        >
-          Save
-        </Button>
-      </Box>
+      <RoutineNameForm
+        isSaving={isSavingName}
+        onSave={handleSaveName}
+        value={routineName}
+      />
 
       <Typography
         sx={{ mb: 1 }}
@@ -134,108 +108,26 @@ export const RoutineEditorView = ({
         Add Exercise
       </Button>
 
-      <FormDialog
-        actions={
-          <DialogActionButtons
-            confirmDisabled={isSubmittingExercise}
-            confirmLabel={editingExercise ? 'Save' : 'Add'}
-            onCancel={() => {
-              exerciseDialog.onClose();
-            }}
-            onConfirm={() => {
-              handleExerciseSubmit().catch(() => undefined);
-            }}
-          />
+      <RoutineExerciseForm
+        initialValues={
+          editingExercise
+            ? {
+                maxReps: editingExercise.maxReps,
+                minReps: editingExercise.minReps,
+                name: editingExercise.exerciseName,
+                sets: editingExercise.suggestedSets,
+              }
+            : undefined
         }
-        onClose={() => {
+        isSubmitting={isSubmittingExercise}
+        libraryExercises={libraryExercises}
+        mode={editingExercise ? 'edit' : 'create'}
+        onCancel={() => {
           exerciseDialog.onClose();
         }}
+        onSave={handleExerciseSave}
         open={exerciseDialog.isOpen}
-        title={editingExercise ? 'Edit Exercise' : 'Add Exercise'}
-      >
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 2,
-            pt: '4px',
-          }}
-        >
-          <ExercisePicker
-            error={Boolean(exerciseErrors.name)}
-            exercises={libraryExercises}
-            helperText={exerciseErrors.name ?? ''}
-            label="Exercise"
-            onChange={(next) => {
-              setExerciseForm((previous) => ({
-                ...previous,
-                name: next ? next.name : '',
-              }));
-              setExerciseErrors((previous) => ({ ...previous, name: '' }));
-            }}
-            value={
-              libraryExercises.find(
-                (option) => option.name === exerciseForm.name,
-              ) ?? null
-            }
-          />
-          <TextField
-            error={Boolean(exerciseErrors.sets)}
-            helperText={exerciseErrors.sets || '(1–5)'}
-            label="Suggested sets"
-            onChange={(event) => {
-              setExerciseForm((previous) => ({
-                ...previous,
-                sets: event.target.value,
-              }));
-              setExerciseErrors((previous) => ({ ...previous, sets: '' }));
-            }}
-            slotProps={{ htmlInput: { max: 5, min: 1 } }}
-            type="number"
-            value={exerciseForm.sets}
-          />
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <TextField
-              error={Boolean(exerciseErrors.minReps)}
-              helperText={exerciseErrors.minReps || '(1–99)'}
-              label="Min reps"
-              onChange={(event) => {
-                setExerciseForm((previous) => ({
-                  ...previous,
-                  minReps: event.target.value,
-                }));
-                setExerciseErrors((previous) => ({
-                  ...previous,
-                  minReps: '',
-                }));
-              }}
-              slotProps={{ htmlInput: { max: 99, min: 1 } }}
-              sx={{ flex: 1 }}
-              type="number"
-              value={exerciseForm.minReps}
-            />
-            <TextField
-              error={Boolean(exerciseErrors.maxReps)}
-              helperText={exerciseErrors.maxReps || '(1–99)'}
-              label="Max reps"
-              onChange={(event) => {
-                setExerciseForm((previous) => ({
-                  ...previous,
-                  maxReps: event.target.value,
-                }));
-                setExerciseErrors((previous) => ({
-                  ...previous,
-                  maxReps: '',
-                }));
-              }}
-              slotProps={{ htmlInput: { max: 99, min: 1 } }}
-              sx={{ flex: 1 }}
-              type="number"
-              value={exerciseForm.maxReps}
-            />
-          </Box>
-        </Box>
-      </FormDialog>
+      />
     </Box>
   );
 };

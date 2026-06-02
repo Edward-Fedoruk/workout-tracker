@@ -1,5 +1,6 @@
 import { DialogActionButtons, FormDialog } from '../../components';
-import { type ExerciseClassification, type MuscleGroup } from '../../database';
+import { type MuscleGroup } from '../../database';
+import { type FormValues, resolver } from './ExerciseForm.schema';
 import {
   Autocomplete,
   FormControl,
@@ -9,30 +10,27 @@ import {
   Stack,
   TextField,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 
-export type ExerciseFormInitial = {
-  classification: ExerciseClassification;
-  muscleGroupIds: number[];
-  name: string;
-};
+export type ExerciseFormInitial = FormValues;
 
 export type ExerciseFormProps = {
-  readonly duplicateError?: null | string | undefined;
   readonly initialValues?: ExerciseFormInitial | undefined;
   readonly mode: 'create' | 'edit';
   readonly muscleGroups: MuscleGroup[];
   readonly onCancel: () => void;
-  readonly onSave: (
-    name: string,
-    muscleGroupIds: number[],
-    classification: ExerciseClassification,
-  ) => void;
+  readonly onSave: (values: FormValues) => Promise<null | string>;
   readonly open: boolean;
 };
 
+const EMPTY_VALUES: FormValues = {
+  classification: 'standard',
+  muscleGroupIds: [],
+  name: '',
+};
+
 export const ExerciseForm = ({
-  duplicateError,
   initialValues,
   mode,
   muscleGroups,
@@ -40,64 +38,31 @@ export const ExerciseForm = ({
   onSave,
   open,
 }: ExerciseFormProps) => {
-  const [name, setName] = useState('');
-  const [selectedGroups, setSelectedGroups] = useState<MuscleGroup[]>([]);
-  const [classification, setClassification] =
-    useState<ExerciseClassification>('standard');
-  const [nameError, setNameError] = useState<null | string>(null);
-  const [groupsError, setGroupsError] = useState<null | string>(null);
+  const {
+    control,
+    formState: { errors },
+    handleSubmit,
+    register,
+    reset,
+    setError,
+  } = useForm<FormValues>({
+    defaultValues: EMPTY_VALUES,
+    resolver,
+  });
 
   useEffect(() => {
-    if (!open) {
-      return;
+    if (open) {
+      reset(initialValues ?? EMPTY_VALUES);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reset form only when the dialog opens
+  }, [open]);
 
-    /* eslint-disable react-hooks/set-state-in-effect -- syncing dialog open/initialValues into form state on each open */
-    setName(initialValues?.name ?? '');
-    setSelectedGroups(
-      initialValues
-        ? muscleGroups.filter((group) =>
-            initialValues.muscleGroupIds.includes(group.id),
-          )
-        : [],
-    );
-    setClassification(initialValues?.classification ?? 'standard');
-    setNameError(null);
-    setGroupsError(null);
-    /* eslint-enable react-hooks/set-state-in-effect */
-  }, [initialValues, muscleGroups, open]);
-
-  const handleSave = () => {
-    const trimmed = name.trim();
-    let hasError = false;
-
-    if (trimmed.length === 0) {
-      setNameError('Name is required');
-      hasError = true;
-    } else if (trimmed.length > 100) {
-      setNameError('Name must be 100 characters or fewer');
-      hasError = true;
-    } else {
-      setNameError(null);
+  const submit = handleSubmit(async (values) => {
+    const duplicateMessage = await onSave(values);
+    if (duplicateMessage) {
+      setError('name', { message: duplicateMessage });
     }
-
-    if (selectedGroups.length === 0) {
-      setGroupsError('Select at least one muscle group');
-      hasError = true;
-    } else {
-      setGroupsError(null);
-    }
-
-    if (hasError) {
-      return;
-    }
-
-    onSave(
-      trimmed,
-      selectedGroups.map((group) => group.id),
-      classification,
-    );
-  };
+  });
 
   return (
     <FormDialog
@@ -105,7 +70,9 @@ export const ExerciseForm = ({
         <DialogActionButtons
           confirmLabel={mode === 'create' ? 'Add' : 'Save'}
           onCancel={onCancel}
-          onConfirm={handleSave}
+          onConfirm={() => {
+            submit().catch(() => undefined);
+          }}
         />
       }
       onClose={onCancel}
@@ -118,51 +85,60 @@ export const ExerciseForm = ({
       >
         <TextField
           autoFocus
-          error={Boolean(nameError) || Boolean(duplicateError)}
+          error={Boolean(errors.name)}
           fullWidth
-          helperText={nameError ?? duplicateError ?? ''}
+          helperText={errors.name?.message ?? ''}
           label="Exercise name"
-          onChange={(event) => {
-            setName(event.target.value);
-            setNameError(null);
-          }}
-          value={name}
+          {...register('name')}
         />
-        <Autocomplete
-          getOptionLabel={(option) => option.name}
-          isOptionEqualToValue={(option, value) => option.id === value.id}
-          multiple
-          onChange={(_event, next) => {
-            setSelectedGroups(next);
-            setGroupsError(null);
-          }}
-          options={muscleGroups}
-          renderInput={(parameters) => (
-            <TextField
-              {...parameters}
-              error={Boolean(groupsError)}
-              helperText={groupsError ?? ''}
-              label="Muscle groups"
+        <Controller
+          control={control}
+          name="muscleGroupIds"
+          render={({ field }) => (
+            <Autocomplete
+              getOptionLabel={(option) => option.name}
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              multiple
+              onChange={(_event, next) => {
+                field.onChange(next.map((group) => group.id));
+              }}
+              options={muscleGroups}
+              renderInput={(parameters) => (
+                <TextField
+                  {...parameters}
+                  error={Boolean(errors.muscleGroupIds)}
+                  helperText={errors.muscleGroupIds?.message ?? ''}
+                  label="Muscle groups"
+                />
+              )}
+              value={muscleGroups.filter((group) =>
+                field.value.includes(group.id),
+              )}
             />
           )}
-          value={selectedGroups}
         />
-        <FormControl fullWidth>
-          <InputLabel id="exercise-classification-label">
-            Classification
-          </InputLabel>
-          <Select
-            label="Classification"
-            labelId="exercise-classification-label"
-            onChange={(event) => {
-              setClassification(event.target.value as ExerciseClassification);
-            }}
-            value={classification}
-          >
-            <MenuItem value="standard">Standard</MenuItem>
-            <MenuItem value="bodyweight">Body weight</MenuItem>
-          </Select>
-        </FormControl>
+        <Controller
+          control={control}
+          name="classification"
+          render={({ field }) => (
+            <FormControl fullWidth>
+              <InputLabel id="exercise-classification-label">
+                Classification
+              </InputLabel>
+              <Select
+                label="Classification"
+                labelId="exercise-classification-label"
+                onChange={(event) => {
+                  field.onChange(event.target.value);
+                }}
+                value={field.value}
+              >
+                <MenuItem value="standard">Standard</MenuItem>
+                <MenuItem value="bodyweight">Body weight</MenuItem>
+              </Select>
+            </FormControl>
+          )}
+        />
       </Stack>
     </FormDialog>
   );

@@ -15,7 +15,6 @@ export const MuscleGroupsSubView = ({
   deleteConfirm,
   dialog,
   dialogMode,
-  duplicateError,
   editingMuscleGroup,
   handleSave,
   muscleGroups,
@@ -47,16 +46,16 @@ export const MuscleGroupsSubView = ({
     />
 
     <MuscleGroupForm
-      duplicateError={duplicateError}
-      initialColor={editingMuscleGroup?.color}
-      initialName={editingMuscleGroup?.name}
+      initialValues={
+        editingMuscleGroup
+          ? { color: editingMuscleGroup.color, name: editingMuscleGroup.name }
+          : undefined
+      }
       mode={dialogMode}
       onCancel={() => {
         dialog.onClose();
       }}
-      onSave={(name, color) => {
-        handleSave(name, color).catch(() => undefined);
-      }}
+      onSave={handleSave}
       open={dialog.isOpen}
     />
 

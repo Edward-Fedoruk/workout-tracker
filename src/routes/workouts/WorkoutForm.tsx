@@ -1,26 +1,7 @@
-import {
-  createWorkout,
-  type Exercise,
-  getBodyWeight,
-  listExercises,
-  updateWorkout,
-  type WorkoutWithSets,
-} from '../../database';
-import {
-  computeEffectiveWeight,
-  computeERM,
-  type ExerciseClassification,
-} from '../../utils/erm';
+import { type Exercise, type WorkoutWithSets } from '../../database';
 import { ExercisePicker } from '../exercises/ExercisePicker';
-import {
-  type FormErrors,
-  getToday,
-  getWeightInputMin,
-  hasFormErrors,
-  makeSetInput,
-  type SetInput,
-  validateWorkoutForm,
-} from './workoutFormUtilities';
+import { type FormValues, resolver } from './WorkoutForm.schema';
+import { getToday, getWeightInputMin } from './workoutFormUtilities';
 import { WorkoutSetInputRow } from './WorkoutSetInputRow';
 import {
   Box,
@@ -30,211 +11,134 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
 
 export type WorkoutFormProps = {
-  readonly initialData?: WorkoutWithSets;
+  readonly bodyWeight: null | number;
+  readonly exercises: Exercise[];
+  readonly initialData?: undefined | WorkoutWithSets;
   readonly onCancel: () => void;
-  readonly onSave: () => void;
+  readonly onSave: (values: FormValues) => Promise<null | string>;
 };
 
 export const WorkoutForm = ({
+  bodyWeight,
+  exercises,
   initialData,
   onCancel,
   onSave,
 }: WorkoutFormProps) => {
   const isEditing = initialData !== undefined;
+  const defaultExerciseName = initialData?.exerciseName ?? '';
+  const defaultClassification =
+    exercises.find((option) => option.name === defaultExerciseName)
+      ?.classification ?? 'standard';
 
-  const [workoutDate, setWorkoutDate] = useState(
-    initialData ? initialData.workoutDate : getToday(),
-  );
-  const [exerciseName, setExerciseName] = useState(
-    initialData ? initialData.exerciseName : '',
-  );
-  const [sets, setSets] = useState<SetInput[]>(() => {
-    if (initialData && initialData.sets.length > 0) {
-      return initialData.sets.map((workoutSet) =>
-        makeSetInput(
-          workoutSet.weight === null ? '' : String(workoutSet.weight),
-          String(workoutSet.reps),
-        ),
-      );
-    }
-
-    return [makeSetInput()];
-  });
-  const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [bodyWeight, setBodyWeight] = useState<null | number>(null);
-  const [errors, setErrors] = useState<FormErrors>({ sets: [] });
-  const [isLoading, setIsLoading] = useState(false);
-  const [submitError, setSubmitError] = useState<null | string>(null);
-
-  useEffect(() => {
-    const loadLibrary = async () => {
-      const [exerciseList, bw] = await Promise.all([
-        listExercises(),
-        getBodyWeight(),
-      ]);
-      setExercises(exerciseList);
-      setBodyWeight(bw);
-    };
-
-    loadLibrary().catch(() => undefined);
-  }, []);
-
-  const classification: ExerciseClassification =
-    exercises.find((option) => option.name === exerciseName)?.classification ??
-    'standard';
-
-  const validate = useCallback((): boolean => {
-    const newErrors = validateWorkoutForm({
+  const {
+    control,
+    formState: { errors, isSubmitting },
+    handleSubmit,
+    register,
+    setError,
+    setValue,
+    watch,
+  } = useForm<FormValues>({
+    defaultValues: {
       bodyWeight,
-      classification,
-      exerciseName,
-      sets,
-      workoutDate,
-    });
-    setErrors(newErrors);
-    return !hasFormErrors(newErrors);
-  }, [bodyWeight, classification, exerciseName, sets, workoutDate]);
-
-  const computeSetERM = useCallback(
-    (rawWeight: string, reps: number): null | number => {
-      const loggedWeight =
-        rawWeight.trim() === '' ? null : Number.parseFloat(rawWeight);
-      const effective = computeEffectiveWeight({
-        bodyWeight,
-        classification,
-        loggedWeight,
-      });
-      if (effective === null) {
-        return null;
-      }
-
-      return computeERM(effective, reps);
+      classification: defaultClassification,
+      exerciseName: defaultExerciseName,
+      sets:
+        initialData && initialData.sets.length > 0
+          ? initialData.sets.map((workoutSet) => ({
+              reps: workoutSet.reps,
+              weight:
+                workoutSet.weight === null ? Number.NaN : workoutSet.weight,
+            }))
+          : [{ reps: Number.NaN, weight: Number.NaN }],
+      workoutDate: initialData?.workoutDate ?? getToday(),
     },
-    [bodyWeight, classification],
-  );
+    resolver,
+  });
 
-  const handleSave = useCallback(async () => {
-    if (!validate()) {
-      return;
-    }
+  const { append, fields, remove } = useFieldArray({ control, name: 'sets' });
 
-    setIsLoading(true);
-    setSubmitError(null);
-
-    const parsedSets = sets.map((setInput) => {
-      const reps = Number.parseInt(setInput.reps, 10);
-      const weight =
-        setInput.weight.trim() === ''
-          ? null
-          : Number.parseFloat(setInput.weight);
-      const erm = computeSetERM(setInput.weight, reps);
-      return { erm, reps, weight };
-    });
-
-    try {
-      if (isEditing && initialData) {
-        await updateWorkout(
-          initialData.id,
-          workoutDate,
-          exerciseName,
-          parsedSets,
-        );
-      } else {
-        await createWorkout(workoutDate, exerciseName, parsedSets);
-      }
-
-      onSave();
-    } catch {
-      setSubmitError('Failed to save workout. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [
-    computeSetERM,
-    exerciseName,
-    initialData,
-    isEditing,
-    onSave,
-    sets,
-    validate,
-    workoutDate,
-  ]);
-
-  const addSet = useCallback(() => {
-    if (sets.length < 5) {
-      setSets((previous) => [...previous, makeSetInput()]);
-    }
-  }, [sets.length]);
-
-  const removeLastSet = useCallback(() => {
-    if (sets.length > 1) {
-      setSets((previous) => previous.slice(0, -1));
-    }
-  }, [sets.length]);
-
-  const updateSet = useCallback(
-    (index: number, field: 'reps' | 'weight', value: string) => {
-      setSets((previous) =>
-        previous.map((setItem, setIndex) =>
-          setIndex === index ? { ...setItem, [field]: value } : setItem,
-        ),
-      );
-    },
-    [],
-  );
-
+  const classification = watch('classification');
   const weightMin = getWeightInputMin(classification);
   const weightInputProps =
     weightMin === undefined ? { step: '0.1' } : { min: weightMin, step: '0.1' };
+
+  const submit = handleSubmit(async (values) => {
+    const message = await onSave(values);
+    if (message) {
+      setError('root', { message });
+    }
+  });
+
+  const addSet = () => {
+    if (fields.length < 5) {
+      append({ reps: Number.NaN, weight: Number.NaN });
+    }
+  };
+
+  const removeLastSet = () => {
+    if (fields.length > 1) {
+      remove(fields.length - 1);
+    }
+  };
 
   return (
     <Stack spacing={2}>
       <TextField
         error={Boolean(errors.workoutDate)}
         fullWidth
-        helperText={errors.workoutDate}
+        helperText={errors.workoutDate?.message ?? ''}
         label="Date"
-        onChange={(event) => {
-          setWorkoutDate(event.target.value);
-        }}
         slotProps={{ htmlInput: { max: getToday() } }}
         type="date"
-        value={workoutDate}
+        {...register('workoutDate')}
       />
 
-      <ExercisePicker
-        error={Boolean(errors.exerciseName)}
-        exercises={exercises}
-        helperText={errors.exerciseName}
-        onChange={(next) => {
-          setExerciseName(next ? next.name : '');
-        }}
-        value={exercises.find((option) => option.name === exerciseName) ?? null}
+      <Controller
+        control={control}
+        name="exerciseName"
+        render={({ field }) => (
+          <ExercisePicker
+            error={Boolean(errors.exerciseName)}
+            exercises={exercises}
+            helperText={errors.exerciseName?.message ?? ''}
+            onChange={(next) => {
+              field.onChange(next ? next.name : '');
+              setValue(
+                'classification',
+                next ? next.classification : 'standard',
+              );
+            }}
+            value={
+              exercises.find((option) => option.name === field.value) ?? null
+            }
+          />
+        )}
       />
 
       <Box>
         <Typography sx={{ fontWeight: 600, mb: 1 }}>Sets</Typography>
-        {sets.map((set, index) => (
+        {fields.map((field, index) => (
           <WorkoutSetInputRow
-            errors={errors.sets[index]}
             index={index}
-            key={set._key}
-            onChange={(field, value) => updateSet(index, field, value)}
-            reps={set.reps}
-            weight={set.weight}
+            key={field.id}
+            register={register}
+            repsError={errors.sets?.[index]?.reps?.message}
+            weightError={errors.sets?.[index]?.weight?.message}
             weightInputProps={weightInputProps}
           />
         ))}
 
-        {errors.general && (
+        {errors.sets?.root && (
           <FormHelperText
             error
             sx={{ mb: 1 }}
           >
-            {errors.general}
+            {errors.sets.root.message}
           </FormHelperText>
         )}
 
@@ -244,14 +148,14 @@ export const WorkoutForm = ({
           sx={{ mt: 1 }}
         >
           <Button
-            disabled={sets.length >= 5}
+            disabled={fields.length >= 5}
             onClick={addSet}
             size="small"
             variant="outlined"
           >
             + Add Set
           </Button>
-          {sets.length > 1 && (
+          {fields.length > 1 && (
             <Button
               onClick={removeLastSet}
               size="small"
@@ -262,7 +166,9 @@ export const WorkoutForm = ({
         </Stack>
       </Box>
 
-      {submitError && <Typography color="error">{submitError}</Typography>}
+      {errors.root && (
+        <Typography color="error">{errors.root.message}</Typography>
+      )}
 
       <Stack
         direction="row"
@@ -271,9 +177,9 @@ export const WorkoutForm = ({
       >
         <Button onClick={onCancel}>Cancel</Button>
         <Button
-          disabled={isLoading}
+          disabled={isSubmitting}
           onClick={() => {
-            handleSave().catch(() => undefined);
+            submit().catch(() => undefined);
           }}
           variant="contained"
         >

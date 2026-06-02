@@ -6,6 +6,7 @@ import {
   updateMuscleGroup,
 } from '../../../../database';
 import { useToggle } from '../../../../hooks/useToggle';
+import { type FormValues } from '../../MuscleGroupForm.schema';
 import { useState } from 'react';
 
 export type UseMuscleGroupsReturn = ReturnType<typeof useMuscleGroups>;
@@ -15,7 +16,6 @@ export const useMuscleGroups = () => {
   const [editingMuscleGroup, setEditingMuscleGroup] =
     useState<MuscleGroup | null>(null);
   const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
-  const [duplicateError, setDuplicateError] = useState<null | string>(null);
   const [pendingDelete, setPendingDelete] = useState<MuscleGroup | null>(null);
 
   const dialog = useToggle();
@@ -29,39 +29,35 @@ export const useMuscleGroups = () => {
   const openCreate = () => {
     setEditingMuscleGroup(null);
     setDialogMode('create');
-    setDuplicateError(null);
     dialog.onOpen();
   };
 
   const openRename = (group: MuscleGroup) => {
     setEditingMuscleGroup(group);
     setDialogMode('edit');
-    setDuplicateError(null);
     dialog.onOpen();
   };
 
-  const handleSave = async (name: string, color: string) => {
-    const lowerName = name.toLowerCase();
+  const handleSave = async (values: FormValues): Promise<null | string> => {
+    const lowerName = values.name.toLowerCase();
     const isDuplicate = muscleGroups.some(
       (item) =>
         item.name.toLowerCase() === lowerName &&
         item.id !== editingMuscleGroup?.id,
     );
     if (isDuplicate) {
-      setDuplicateError('A muscle group with this name already exists');
-      return;
+      return 'A muscle group with this name already exists';
     }
 
-    setDuplicateError(null);
-
     if (dialogMode === 'edit' && editingMuscleGroup) {
-      await updateMuscleGroup(editingMuscleGroup.id, name, color);
+      await updateMuscleGroup(editingMuscleGroup.id, values.name, values.color);
     } else {
-      await createMuscleGroup(name, color);
+      await createMuscleGroup(values.name, values.color);
     }
 
     await refresh();
     dialog.onClose();
+    return null;
   };
 
   const requestDelete = (group: MuscleGroup) => {
@@ -92,7 +88,6 @@ export const useMuscleGroups = () => {
     deleteConfirm,
     dialog,
     dialogMode,
-    duplicateError,
     editingMuscleGroup,
     handleSave,
     muscleGroups,
