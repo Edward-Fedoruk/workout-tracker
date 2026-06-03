@@ -12,7 +12,7 @@ export class MigrationError extends Error {
   }
 }
 
-const sqlFiles = import.meta.glob('../../drizzle/*.sql', {
+const sqlFiles = import.meta.glob('@/../drizzle/*.sql', {
   eager: true,
   import: 'default',
   query: '?raw',

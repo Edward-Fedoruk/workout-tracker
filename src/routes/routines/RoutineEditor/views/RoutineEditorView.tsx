@@ -1,7 +1,7 @@
-import { ExerciseRow } from '../../ExerciseRow';
-import { RoutineExerciseForm } from '../../RoutineExerciseForm';
-import { RoutineNameForm } from '../../RoutineNameForm';
-import { type UseRoutineEditorReturn } from '../hooks/useRoutineEditor';
+import { ExerciseRow } from '@/routes/routines/ExerciseRow';
+import { type UseRoutineEditorReturn } from '@/routes/routines/RoutineEditor/hooks/useRoutineEditor';
+import { RoutineExerciseForm } from '@/routes/routines/RoutineExerciseForm';
+import { RoutineNameForm } from '@/routes/routines/RoutineNameForm';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import {
   Box,

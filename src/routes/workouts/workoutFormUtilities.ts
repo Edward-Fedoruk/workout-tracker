@@ -1,4 +1,4 @@
-import { type ExerciseClassification } from '../../utils/erm';
+import { type ExerciseClassification } from '@/utils/erm';
 
 export const getToday = (): string => new Date().toISOString().slice(0, 10);
 

@@ -187,7 +187,7 @@ export const __devRollback = async (migrationName: string): Promise<void> => {
   const promiser = await getPromiser();
   const databaseId = getDatabaseId();
 
-  const downFiles = import.meta.glob('../../drizzle/*_down.sql', {
+  const downFiles = import.meta.glob('@/../../drizzle/*_down.sql', {
     eager: true,
     import: 'default',
     query: '?raw',

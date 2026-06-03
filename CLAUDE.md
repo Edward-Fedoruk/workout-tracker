@@ -26,6 +26,23 @@ These are hard rules. Breaking them silently corrupts data, breaks OPFS, or caus
 - **UI gates on `isDbReady`.** `App.tsx` does not render the main tree until `initDatabase()` resolves. New top-level UI must respect that gate or be mounted inside it.
 - **Never string-interpolate SQL.** Always use the `bind` array with `?` placeholders. The promiser supports only positional params.
 
+## Route folder organization & imports
+
+- **`@/` aliases `src/`.** Every cross-directory import MUST use it
+  (`@/components`, `@/database`, `@/hooks/useToggle`, `@/routes/...`); never write `../`.
+  Only same-folder imports stay relative (`./schema`). The alias is wired in both
+  `vite.config.ts` (`resolve.alias`) and `tsconfig.app.json` (`paths`) — keep them in sync.
+- **Group by entity, one folder per component.** Under `src/routes/<feature>/`, files are
+  grouped by domain entity (e.g. `Exercise/`, `MuscleGroup/`). Each component gets its own
+  folder with an `index.tsx` entry point whose exported component matches the folder name
+  (`Exercise/ExerciseForm/index.tsx` exports `ExerciseForm`). A form folder colocates its
+  `schema.ts`.
+- **No trivial barrels.** An `index.tsx` IS the component, not a re-export file. `database.ts`
+  is the only re-export barrel allowed in the app.
+- **Containers keep `hooks/` + `views/`.** Stateful container components (e.g.
+  `ExerciseLibrary/`) split into a smart `index.tsx`, `hooks/` (state + DB), and dumb
+  `views/`. See `.claude/skills/create-component/SKILL.md` for the full layer contract.
+
 ## SQLite-WASM promiser contract
 
 The promiser is the only handle to the worker. Its shape (as used in this repo):

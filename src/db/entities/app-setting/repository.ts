@@ -1,5 +1,5 @@
-import { database } from '../../orm';
 import { appSetting } from './schema';
+import { database } from '@/db/orm';
 import { eq } from 'drizzle-orm';
 
 const BODY_WEIGHT_KEY = 'body_weight';

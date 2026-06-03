@@ -1,5 +1,5 @@
-import { database } from '../../orm';
 import { workoutSet } from './schema';
+import { database } from '@/db/orm';
 import { eq } from 'drizzle-orm';
 
 class WorkoutSetRepository {

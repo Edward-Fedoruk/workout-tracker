@@ -1,7 +1,7 @@
-import { getDatabaseId, getPromiser } from '../../driver';
-import { database } from '../../orm';
 import { routineExercise } from './schema';
 import { type LastExerciseSets } from './types';
+import { getDatabaseId, getPromiser } from '@/db/driver';
+import { database } from '@/db/orm';
 import { eq } from 'drizzle-orm';
 
 class RoutineExerciseRepository {

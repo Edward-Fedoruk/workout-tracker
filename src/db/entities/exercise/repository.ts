@@ -1,8 +1,8 @@
-import { getDatabaseId, getPromiser } from '../../driver';
-import { database } from '../../orm';
-import { type MuscleGroup } from '../muscle-group/types';
 import { exercise, exerciseMuscleGroup } from './schema';
 import { type Exercise, type ExerciseClassification } from './types';
+import { getDatabaseId, getPromiser } from '@/db/driver';
+import { type MuscleGroup } from '@/db/entities/muscle-group/types';
+import { database } from '@/db/orm';
 import { eq } from 'drizzle-orm';
 
 type ExerciseMuscleGroupRow = {

@@ -1,4 +1,4 @@
-import { type RoutineWithExercises } from '../../database';
+import { type RoutineWithExercises } from '@/database';
 import {
   Button,
   Card,

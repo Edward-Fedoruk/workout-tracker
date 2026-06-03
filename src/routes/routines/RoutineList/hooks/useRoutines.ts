@@ -2,8 +2,8 @@ import {
   deleteRoutine,
   listRoutines,
   type RoutineWithExercises,
-} from '../../../../database';
-import { useToggle } from '../../../../hooks/useToggle';
+} from '@/database';
+import { useToggle } from '@/hooks/useToggle';
 import { useState } from 'react';
 
 export type UseRoutinesReturn = ReturnType<typeof useRoutines>;

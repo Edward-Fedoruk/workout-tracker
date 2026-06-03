@@ -1,4 +1,4 @@
-import { ConfirmDialog } from '../../components';
+import { ConfirmDialog } from '@/components';
 
 export type ConfirmImportDialogProps = {
   readonly filename: string;

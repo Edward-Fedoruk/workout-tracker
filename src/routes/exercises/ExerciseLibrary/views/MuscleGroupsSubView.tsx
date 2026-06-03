@@ -1,7 +1,7 @@
-import { ConfirmDialog } from '../../../../components/ConfirmDialog';
-import { MuscleGroupForm } from '../../MuscleGroupForm';
-import { MuscleGroupList } from '../../MuscleGroupList';
-import { type UseMuscleGroupsReturn } from '../hooks/useMuscleGroups';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { type UseMuscleGroupsReturn } from '@/routes/exercises/ExerciseLibrary/hooks/useMuscleGroups';
+import { MuscleGroupForm } from '@/routes/exercises/MuscleGroup/MuscleGroupForm';
+import { MuscleGroupList } from '@/routes/exercises/MuscleGroup/MuscleGroupList';
 import AddIcon from '@mui/icons-material/Add';
 import { Button, DialogContentText, Stack } from '@mui/material';
 

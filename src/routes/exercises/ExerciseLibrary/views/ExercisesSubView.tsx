@@ -1,8 +1,8 @@
-import { ConfirmDialog } from '../../../../components/ConfirmDialog';
-import { type MuscleGroup } from '../../../../database';
-import { ExerciseForm } from '../../ExerciseForm';
-import { ExerciseList } from '../../ExerciseList';
-import { type UseExercisesReturn } from '../hooks/useExercises';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { type MuscleGroup } from '@/database';
+import { ExerciseForm } from '@/routes/exercises/Exercise/ExerciseForm';
+import { ExerciseList } from '@/routes/exercises/Exercise/ExerciseList';
+import { type UseExercisesReturn } from '@/routes/exercises/ExerciseLibrary/hooks/useExercises';
 import AddIcon from '@mui/icons-material/Add';
 import { Button, DialogContentText, Stack } from '@mui/material';
 

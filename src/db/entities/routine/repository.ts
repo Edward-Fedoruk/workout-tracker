@@ -1,8 +1,8 @@
-import { database } from '../../orm';
-import { routineExercise } from '../routine-exercise/schema';
-import { type RoutineExercise } from '../routine-exercise/types';
 import { routine } from './schema';
 import { type RoutineWithExercises } from './types';
+import { routineExercise } from '@/db/entities/routine-exercise/schema';
+import { type RoutineExercise } from '@/db/entities/routine-exercise/types';
+import { database } from '@/db/orm';
 import { eq, sql } from 'drizzle-orm';
 
 class RoutineRepository {

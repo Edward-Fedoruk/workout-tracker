@@ -1,6 +1,6 @@
-import { DialogActionButtons, FormDialog } from '../../components';
-import { type MuscleGroup } from '../../database';
-import { type FormValues, resolver } from './ExerciseForm.schema';
+import { type FormValues, resolver } from './schema';
+import { DialogActionButtons, FormDialog } from '@/components';
+import { type MuscleGroup } from '@/database';
 import {
   Autocomplete,
   FormControl,

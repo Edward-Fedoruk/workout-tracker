@@ -1,5 +1,5 @@
-import { type Exercise } from '../../database';
-import { contrastText } from './muscleGroupColors';
+import { type Exercise } from '@/database';
+import { contrastText } from '@/routes/exercises/MuscleGroup/muscleGroupColors';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';

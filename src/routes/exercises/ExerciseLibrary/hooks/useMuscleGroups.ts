@@ -4,9 +4,9 @@ import {
   listMuscleGroups,
   type MuscleGroup,
   updateMuscleGroup,
-} from '../../../../database';
-import { useToggle } from '../../../../hooks/useToggle';
-import { type FormValues } from '../../MuscleGroupForm.schema';
+} from '@/database';
+import { useToggle } from '@/hooks/useToggle';
+import { type FormValues } from '@/routes/exercises/MuscleGroup/MuscleGroupForm/schema';
 import { useState } from 'react';
 
 export type UseMuscleGroupsReturn = ReturnType<typeof useMuscleGroups>;

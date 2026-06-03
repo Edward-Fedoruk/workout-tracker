@@ -1,9 +1,9 @@
-import { DialogActionButtons, FormDialog } from '../../components';
+import { type FormValues, resolver } from './schema';
+import { DialogActionButtons, FormDialog } from '@/components';
 import {
   DEFAULT_MUSCLE_GROUP_COLOR,
   MUSCLE_GROUP_PALETTE,
-} from './muscleGroupColors';
-import { type FormValues, resolver } from './MuscleGroupForm.schema';
+} from '@/routes/exercises/MuscleGroup/muscleGroupColors';
 import CheckIcon from '@mui/icons-material/Check';
 import { Box, TextField, Tooltip, Typography } from '@mui/material';
 import { useEffect } from 'react';

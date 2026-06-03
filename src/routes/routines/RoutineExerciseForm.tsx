@@ -1,7 +1,7 @@
-import { DialogActionButtons, FormDialog } from '../../components';
-import { type Exercise } from '../../database';
-import { ExercisePicker } from '../exercises/ExercisePicker';
 import { type FormValues, resolver } from './RoutineExerciseForm.schema';
+import { DialogActionButtons, FormDialog } from '@/components';
+import { type Exercise } from '@/database';
+import { ExercisePicker } from '@/routes/exercises/Exercise/ExercisePicker';
 import { Box, TextField } from '@mui/material';
 import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';

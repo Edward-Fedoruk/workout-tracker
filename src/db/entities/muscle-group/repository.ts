@@ -1,6 +1,6 @@
-import { database } from '../../orm';
 import { muscleGroup } from './schema';
 import { type MuscleGroup } from './types';
+import { database } from '@/db/orm';
 import { eq } from 'drizzle-orm';
 
 class MuscleGroupRepository {

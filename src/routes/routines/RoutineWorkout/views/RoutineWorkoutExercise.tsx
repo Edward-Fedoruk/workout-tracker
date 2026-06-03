@@ -1,9 +1,6 @@
-import {
-  type LastExerciseSets,
-  type RoutineExercise,
-} from '../../../../database';
-import { formatRepRange } from '../../routineUtilities';
-import { type FormValues } from '../RoutineWorkoutForm.schema';
+import { type LastExerciseSets, type RoutineExercise } from '@/database';
+import { formatRepRange } from '@/routes/routines/routineUtilities';
+import { type FormValues } from '@/routes/routines/RoutineWorkout/RoutineWorkoutForm.schema';
 import { Box, TextField, Typography } from '@mui/material';
 import { type FieldErrors, type UseFormRegister } from 'react-hook-form';
 

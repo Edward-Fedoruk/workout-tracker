@@ -30,16 +30,36 @@ npm run check       # typecheck + lint
 
 ```
 src/
-  db.ts        # SQLite-WASM worker + OPFS bootstrap, typed helpers (setKV / getKV / listKV)
-  App.tsx      # UI gated on initDb()
-  main.tsx     # Entry
-  index.d.ts   # sqlite-wasm shim
+  database.ts   # SQLite-WASM worker + OPFS bootstrap, typed helpers (the only barrel)
+  db/           # entity repositories, schemas, types backing database.ts
+  App.tsx       # UI gated on initDatabase()
+  main.tsx      # Entry
+  router.tsx    # Route table
+  components/   # shared presentational components (FormDialog, ConfirmDialog, …)
+  hooks/        # shared hooks (useToggle, …)
+  utils/        # shared pure helpers
+  routes/       # one folder per feature (exercises, workouts, routines, settings)
 public/
   favicon.svg, icon-*.png   # PWA icons (placeholders — swap with your own)
-vite.config.ts             # COOP/COEP headers, PWA config
+vite.config.ts             # COOP/COEP headers, PWA config, @/ alias
 .claude/                   # Claude Code hooks (validate + autofix on Stop)
 CLAUDE.md                  # Architecture notes for Claude Code sessions
 ```
+
+### Conventions
+
+- **`@/` path alias** maps to `src/`. Every cross-directory import uses it
+  (`import { useToggle } from '@/hooks/useToggle'`); only same-folder imports stay
+  relative (`./schema`). Configured in `vite.config.ts` (`resolve.alias`) and
+  `tsconfig.app.json` (`paths`).
+- **Feature folders** under `src/routes/<feature>/` group files by domain entity.
+  Each component lives in its own folder with an `index.tsx` entry point whose
+  exported component matches the folder name (e.g. `Exercise/ExerciseForm/index.tsx`
+  exports `ExerciseForm`). A form folder colocates its `schema.ts`.
+- **No trivial barrels.** `index.tsx` files *are* the component, not re-exports. The
+  sole re-export barrel in the app is `database.ts`.
+- Stateful containers (e.g. `ExerciseLibrary/`) keep `hooks/` and `views/` subfolders;
+  see `.claude/skills/create-component/SKILL.md` for the full layer contract.
 
 ## How persistence works
 

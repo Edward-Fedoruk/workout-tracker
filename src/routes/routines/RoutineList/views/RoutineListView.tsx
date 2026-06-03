@@ -1,6 +1,6 @@
-import { ConfirmDialog } from '../../../../components/ConfirmDialog';
-import { RoutineCard } from '../../RoutineCard';
-import { type UseRoutinesReturn } from '../hooks/useRoutines';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { RoutineCard } from '@/routes/routines/RoutineCard';
+import { type UseRoutinesReturn } from '@/routes/routines/RoutineList/hooks/useRoutines';
 import { Box, Button, Typography } from '@mui/material';
 
 export type RoutineListViewProps = UseRoutinesReturn & {

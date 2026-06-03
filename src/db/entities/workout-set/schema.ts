@@ -1,4 +1,4 @@
-import { workoutLog } from '../workout-log/schema';
+import { workoutLog } from '@/db/entities/workout-log/schema';
 import { sql } from 'drizzle-orm';
 import {
   check,

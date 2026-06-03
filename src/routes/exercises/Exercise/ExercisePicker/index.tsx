@@ -1,4 +1,4 @@
-import { type Exercise } from '../../database';
+import { type Exercise } from '@/database';
 import { Autocomplete, TextField } from '@mui/material';
 
 export type ExercisePickerProps = {

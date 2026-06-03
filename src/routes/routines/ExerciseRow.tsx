@@ -1,5 +1,5 @@
-import { type RoutineExercise } from '../../database';
 import { formatRepRange } from './routineUtilities';
+import { type RoutineExercise } from '@/database';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import DeleteIcon from '@mui/icons-material/Delete';

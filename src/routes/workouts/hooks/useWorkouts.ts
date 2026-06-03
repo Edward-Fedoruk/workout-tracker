@@ -9,10 +9,10 @@ import {
   updateWorkout,
   type WorkoutTableRow,
   type WorkoutWithSets,
-} from '../../../database';
-import { useToggle } from '../../../hooks/useToggle';
-import { computeEffectiveWeight, computeERM } from '../../../utils/erm';
-import { type FormValues } from '../WorkoutForm.schema';
+} from '@/database';
+import { useToggle } from '@/hooks/useToggle';
+import { type FormValues } from '@/routes/workouts/WorkoutForm.schema';
+import { computeEffectiveWeight, computeERM } from '@/utils/erm';
 import { useState } from 'react';
 
 export type UseWorkoutsReturn = ReturnType<typeof useWorkouts>;

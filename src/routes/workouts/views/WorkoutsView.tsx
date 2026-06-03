@@ -1,10 +1,13 @@
-import { FormDialog } from '../../../components';
-import { type WorkoutTableRow } from '../../../database';
-import { DeleteWorkoutDialog } from '../DeleteWorkoutDialog';
-import { type UseWorkoutsReturn } from '../hooks/useWorkouts';
-import { WorkoutForm } from '../WorkoutForm';
-import { WorkoutRowActions } from '../WorkoutRowActions';
-import { HIDDEN_SET_COLUMNS, useSetColumns } from '../WorkoutSetRow';
+import { FormDialog } from '@/components';
+import { type WorkoutTableRow } from '@/database';
+import { DeleteWorkoutDialog } from '@/routes/workouts/DeleteWorkoutDialog';
+import { type UseWorkoutsReturn } from '@/routes/workouts/hooks/useWorkouts';
+import { WorkoutForm } from '@/routes/workouts/WorkoutForm';
+import { WorkoutRowActions } from '@/routes/workouts/WorkoutRowActions';
+import {
+  HIDDEN_SET_COLUMNS,
+  useSetColumns,
+} from '@/routes/workouts/WorkoutSetRow';
 import { Box, Button } from '@mui/material';
 import {
   MaterialReactTable,

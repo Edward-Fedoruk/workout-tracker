@@ -25,6 +25,27 @@ Do not proceed until these are clear.
 
 Create all files below. Follow every constraint in the reference section exactly. Do not deviate from the patterns.
 
+**Imports:** use the `@/` alias (→ `src/`) for every cross-directory import
+(`@/components`, `@/database`, `@/hooks/useToggle`, `@/routes/...`). Only same-folder
+imports stay relative (`./schema`). Never write `../`.
+
+**Entity component folders:** the entity-specific presentational pieces a view renders —
+the list, the form (+ its schema), any picker — live beside the container in their own
+folders, grouped by entity and given an `index.tsx` entry point whose export matches the
+folder name. A form folder colocates `schema.ts`:
+
+```
+<feature>/
+  <ComponentName>/          # the container (this skill's main output)
+    index.tsx  hooks/  views/
+  <Entity>/
+    <Entity>Form/   index.tsx (<Entity>Form) + schema.ts
+    <Entity>List/   index.tsx (<Entity>List)
+    <Entity>Picker/ index.tsx (<Entity>Picker)   # if needed
+```
+
+Views import these via the alias, e.g. `import { <Entity>Form } from '@/routes/<feature>/<Entity>/<Entity>Form'`.
+
 ### 1. `<ComponentName>/hooks/use<Entity>.ts` — one per entity
 
 - `useState` only — **no `useEffect`**, no DB calls at init time
@@ -45,7 +66,7 @@ Create all files below. Follow every constraint in the reference section exactly
 
 - Props typed as `Use<Entity>Return & { /* extra */ }`
 - Renders the section's content: list, form dialog, delete confirmation dialog
-- Use `ConfirmDialog` from `src/components/ConfirmDialog.tsx` for all delete confirmations — never a raw MUI `Dialog`
+- Use `ConfirmDialog` (`@/components/ConfirmDialog`) for all delete confirmations — never a raw MUI `Dialog`
 - Pass `on*` props as inline arrows when the referenced function is not named `handle*`
 
 ### 4. `<ComponentName>/index.tsx` — smart component
@@ -85,7 +106,7 @@ Run `npm run lint && npm run build` and fix any errors before reporting done.
 
 **Do not self-fetch in hooks.** Hooks are pure state-and-actions containers. Only the smart component triggers data loading via `useEffect`.
 
-**Do not import DB functions in dumb views.** If a view imports from `../../database`, it is no longer dumb.
+**Do not import DB functions in dumb views.** If a view imports from `@/database`, it is no longer dumb.
 
 **Do not pass a non-`handle*` function directly to an `on*` prop.** The `react/jsx-handler-names` lint rule enforces this. Use a `handle*`-named reference or an inline arrow — never `dialog.onClose` or `hook.refresh` directly.
 
@@ -102,7 +123,7 @@ Run `npm run lint && npm run build` and fix any errors before reporting done.
 ## Reference: domain hook skeleton
 
 ```ts
-import { useToggle } from '../../../../hooks/useToggle';
+import { useToggle } from '@/hooks/useToggle';
 import { useState } from 'react';
 
 export type Use<Entity>Return = ReturnType<typeof use<Entity>>;

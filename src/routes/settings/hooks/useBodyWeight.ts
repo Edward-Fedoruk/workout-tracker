@@ -1,5 +1,5 @@
-import { getBodyWeight, setBodyWeight } from '../../../database';
-import { type FormValues } from '../BodyWeightForm.schema';
+import { getBodyWeight, setBodyWeight } from '@/database';
+import { type FormValues } from '@/routes/settings/BodyWeightForm.schema';
 import { useState } from 'react';
 
 export type Feedback = {

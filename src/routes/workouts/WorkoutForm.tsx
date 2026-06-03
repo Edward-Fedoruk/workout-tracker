@@ -1,8 +1,8 @@
-import { type Exercise, type WorkoutWithSets } from '../../database';
-import { ExercisePicker } from '../exercises/ExercisePicker';
 import { type FormValues, resolver } from './WorkoutForm.schema';
 import { getToday, getWeightInputMin } from './workoutFormUtilities';
 import { WorkoutSetInputRow } from './WorkoutSetInputRow';
+import { type Exercise, type WorkoutWithSets } from '@/database';
+import { ExercisePicker } from '@/routes/exercises/Exercise/ExercisePicker';
 import {
   Box,
   Button,

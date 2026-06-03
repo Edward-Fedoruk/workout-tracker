@@ -1,8 +1,5 @@
-import {
-  exportDatabaseBytes,
-  replaceDatabaseAndReload,
-} from '../../../database';
-import { useToggle } from '../../../hooks/useToggle';
+import { exportDatabaseBytes, replaceDatabaseAndReload } from '@/database';
+import { useToggle } from '@/hooks/useToggle';
 import { type ChangeEvent, useRef, useState } from 'react';
 
 export type UseDatabaseActionsReturn = ReturnType<typeof useDatabaseActions>;

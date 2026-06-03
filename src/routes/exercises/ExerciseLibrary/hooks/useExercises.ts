@@ -4,9 +4,9 @@ import {
   type Exercise,
   listExercises,
   updateExercise,
-} from '../../../../database';
-import { useToggle } from '../../../../hooks/useToggle';
-import { type FormValues } from '../../ExerciseForm.schema';
+} from '@/database';
+import { useToggle } from '@/hooks/useToggle';
+import { type FormValues } from '@/routes/exercises/Exercise/ExerciseForm/schema';
 import { useState } from 'react';
 
 export type UseExercisesReturn = ReturnType<typeof useExercises>;

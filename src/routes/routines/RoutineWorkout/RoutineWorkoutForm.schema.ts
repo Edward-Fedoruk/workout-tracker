@@ -1,4 +1,4 @@
-import { weightValidationMessage } from '../../../utils/erm';
+import { weightValidationMessage } from '@/utils/erm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 

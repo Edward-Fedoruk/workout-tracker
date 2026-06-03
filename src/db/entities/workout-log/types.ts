@@ -1,7 +1,7 @@
-import { type WorkoutSet } from '../workout-set/types';
 import { type workoutLog } from './schema';
+import { type WorkoutSet } from '@/db/entities/workout-set/types';
 
-export type { WorkoutSet } from '../workout-set/types';
+export type { WorkoutSet } from '@/db/entities/workout-set/types';
 export type WorkoutLog = typeof workoutLog.$inferSelect;
 export type WorkoutTableRow = {
   exercise_name: string;

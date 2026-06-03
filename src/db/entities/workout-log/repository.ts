@@ -1,9 +1,9 @@
-import { getDatabaseId, getPromiser } from '../../driver';
-import { database } from '../../orm';
-import { workoutSetRepository } from '../workout-set/repository';
-import { workoutSet } from '../workout-set/schema';
 import { workoutLog } from './schema';
 import { type WorkoutTableRow, type WorkoutWithSets } from './types';
+import { getDatabaseId, getPromiser } from '@/db/driver';
+import { workoutSetRepository } from '@/db/entities/workout-set/repository';
+import { workoutSet } from '@/db/entities/workout-set/schema';
+import { database } from '@/db/orm';
 import { eq, sql } from 'drizzle-orm';
 
 class WorkoutLogRepository {

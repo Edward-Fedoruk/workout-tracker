@@ -1,4 +1,4 @@
-import { routine } from '../routine/schema';
+import { routine } from '@/db/entities/routine/schema';
 import { sql } from 'drizzle-orm';
 import {
   check,

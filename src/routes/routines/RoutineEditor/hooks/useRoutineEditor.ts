@@ -10,10 +10,10 @@ import {
   type RoutineWithExercises,
   updateRoutine,
   updateRoutineExercise,
-} from '../../../../database';
-import { useToggle } from '../../../../hooks/useToggle';
-import { type FormValues as ExerciseFormValues } from '../../RoutineExerciseForm.schema';
-import { type FormValues as NameFormValues } from '../../RoutineNameForm.schema';
+} from '@/database';
+import { useToggle } from '@/hooks/useToggle';
+import { type FormValues as ExerciseFormValues } from '@/routes/routines/RoutineExerciseForm.schema';
+import { type FormValues as NameFormValues } from '@/routes/routines/RoutineNameForm.schema';
 import { useState } from 'react';
 
 export type UseRoutineEditorReturn = ReturnType<typeof useRoutineEditor>;

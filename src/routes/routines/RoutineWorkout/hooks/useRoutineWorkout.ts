@@ -8,9 +8,9 @@ import {
   listExercises,
   type RoutineExercise,
   type RoutineWithExercises,
-} from '../../../../database';
-import { computeEffectiveWeight, computeERM } from '../../../../utils/erm';
-import { type FormValues } from '../RoutineWorkoutForm.schema';
+} from '@/database';
+import { type FormValues } from '@/routes/routines/RoutineWorkout/RoutineWorkoutForm.schema';
+import { computeEffectiveWeight, computeERM } from '@/utils/erm';
 import { useState } from 'react';
 
 export type UseRoutineWorkoutReturn = ReturnType<typeof useRoutineWorkout>;

@@ -1,5 +1,5 @@
-import { ConfirmDialog } from '../../components';
-import { type MigrationError } from '../../database';
+import { ConfirmDialog } from '@/components';
+import { type MigrationError } from '@/database';
 import { Button, DialogContentText } from '@mui/material';
 
 export type MigrationErrorDialogProps = {

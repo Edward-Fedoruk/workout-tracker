@@ -1,4 +1,4 @@
-import { muscleGroup } from '../muscle-group/schema';
+import { muscleGroup } from '@/db/entities/muscle-group/schema';
 import { sql } from 'drizzle-orm';
 import {
   check,

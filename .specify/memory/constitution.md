@@ -1,15 +1,17 @@
 <!--
 Sync Impact Report
 ==================
-Version change: 1.4.0 → 1.5.0
-Bump rationale: New Principle IX added — Strong TypeScript Types. Prohibits resolving
-type errors with `any`, `unknown`, or `as unknown as X` casts; requires genuine type
-definitions instead. MINOR bump per policy — new principle added.
+Version change: 1.5.0 → 1.6.0
+Bump rationale: Principle VIII (Code Organization & File Size) materially expanded with
+folder-by-entity organization, per-component `index.tsx` entry points, a no-trivial-barrel
+rule, and the mandatory `@/` import alias. MINOR bump per policy — existing guidance
+materially expanded.
 
-Modified principles: none
+Modified principles:
+  - VIII. Code Organization & File Size — added folder grouping, entry-point, barrel,
+    and `@/` alias rules.
 
-Added sections:
-  - Principle IX: Strong TypeScript Types
+Added sections: none
 
 Removed sections: none
 
@@ -17,17 +19,16 @@ Templates audited:
   - .specify/templates/plan-template.md   ✅ no changes needed
   - .specify/templates/spec-template.md   ✅ no changes needed
   - .specify/templates/tasks-template.md  ✅ no changes needed
-  - CLAUDE.md                             ⚠ pending — add a note in the "Forbidden
-    moves" section that `as any`, `as unknown`, and `as unknown as X` are forbidden
-    workarounds; type errors must be fixed with real types. Update when CLAUDE.md is
-    next revised.
+  - CLAUDE.md                             ✅ updated — new "Route folder organization &
+    imports" section mirrors the expanded Principle VIII.
+  - README.md                             ✅ updated — Project layout + Conventions.
+  - .claude/skills/create-component/SKILL.md ✅ updated — entity folders, `@/` alias.
 
 Follow-up TODOs:
-  - Review existing uses of `as unknown as Promiser` in src/db/driver.ts and
-    `(this as unknown as Record<string, unknown>)` in src/db/migrations.ts; these are
-    genuine third-party boundary casts but should be documented with a comment citing
-    the specific reason (e.g., untyped sqlite-wasm constructor return). Tracked for
-    cleanup in a future refactor.
+  - (carried from 1.5.0) Add a note in CLAUDE.md "Forbidden moves" that `as any`,
+    `as unknown`, and `as unknown as X` are forbidden workarounds.
+  - (carried from 1.5.0) Document the genuine third-party boundary casts in
+    src/db/driver.ts and src/db/migrations.ts with a comment citing the reason.
 -->
 
 # todo-opfs-sqlite Constitution
@@ -150,9 +151,20 @@ shared within a single domain SHOULD live in a co-located utility file
 (e.g., `src/components/workoutUtils.ts`). Every utility function MUST be a pure,
 named export with a single, clearly named responsibility.
 
+Files MUST be grouped into folders by feature and domain entity rather than left loose
+at a route root. Each component MUST live in its own folder with an `index.tsx` entry
+point whose exported component matches the folder name (e.g. `Exercise/ExerciseForm/
+index.tsx` exports `ExerciseForm`); a form's folder colocates its `schema.ts`. Trivial
+re-export barrel files are forbidden — an `index.tsx` IS the component, not a re-export;
+the database module is the sole exception. Every cross-directory import MUST use the
+`@/` alias (→ `src/`); `../` parent-relative imports are forbidden, and only same-folder
+`./` imports stay relative.
+
 Rationale: Files beyond ~200 lines become hard to review, navigate, and reason about.
 Keeping files small forces decomposition early, surfaces reuse opportunities naturally,
-and makes individual responsibilities easy to test in isolation.
+and makes individual responsibilities easy to test in isolation. Grouping by entity and
+giving each component a predictable entry point makes the tree navigable; the `@/` alias
+keeps imports stable under refactors and free of `../../../../` churn.
 
 ### IX. Strong TypeScript Types
 
@@ -234,4 +246,4 @@ that compounds over time.
   touches; any deviation MUST be justified in a Complexity Tracking entry in the
   feature's plan.md.
 
-**Version**: 1.5.0 | **Ratified**: 2026-05-18 | **Last Amended**: 2026-05-25
+**Version**: 1.6.0 | **Ratified**: 2026-05-18 | **Last Amended**: 2026-06-03

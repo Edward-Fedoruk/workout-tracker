@@ -1,7 +1,7 @@
-import { BodyWeightForm } from '../BodyWeightForm';
-import { DatabaseActions } from '../DatabaseActions';
-import { type UseBodyWeightReturn } from '../hooks/useBodyWeight';
-import { type UseDatabaseActionsReturn } from '../hooks/useDatabaseActions';
+import { BodyWeightForm } from '@/routes/settings/BodyWeightForm';
+import { DatabaseActions } from '@/routes/settings/DatabaseActions';
+import { type UseBodyWeightReturn } from '@/routes/settings/hooks/useBodyWeight';
+import { type UseDatabaseActionsReturn } from '@/routes/settings/hooks/useDatabaseActions';
 import { Box, Divider, Stack, Typography } from '@mui/material';
 
 export type SettingsViewProps = {

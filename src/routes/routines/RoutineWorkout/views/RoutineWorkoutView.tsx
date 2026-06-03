@@ -1,10 +1,13 @@
+import { RoutineWorkoutExercise } from './RoutineWorkoutExercise';
 import {
   type Exercise,
   type LastExerciseSets,
   type RoutineWithExercises,
-} from '../../../../database';
-import { type FormValues, resolver } from '../RoutineWorkoutForm.schema';
-import { RoutineWorkoutExercise } from './RoutineWorkoutExercise';
+} from '@/database';
+import {
+  type FormValues,
+  resolver,
+} from '@/routes/routines/RoutineWorkout/RoutineWorkoutForm.schema';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Alert, Box, Button, IconButton, Typography } from '@mui/material';
 import { useForm } from 'react-hook-form';
