@@ -40,7 +40,6 @@ export const ConfirmDialog = ({
         <Button
           color={confirmColor}
           onClick={onConfirm}
-          sx={{ minHeight: 44, minWidth: 44 }}
           variant="contained"
         >
           {confirmLabel}

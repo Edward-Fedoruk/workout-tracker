@@ -29,7 +29,7 @@ export const MigrationErrorDialog = ({
     </DialogContentText>
     <Button
       onClick={() => location.reload()}
-      sx={{ minHeight: 44, minWidth: 44, mt: 2 }}
+      sx={{ mt: 2 }}
     >
       Retry
     </Button>

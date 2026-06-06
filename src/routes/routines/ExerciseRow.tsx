@@ -50,7 +50,6 @@ export const ExerciseRow = ({
       disabled={isFirst}
       onClick={onMoveUp}
       size="small"
-      sx={{ minHeight: 44, minWidth: 44 }}
     >
       <ArrowUpwardIcon fontSize="small" />
     </IconButton>
@@ -59,7 +58,6 @@ export const ExerciseRow = ({
       disabled={isLast}
       onClick={onMoveDown}
       size="small"
-      sx={{ minHeight: 44, minWidth: 44 }}
     >
       <ArrowDownwardIcon fontSize="small" />
     </IconButton>
@@ -67,7 +65,6 @@ export const ExerciseRow = ({
       aria-label="Edit exercise"
       onClick={onEdit}
       size="small"
-      sx={{ minHeight: 44, minWidth: 44 }}
     >
       <EditIcon fontSize="small" />
     </IconButton>
@@ -76,7 +73,6 @@ export const ExerciseRow = ({
       color="error"
       onClick={onDelete}
       size="small"
-      sx={{ minHeight: 44, minWidth: 44 }}
     >
       <DeleteIcon fontSize="small" />
     </IconButton>

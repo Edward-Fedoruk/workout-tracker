@@ -82,7 +82,7 @@ export const BodyWeightForm = ({
           onClick={() => {
             submit().catch(() => undefined);
           }}
-          sx={{ minHeight: 44, minWidth: 96 }}
+          sx={{ minWidth: 96 }}
           variant="contained"
         >
           Save

@@ -1,0 +1,52 @@
+/* ds-tokens.css — Workout Log design tokens as CSS custom properties.
+   Import once, globally, alongside your existing index.css:
+
+     // src/main.tsx
+     import './ds-tokens.css';
+     import './index.css';
+
+   Use the variables anywhere (sx props, plain CSS, styled()):
+     sx={{ color: 'var(--text-secondary)', borderColor: 'var(--border-default)' }}
+
+   These mirror the design system's tokens/ files. The MUI theme (theme.ts)
+   carries the same values for MUI's color math; use these vars for everything
+   outside the MUI palette (custom layout, one-off styling). */
+:root {
+  /* Surfaces */
+  --surface-base: #121814;
+  --surface-card: #1A231E;
+  --surface-elevated: #202C25;
+  --surface-hover: #2A3830;
+
+  /* Brand — emerald */
+  --accent: #34D399;
+  --accent-strong: #10B981;
+  --accent-deep: #059669;
+  --accent-soft: rgba(16, 185, 129, 0.12);
+
+  /* Text */
+  --text-primary: #F0FDF4;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --text-accent: #34D399;
+
+  /* Lines */
+  --border-subtle: rgba(16, 185, 129, 0.16);
+  --border-default: rgba(16, 185, 129, 0.22);
+  --border-strong: rgba(16, 185, 129, 0.40);
+
+  /* Status */
+  --danger: #EF4444;
+  --warning: #FBBF24;
+  --info: #38BDF8;
+
+  /* Radii / spacing / tap target */
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --tap-min: 44px;
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+}

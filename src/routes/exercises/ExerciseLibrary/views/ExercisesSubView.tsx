@@ -33,7 +33,6 @@ export const ExercisesSubView = ({
       <Button
         onClick={openCreate}
         startIcon={<AddIcon />}
-        sx={{ minHeight: 44 }}
         variant="contained"
       >
         Add exercise

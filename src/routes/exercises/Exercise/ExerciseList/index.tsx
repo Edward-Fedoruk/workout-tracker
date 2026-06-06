@@ -1,11 +1,10 @@
 import { type Exercise } from '@/database';
-import { contrastText } from '@/routes/exercises/MuscleGroup/muscleGroupColors';
+import { MuscleGroupChip } from '@/routes/exercises/MuscleGroup/MuscleGroupChip';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import {
   Box,
-  Chip,
   IconButton,
   List,
   ListItem,
@@ -43,14 +42,12 @@ export const ExerciseList = ({
               <IconButton
                 aria-label={`Edit ${exerciseItem.name}`}
                 onClick={() => onEdit(exerciseItem)}
-                sx={{ minHeight: 44, minWidth: 44 }}
               >
                 <EditIcon />
               </IconButton>
               <IconButton
                 aria-label={`Delete ${exerciseItem.name}`}
                 onClick={() => onDelete(exerciseItem)}
-                sx={{ minHeight: 44, minWidth: 44 }}
               >
                 <DeleteIcon />
               </IconButton>
@@ -78,18 +75,14 @@ export const ExerciseList = ({
             <Stack
               direction="row"
               spacing={0.5}
-              sx={{ flexWrap: 'wrap', mt: 0.5 }}
+              sx={{ flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}
+              useFlexGap
             >
               {exerciseItem.muscleGroups.map((group) => (
-                <Chip
+                <MuscleGroupChip
+                  color={group.color}
                   key={group.id}
                   label={group.name}
-                  size="small"
-                  sx={{
-                    backgroundColor: group.color,
-                    color: contrastText(group.color),
-                    mb: 0.5,
-                  }}
                 />
               ))}
             </Stack>

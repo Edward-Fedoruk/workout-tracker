@@ -65,7 +65,6 @@ export const RoutineWorkoutView = ({
         <IconButton
           aria-label="Go back"
           onClick={onBack}
-          sx={{ minHeight: 44, minWidth: 44 }}
         >
           <ArrowBackIcon />
         </IconButton>

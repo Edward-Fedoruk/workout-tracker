@@ -18,17 +18,11 @@ export const DialogActionButtons = ({
   onConfirm,
 }: DialogActionButtonsProps) => (
   <>
-    <Button
-      onClick={onCancel}
-      sx={{ minHeight: 44, minWidth: 44 }}
-    >
-      {cancelLabel}
-    </Button>
+    <Button onClick={onCancel}>{cancelLabel}</Button>
     <Button
       color={confirmColor}
       disabled={confirmDisabled}
       onClick={onConfirm}
-      sx={{ minHeight: 44, minWidth: 44 }}
       variant="contained"
     >
       {confirmLabel}

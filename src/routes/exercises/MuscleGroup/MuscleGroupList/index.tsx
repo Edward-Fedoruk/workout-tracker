@@ -42,14 +42,12 @@ export const MuscleGroupList = ({
               <IconButton
                 aria-label={`Rename ${group.name}`}
                 onClick={() => onRename(group)}
-                sx={{ minHeight: 44, minWidth: 44 }}
               >
                 <EditIcon />
               </IconButton>
               <IconButton
                 aria-label={`Delete ${group.name}`}
                 onClick={() => onDelete(group)}
-                sx={{ minHeight: 44, minWidth: 44 }}
               >
                 <DeleteIcon />
               </IconButton>
