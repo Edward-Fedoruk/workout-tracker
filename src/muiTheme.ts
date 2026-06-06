@@ -79,6 +79,21 @@ export const muiTheme = createTheme({
         root: { backgroundColor: token.scrim },
       },
     },
+    // ---- Bottom navigation (primary app menu) ----
+    MuiBottomNavigation: {
+      styleOverrides: {
+        root: { backgroundColor: token.surfaceCard },
+      },
+    },
+
+    MuiBottomNavigationAction: {
+      styleOverrides: {
+        root: {
+          '&.Mui-selected': { color: token.emerald400 },
+          color: token.textSecondary,
+        },
+      },
+    },
     // ---- Actions ----
     MuiButton: {
       defaultProps: { disableElevation: true },
@@ -109,7 +124,6 @@ export const muiTheme = createTheme({
         },
       },
     },
-
     MuiCheckbox: { defaultProps: { color: 'secondary' } },
     // ---- Data ----
     MuiChip: {
