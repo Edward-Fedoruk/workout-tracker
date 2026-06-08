@@ -74,7 +74,9 @@ export const RoutineWorkoutExercise = ({
                   : ''
               }
               size="small"
-              slotProps={{ htmlInput: { min: 0, step: 0.5 } }}
+              slotProps={{
+                htmlInput: { inputMode: 'decimal', min: 0, step: 0.5 },
+              }}
               sx={{ flex: 1 }}
               type="number"
               {...weightField}
@@ -89,7 +91,7 @@ export const RoutineWorkoutExercise = ({
               label="Reps"
               placeholder={prefillEntry ? String(prefillEntry.reps) : ''}
               size="small"
-              slotProps={{ htmlInput: { min: 1 } }}
+              slotProps={{ htmlInput: { inputMode: 'numeric', min: 1 } }}
               sx={{ flex: 1 }}
               type="number"
               {...repsField}

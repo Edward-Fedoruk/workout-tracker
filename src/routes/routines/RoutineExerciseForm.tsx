@@ -106,7 +106,7 @@ export const RoutineExerciseForm = ({
           error={Boolean(errors.sets)}
           helperText={errors.sets?.message ?? '(1–5)'}
           label="Suggested sets"
-          slotProps={{ htmlInput: { max: 5, min: 1 } }}
+          slotProps={{ htmlInput: { inputMode: 'numeric', max: 5, min: 1 } }}
           type="number"
           {...register('sets', { valueAsNumber: true })}
         />
@@ -115,7 +115,7 @@ export const RoutineExerciseForm = ({
             error={Boolean(errors.minReps)}
             helperText={errors.minReps?.message ?? '(1–99)'}
             label="Min reps"
-            slotProps={{ htmlInput: { max: 99, min: 1 } }}
+            slotProps={{ htmlInput: { inputMode: 'numeric', max: 99, min: 1 } }}
             sx={{ flex: 1 }}
             type="number"
             {...register('minReps', { valueAsNumber: true })}
@@ -124,7 +124,7 @@ export const RoutineExerciseForm = ({
             error={Boolean(errors.maxReps)}
             helperText={errors.maxReps?.message ?? '(1–99)'}
             label="Max reps"
-            slotProps={{ htmlInput: { max: 99, min: 1 } }}
+            slotProps={{ htmlInput: { inputMode: 'numeric', max: 99, min: 1 } }}
             sx={{ flex: 1 }}
             type="number"
             {...register('maxReps', { valueAsNumber: true })}

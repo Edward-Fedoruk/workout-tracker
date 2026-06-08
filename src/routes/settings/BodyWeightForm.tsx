@@ -65,9 +65,10 @@ export const BodyWeightForm = ({
           errors.bodyWeight?.message ??
           'Used to compute eRM for body-weight and assisted exercises.'
         }
-        inputMode="decimal"
         label="Body weight (kg)"
-        slotProps={{ htmlInput: { min: '0.01', step: '0.01' } }}
+        slotProps={{
+          htmlInput: { inputMode: 'decimal', min: '0.01', step: '0.01' },
+        }}
         type="number"
         {...bodyWeightField}
       />

@@ -33,7 +33,7 @@ export const WorkoutSetInputRow = ({
       helperText={weightError}
       placeholder="kg"
       size="small"
-      slotProps={{ htmlInput: weightInputProps }}
+      slotProps={{ htmlInput: { ...weightInputProps, inputMode: 'decimal' } }}
       type="number"
       {...register(`sets.${index}.weight`, { valueAsNumber: true })}
     />
@@ -42,7 +42,7 @@ export const WorkoutSetInputRow = ({
       helperText={repsError}
       placeholder="reps"
       size="small"
-      slotProps={{ htmlInput: { min: '1', step: '1' } }}
+      slotProps={{ htmlInput: { inputMode: 'numeric', min: '1', step: '1' } }}
       type="number"
       {...register(`sets.${index}.reps`, { valueAsNumber: true })}
     />
