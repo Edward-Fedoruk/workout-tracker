@@ -1,10 +1,11 @@
-import { initDatabase, MigrationError } from './database';
+import { getDraft, initDatabase, MigrationError } from './database';
 import { MigrationErrorDialog } from './routes/workouts/MigrationErrorDialog';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay';
 import SettingsIcon from '@mui/icons-material/Settings';
 import {
+  Badge,
   BottomNavigation,
   BottomNavigationAction,
   Box,
@@ -34,6 +35,7 @@ export const AppLayout = () => {
   const [migrationError, setMigrationError] = useState<MigrationError | null>(
     null,
   );
+  const [hasDraft, setHasDraft] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -70,6 +72,22 @@ export const AppLayout = () => {
     run().catch(() => undefined);
   }, []);
 
+  // Refresh the draft badge whenever the route changes, so it appears as soon as
+  // the user navigates away from an in-progress workout and clears on submit or
+  // discard.
+  useEffect(() => {
+    if (!isDatabaseReady) {
+      return;
+    }
+
+    const check = async () => {
+      const draft = await getDraft();
+      setHasDraft(draft !== null);
+    };
+
+    check().catch(() => undefined);
+  }, [isDatabaseReady, location.pathname]);
+
   if (migrationError !== null) {
     return (
       <MigrationErrorDialog
@@ -90,7 +108,12 @@ export const AppLayout = () => {
 
   return (
     <>
-      <Box sx={{ pb: showNav ? NAV_OFFSET : 0 }}>
+      <Box
+        sx={{
+          pb: showNav ? NAV_OFFSET : 0,
+          pt: 'env(safe-area-inset-top)',
+        }}
+      >
         <Outlet />
       </Box>
       {showNav && (
@@ -120,7 +143,15 @@ export const AppLayout = () => {
               value="log"
             />
             <BottomNavigationAction
-              icon={<PlaylistPlayIcon />}
+              icon={
+                <Badge
+                  color="error"
+                  invisible={!hasDraft}
+                  variant="dot"
+                >
+                  <PlaylistPlayIcon />
+                </Badge>
+              }
               label="Routines"
               value="routines"
             />

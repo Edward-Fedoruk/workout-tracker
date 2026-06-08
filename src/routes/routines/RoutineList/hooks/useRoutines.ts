@@ -1,5 +1,6 @@
 import {
   deleteRoutine,
+  getDraft,
   listRoutines,
   type RoutineWithExercises,
 } from '@/database';
@@ -10,14 +11,16 @@ export type UseRoutinesReturn = ReturnType<typeof useRoutines>;
 
 export const useRoutines = () => {
   const [routines, setRoutines] = useState<RoutineWithExercises[]>([]);
+  const [draftRoutineId, setDraftRoutineId] = useState<null | number>(null);
   const [pendingDelete, setPendingDelete] =
     useState<null | RoutineWithExercises>(null);
 
   const deleteConfirm = useToggle();
 
   const refresh = async () => {
-    const list = await listRoutines();
+    const [list, draft] = await Promise.all([listRoutines(), getDraft()]);
     setRoutines(list);
+    setDraftRoutineId(draft ? draft.routineId : null);
   };
 
   const requestDelete = (routine: RoutineWithExercises) => {
@@ -45,6 +48,7 @@ export const useRoutines = () => {
   return {
     cancelDelete,
     deleteConfirm,
+    draftRoutineId,
     handleConfirmDelete,
     pendingDelete,
     refresh,

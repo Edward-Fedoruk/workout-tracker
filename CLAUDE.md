@@ -119,11 +119,11 @@ main thread (React)  ──►  promiser (async API)  ──►  Web Worker  ─
 - On unsupported browsers, the OPFS open throws and the fallback to `:memory:` is silent (a `console.warn` is logged). The app appears to work but data is lost on reload — check the console if persistence seems broken.
 
 <!-- SPECKIT START -->
-**Active Feature**: Database Repository Pattern Refactor & Component Cleanup (branch `010-repository-pattern-refactor`)  
+**Active Feature**: Routine Draft Persistence (branch `011-routine-draft-persistence`)  
 For implementation context, design decisions, data model, and step-by-step quickstart, see:
-- **Plan**: `specs/010-repository-pattern-refactor/plan.md`
-- **Research**: `specs/010-repository-pattern-refactor/research.md`
-- **Data Model**: `specs/010-repository-pattern-refactor/data-model.md`
-- **Quickstart**: `specs/010-repository-pattern-refactor/quickstart.md`
-- **Contracts**: `specs/010-repository-pattern-refactor/contracts/database-api.md`
+- **Plan**: `specs/011-routine-draft-persistence/plan.md`
+- **Research**: `specs/011-routine-draft-persistence/research.md`
+- **Data Model**: `specs/011-routine-draft-persistence/data-model.md`
+- **Quickstart**: `specs/011-routine-draft-persistence/quickstart.md`
+- **Contracts**: `specs/011-routine-draft-persistence/contracts/database-api.md`
 <!-- SPECKIT END -->

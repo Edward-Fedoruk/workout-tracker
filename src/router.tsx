@@ -5,40 +5,37 @@ import { RoutineList } from './routes/routines/RoutineList';
 import { RoutineWorkout } from './routes/routines/RoutineWorkout';
 import { Settings } from './routes/settings';
 import { Workouts } from './routes/workouts';
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createHashRouter, Navigate } from 'react-router-dom';
 
-export const router = createBrowserRouter(
-  [
-    {
-      children: [
-        { element: <Workouts />, path: '/log' },
-        { element: <RoutineList />, path: '/routines' },
-        { element: <RoutineEditor />, path: '/routines/new' },
-        { element: <RoutineEditor />, path: '/routines/:id/edit' },
-        { element: <RoutineWorkout />, path: '/routines/:id/start' },
-        { element: <ExerciseLibrary />, path: '/exercises' },
-        { element: <Settings />, path: '/settings' },
-        {
-          element: (
-            <Navigate
-              replace
-              to="/log"
-            />
-          ),
-          path: '/',
-        },
-        {
-          element: (
-            <Navigate
-              replace
-              to="/log"
-            />
-          ),
-          path: '*',
-        },
-      ],
-      element: <AppLayout />,
-    },
-  ],
-  { basename: '/workout-tracker' },
-);
+export const router = createHashRouter([
+  {
+    children: [
+      { element: <Workouts />, path: '/log' },
+      { element: <RoutineList />, path: '/routines' },
+      { element: <RoutineEditor />, path: '/routines/new' },
+      { element: <RoutineEditor />, path: '/routines/:id/edit' },
+      { element: <RoutineWorkout />, path: '/routines/:id/start' },
+      { element: <ExerciseLibrary />, path: '/exercises' },
+      { element: <Settings />, path: '/settings' },
+      {
+        element: (
+          <Navigate
+            replace
+            to="/log"
+          />
+        ),
+        path: '/',
+      },
+      {
+        element: (
+          <Navigate
+            replace
+            to="/log"
+          />
+        ),
+        path: '*',
+      },
+    ],
+    element: <AppLayout />,
+  },
+]);

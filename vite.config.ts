@@ -4,7 +4,7 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
-  base: '/workout-tracker/',
+  base: '/',
   optimizeDeps: {
     exclude: ['@sqlite.org/sqlite-wasm'],
   },
@@ -43,9 +43,9 @@ export default defineConfig({
         ],
         name: 'Workout Log',
         orientation: 'portrait',
-        scope: '/workout-tracker/',
+        scope: '/',
         short_name: 'Workout',
-        start_url: '/workout-tracker/',
+        start_url: '/',
         theme_color: '#1a202c',
       },
       registerType: 'autoUpdate',

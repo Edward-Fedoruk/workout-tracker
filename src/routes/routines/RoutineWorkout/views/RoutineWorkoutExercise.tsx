@@ -8,6 +8,7 @@ export type RoutineWorkoutExerciseProps = {
   readonly errors: FieldErrors<FormValues>;
   readonly exercise: RoutineExercise;
   readonly exerciseIndex: number;
+  readonly onAutoSave: () => void;
   readonly prefill: LastExerciseSets;
   readonly register: UseFormRegister<FormValues>;
 };
@@ -16,6 +17,7 @@ export const RoutineWorkoutExercise = ({
   errors,
   exercise,
   exerciseIndex,
+  onAutoSave,
   prefill,
   register,
 }: RoutineWorkoutExerciseProps) => {
@@ -41,6 +43,14 @@ export const RoutineWorkoutExercise = ({
         const prefillEntry = prefill[setIndex];
         const weightError = setErrors?.[setIndex]?.weight?.message;
         const repsError = setErrors?.[setIndex]?.reps?.message;
+        const weightField = register(
+          `exercises.${exerciseIndex}.sets.${setIndex}.weight`,
+          { valueAsNumber: true },
+        );
+        const repsField = register(
+          `exercises.${exerciseIndex}.sets.${setIndex}.reps`,
+          { valueAsNumber: true },
+        );
         return (
           <Box
             key={setIndex}
@@ -67,10 +77,11 @@ export const RoutineWorkoutExercise = ({
               slotProps={{ htmlInput: { min: 0, step: 0.5 } }}
               sx={{ flex: 1 }}
               type="number"
-              {...register(
-                `exercises.${exerciseIndex}.sets.${setIndex}.weight`,
-                { valueAsNumber: true },
-              )}
+              {...weightField}
+              onBlur={(event) => {
+                weightField.onBlur(event).catch(() => undefined);
+                onAutoSave();
+              }}
             />
             <TextField
               error={Boolean(repsError)}
@@ -81,9 +92,11 @@ export const RoutineWorkoutExercise = ({
               slotProps={{ htmlInput: { min: 1 } }}
               sx={{ flex: 1 }}
               type="number"
-              {...register(`exercises.${exerciseIndex}.sets.${setIndex}.reps`, {
-                valueAsNumber: true,
-              })}
+              {...repsField}
+              onBlur={(event) => {
+                repsField.onBlur(event).catch(() => undefined);
+                onAutoSave();
+              }}
             />
           </Box>
         );
