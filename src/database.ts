@@ -4,6 +4,8 @@ import { exerciseRepository } from './db/entities/exercise/repository';
 import { type ExerciseClassification } from './db/entities/exercise/types';
 import { muscleGroupRepository } from './db/entities/muscle-group/repository';
 import { routineExerciseRepository } from './db/entities/routine-exercise/repository';
+import { routineWorkoutDraftRepository } from './db/entities/routine-workout-draft/repository';
+import { type StoredDraftData } from './db/entities/routine-workout-draft/types';
 import { routineRepository } from './db/entities/routine/repository';
 import { workoutLogRepository } from './db/entities/workout-log/repository';
 import { initDatabase } from './db/initDatabase';
@@ -18,6 +20,11 @@ export type {
   LastExerciseSets,
   RoutineExercise,
 } from './db/entities/routine-exercise/types';
+export type {
+  RoutineWorkoutDraft,
+  StoredDraftData,
+  StoredSetValues,
+} from './db/entities/routine-workout-draft/types';
 export type {
   Routine,
   RoutineWithExercises,
@@ -115,6 +122,12 @@ export const updateWorkout = (
   sets: Array<{ erm: null | number; reps: number; weight: null | number }>,
 ) => workoutLogRepository.update(id, workoutDate, exerciseName, sets);
 export const deleteWorkout = (id: number) => workoutLogRepository.delete(id);
+
+// Routine workout draft operations
+export const saveDraft = (routineId: number, data: StoredDraftData) =>
+  routineWorkoutDraftRepository.save(routineId, data);
+export const getDraft = () => routineWorkoutDraftRepository.get();
+export const clearDraft = () => routineWorkoutDraftRepository.clear();
 
 // Settings operations
 export const getBodyWeight = () => appSettingRepository.getBodyWeight();

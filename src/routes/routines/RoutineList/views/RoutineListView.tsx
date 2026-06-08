@@ -12,6 +12,7 @@ export type RoutineListViewProps = UseRoutinesReturn & {
 export const RoutineListView = ({
   cancelDelete,
   deleteConfirm,
+  draftRoutineId,
   handleConfirmDelete,
   onAdd,
   onEdit,
@@ -45,6 +46,7 @@ export const RoutineListView = ({
     ) : (
       routines.map((routine) => (
         <RoutineCard
+          isInProgress={routine.id === draftRoutineId}
           key={routine.id}
           onDelete={() => requestDelete(routine)}
           onEdit={() => onEdit(routine.id)}

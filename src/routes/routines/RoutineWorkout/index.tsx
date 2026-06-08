@@ -42,10 +42,20 @@ export const RoutineWorkout = () => {
   return (
     <RoutineWorkoutView
       bodyWeight={workout.bodyWeight}
+      draftData={workout.draftData}
       error={workout.error}
       exercises={workout.exercises}
       isSubmitting={workout.isSubmitting}
+      onAutoSave={(values) => workout.autoSave(values)}
       onBack={() => navigate('/routines')}
+      onDiscard={() => {
+        const discard = async () => {
+          await workout.discardDraft();
+          navigate('/routines');
+        };
+
+        discard().catch(() => undefined);
+      }}
       onSubmit={async (values) => {
         const ok = await workout.submit(values);
         if (ok) {

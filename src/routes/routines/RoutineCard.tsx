@@ -1,5 +1,6 @@
 import { type RoutineWithExercises } from '@/database';
 import {
+  Box,
   Button,
   Card,
   CardActions,
@@ -10,6 +11,7 @@ import {
 } from '@mui/material';
 
 export type RoutineCardProps = {
+  readonly isInProgress?: boolean;
   readonly onDelete: () => void;
   readonly onEdit: () => void;
   readonly onStart: () => void;
@@ -17,6 +19,7 @@ export type RoutineCardProps = {
 };
 
 export const RoutineCard = ({
+  isInProgress = false,
   onDelete,
   onEdit,
   onStart,
@@ -31,12 +34,25 @@ export const RoutineCard = ({
       variant="outlined"
     >
       <CardContent sx={{ pb: 0 }}>
-        <Typography
-          component="div"
-          variant="h6"
-        >
-          {routine.name}
-        </Typography>
+        <Box sx={{ alignItems: 'center', display: 'flex', gap: 1 }}>
+          <Typography
+            component="div"
+            variant="h6"
+          >
+            {routine.name}
+          </Typography>
+          {isInProgress && (
+            <Chip
+              label="In Progress"
+              size="small"
+              sx={{
+                bgcolor: 'secondary.main',
+                color: 'secondary.contrastText',
+                fontWeight: 700,
+              }}
+            />
+          )}
+        </Box>
         <Chip
           label={`${exerciseCount} exercise${exerciseCount === 1 ? '' : 's'}`}
           size="small"

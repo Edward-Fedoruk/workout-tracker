@@ -1,17 +1,21 @@
 import {
+  clearDraft,
   createWorkout,
   type Exercise,
   getBodyWeight,
+  getDraft,
   getLastExerciseSets,
   getRoutineById,
   type LastExerciseSets,
   listExercises,
   type RoutineExercise,
   type RoutineWithExercises,
+  saveDraft,
+  type StoredDraftData,
 } from '@/database';
 import { type FormValues } from '@/routes/routines/RoutineWorkout/RoutineWorkoutForm.schema';
 import { computeEffectiveWeight, computeERM } from '@/utils/erm';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 export type UseRoutineWorkoutReturn = ReturnType<typeof useRoutineWorkout>;
 
@@ -22,15 +26,17 @@ export const useRoutineWorkout = () => {
   );
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [bodyWeight, setBodyWeight] = useState<null | number>(null);
+  const [draftData, setDraftData] = useState<null | StoredDraftData>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<null | string>(null);
 
   const load = async (routineId: number): Promise<boolean> => {
-    const [data, bw, exerciseList] = await Promise.all([
+    const [data, bw, exerciseList, draft] = await Promise.all([
       getRoutineById(routineId),
       getBodyWeight(),
       listExercises(),
+      getDraft(),
     ]);
 
     if (!data) {
@@ -41,6 +47,11 @@ export const useRoutineWorkout = () => {
     setRoutine(data);
     setBodyWeight(bw);
     setExercises(exerciseList);
+
+    // Restore saved values only when the draft belongs to this routine.
+    setDraftData(
+      draft && draft.routineId === routineId ? draft.draftData : null,
+    );
 
     const prefillMap = new Map<number, LastExerciseSets>();
     await Promise.all(
@@ -56,6 +67,37 @@ export const useRoutineWorkout = () => {
     setIsLoading(false);
     return true;
   };
+
+  // Serialise the current form values into the singleton draft. NaN (empty
+  // numeric field) is stored as null. Best-effort — failures are swallowed so a
+  // draft-write error never blocks the user from logging.
+  const autoSave = useCallback(
+    (values: FormValues) => {
+      if (!routine) {
+        return;
+      }
+
+      const data: StoredDraftData = {};
+      for (const [index, exercise] of values.exercises.entries()) {
+        const routineExerciseId = routine.exercises[index]?.id;
+        if (routineExerciseId === undefined) {
+          continue;
+        }
+
+        data[String(routineExerciseId)] = exercise.sets.map((set) => ({
+          reps: Number.isNaN(set.reps) ? null : set.reps,
+          weight: Number.isNaN(set.weight) ? null : set.weight,
+        }));
+      }
+
+      saveDraft(routine.id, data).catch(() => undefined);
+    },
+    [routine],
+  );
+
+  const discardDraft = useCallback(async (): Promise<void> => {
+    await clearDraft();
+  }, []);
 
   const submit = async (values: FormValues): Promise<boolean> => {
     setIsSubmitting(true);
@@ -84,6 +126,8 @@ export const useRoutineWorkout = () => {
         }
       }
 
+      // Workout logged — the draft has served its purpose.
+      await clearDraft();
       return true;
     } catch {
       setError('Failed to save workout. Please try again.');
@@ -93,7 +137,10 @@ export const useRoutineWorkout = () => {
   };
 
   return {
+    autoSave,
     bodyWeight,
+    discardDraft,
+    draftData,
     error,
     exercises,
     isLoading,
