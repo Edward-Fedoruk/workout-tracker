@@ -12,28 +12,28 @@
    carries the same values for MUI's color math; use these vars for everything
    outside the MUI palette (custom layout, one-off styling). */
 :root {
-  /* Surfaces */
-  --surface-base: #121814;
-  --surface-card: #1A231E;
-  --surface-elevated: #202C25;
-  --surface-hover: #2A3830;
+  /* Surfaces — neutral charcoal (Spotify), no green tint */
+  --surface-base: #121212;
+  --surface-card: #1C1C1C;
+  --surface-elevated: #282828;
+  --surface-hover: #333333;
 
-  /* Brand — emerald */
-  --accent: #34D399;
-  --accent-strong: #10B981;
-  --accent-deep: #059669;
-  --accent-soft: rgba(16, 185, 129, 0.12);
+  /* Brand — vivid green */
+  --accent: #1ED760;
+  --accent-strong: #1DB954;
+  --accent-deep: #169C46;
+  --accent-soft: rgba(30, 215, 96, 0.12);
 
-  /* Text */
-  --text-primary: #F0FDF4;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
-  --text-accent: #34D399;
+  /* Text — neutral white */
+  --text-primary: #F5F5F5;
+  --text-secondary: #B3B3B3;
+  --text-muted: #777777;
+  --text-accent: #1ED760;
 
-  /* Lines */
-  --border-subtle: rgba(16, 185, 129, 0.16);
-  --border-default: rgba(16, 185, 129, 0.22);
-  --border-strong: rgba(16, 185, 129, 0.40);
+  /* Lines — neutral hairlines (green stays in the accent, not the surfaces) */
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.18);
 
   /* Status */
   --danger: #EF4444;

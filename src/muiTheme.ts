@@ -16,33 +16,33 @@ import { createTheme } from '@mui/material';
 
 // ---- Design tokens (from the Workout Log design system) ----
 const token = {
-  accentSoft: 'rgba(16, 185, 129, 0.12)',
-  accentSoftHover: 'rgba(16, 185, 129, 0.20)',
-  border: 'rgba(16, 185, 129, 0.22)',
-  borderStrong: 'rgba(16, 185, 129, 0.40)',
-  bright: '#E2E8F0',
+  accentSoft: 'rgba(30, 215, 96, 0.12)',
+  accentSoftHover: 'rgba(30, 215, 96, 0.20)',
+  // lines — neutral hairlines (green lives in the accent, not the surfaces)
+  border: 'rgba(255, 255, 255, 0.10)',
+  borderStrong: 'rgba(255, 255, 255, 0.18)',
+  bright: '#FFFFFF',
   danger: '#EF4444',
-  // lines + status
-  divider: 'rgba(16, 185, 129, 0.16)',
-  // brand emerald
-  emerald300: '#6EE7B7',
-  emerald400: '#34D399',
-  emerald500: '#10B981',
-  emerald600: '#059669',
+  divider: 'rgba(255, 255, 255, 0.07)',
+  // brand — vivid green (Spotify)
+  emerald300: '#5DE88A',
+  emerald400: '#1ED760',
+  emerald500: '#1DB954',
+  emerald600: '#169C46',
   // effects — the brand is shadowless; only overlays cast a real shadow
-  focusRing: '0 0 0 3px rgba(16, 185, 129, 0.25)',
+  focusRing: '0 0 0 3px rgba(30, 215, 96, 0.25)',
   info: '#38BDF8',
   overlayShadow: '0 16px 48px -12px rgba(0, 0, 0, 0.7)',
   scrim: 'rgba(0, 0, 0, 0.6)',
-  // surfaces
-  surfaceBase: '#121814',
-  surfaceCard: '#1A231E',
-  surfaceElevated: '#202C25',
-  surfaceHover: '#2A3830',
-  textMuted: '#64748B',
+  // surfaces — neutral charcoal, no green tint
+  surfaceBase: '#121212',
+  surfaceCard: '#1C1C1C',
+  surfaceElevated: '#282828',
+  surfaceHover: '#333333',
+  textMuted: '#777777',
   // neutral / text
-  textPrimary: '#F0FDF4',
-  textSecondary: '#94A3B8',
+  textPrimary: '#F5F5F5',
+  textSecondary: '#B3B3B3',
   warning: '#FBBF24',
 } as const;
 

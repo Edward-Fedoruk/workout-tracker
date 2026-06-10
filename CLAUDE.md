@@ -119,11 +119,11 @@ main thread (React)  ──►  promiser (async API)  ──►  Web Worker  ─
 - On unsupported browsers, the OPFS open throws and the fallback to `:memory:` is silent (a `console.warn` is logged). The app appears to work but data is lost on reload — check the console if persistence seems broken.
 
 <!-- SPECKIT START -->
-**Active Feature**: Routine Draft Persistence (branch `011-routine-draft-persistence`)  
+**Active Feature**: Combined Workout Set Column — weight × reps (branch `012-workout-set-combined-column`)  
 For implementation context, design decisions, data model, and step-by-step quickstart, see:
-- **Plan**: `specs/011-routine-draft-persistence/plan.md`
-- **Research**: `specs/011-routine-draft-persistence/research.md`
-- **Data Model**: `specs/011-routine-draft-persistence/data-model.md`
-- **Quickstart**: `specs/011-routine-draft-persistence/quickstart.md`
-- **Contracts**: `specs/011-routine-draft-persistence/contracts/database-api.md`
+- **Plan**: `specs/012-workout-set-combined-column/plan.md`
+- **Research**: `specs/012-workout-set-combined-column/research.md`
+- **Data Model**: `specs/012-workout-set-combined-column/data-model.md`
+- **Quickstart**: `specs/012-workout-set-combined-column/quickstart.md`
+- **Contracts**: `specs/012-workout-set-combined-column/contracts/set-column-format.md`
 <!-- SPECKIT END -->
