@@ -1,3 +1,4 @@
+import basicSsl from '@vitejs/plugin-basic-ssl';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
@@ -9,6 +10,7 @@ export default defineConfig({
     exclude: ['@sqlite.org/sqlite-wasm'],
   },
   plugins: [
+    basicSsl(),
     react(),
     VitePWA({
       filename: 'sw.ts',
