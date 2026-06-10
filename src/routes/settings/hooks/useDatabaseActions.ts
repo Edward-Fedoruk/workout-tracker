@@ -86,7 +86,6 @@ export const useDatabaseActions = () => {
       const bytes = new Uint8Array(fileBuffer);
       await replaceDatabaseAndReload(bytes);
     } catch (e){
-      document.writeln(e as any);
       setFatalError(
         'The previous database may have been removed but the new one failed to load. ' +
           'Please try importing a different backup file.',

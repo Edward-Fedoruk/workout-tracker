@@ -8,6 +8,7 @@ import { routineWorkoutDraftRepository } from './db/entities/routine-workout-dra
 import { type StoredDraftData } from './db/entities/routine-workout-draft/types';
 import { routineRepository } from './db/entities/routine/repository';
 import { workoutLogRepository } from './db/entities/workout-log/repository';
+import { writeDatabaseFile } from './db/importDatabaseFile';
 import { initDatabase } from './db/initDatabase';
 
 export type {
@@ -149,7 +150,7 @@ export const exportDatabaseBytes = async (): Promise<Uint8Array> => {
 
 export const replaceDatabaseAndReload = async (
   bytes: Uint8Array,
-): Promise<never> => {
+): Promise<void> => {
   await initDatabase();
 
   const headerBytes = bytes.slice(0, 16);
@@ -167,27 +168,13 @@ export const replaceDatabaseAndReload = async (
     // Log but don't abort — reload will reset the worker
   }
 
+  // The OPFS write runs in a worker via createSyncAccessHandle: that is the only
+  // write path available on iOS Safari, where the main thread lacks createWritable.
   if (navigator.storage) {
-    const root = await navigator.storage.getDirectory();
-    for (const name of [
-      'app.sqlite3',
-      'app.sqlite3-journal',
-      'app.sqlite3-wal',
-      'app.sqlite3-shm',
-    ]) {
-      await root.removeEntry(name).catch(() => undefined);
-    }
-
-    const fileHandle = await root.getFileHandle('app.sqlite3', {
-      create: true,
-    });
-    const writable = await fileHandle.createWritable();
-    await writable.write(bytes);
-    await writable.close();
+    await writeDatabaseFile(bytes);
   }
 
   location.reload();
-  throw new Error('Reload failed');
 };
 
 // eslint-disable-next-line canonical/id-match, unicorn/prevent-abbreviations, @typescript-eslint/naming-convention -- contract specifies __devRollback as the exported name
