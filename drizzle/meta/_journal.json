@@ -22,6 +22,13 @@
       "when": 1780898413920,
       "tag": "0002_routine-workout-draft",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1781189855466,
+      "tag": "0003_exercise-image-filename",
+      "breakpoints": true
     }
   ]
 }

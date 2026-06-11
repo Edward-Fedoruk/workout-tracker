@@ -16,6 +16,7 @@ type ExerciseRow = {
   classification: ExerciseClassification;
   created_at: string;
   id: number;
+  image_filename: null | string;
   name: string;
 };
 
@@ -24,11 +25,12 @@ class ExerciseRepository {
     name: string,
     muscleGroupIds: number[],
     classification: ExerciseClassification,
+    imageFilename?: null | string,
   ): Promise<number> {
     return database.transaction(async (tx) => {
       const inserted = await tx
         .insert(exercise)
-        .values({ classification, name })
+        .values({ classification, imageFilename: imageFilename ?? null, name })
         .returning({ id: exercise.id });
 
       const id = inserted[0]?.id;
@@ -78,7 +80,7 @@ class ExerciseRepository {
     const exercisesResult = await promiser<ExerciseRow>('exec', {
       dbId: databaseId,
       rowMode: 'object',
-      sql: 'SELECT id, name, created_at, classification FROM exercise ORDER BY name COLLATE NOCASE ASC',
+      sql: 'SELECT id, name, created_at, classification, image_filename FROM exercise ORDER BY name COLLATE NOCASE ASC',
     });
 
     const joinResult = await promiser<ExerciseMuscleGroupRow>('exec', {
@@ -107,6 +109,7 @@ class ExerciseRepository {
       classification: row.classification,
       createdAt: row.created_at,
       id: row.id,
+      imageFilename: row.image_filename,
       muscleGroups: groupsByExerciseId.get(row.id) ?? [],
       name: row.name,
     }));
@@ -117,6 +120,7 @@ class ExerciseRepository {
     name: string,
     muscleGroupIds: number[],
     classification: ExerciseClassification,
+    imageFilename?: null | string,
   ): Promise<void> {
     const promiser = await getPromiser();
     const databaseId = getDatabaseId();
@@ -135,7 +139,7 @@ class ExerciseRepository {
     await database.transaction(async (tx) => {
       await tx
         .update(exercise)
-        .set({ classification, name })
+        .set({ classification, imageFilename: imageFilename ?? null, name })
         .where(eq(exercise.id, id));
 
       if (oldName !== name) {

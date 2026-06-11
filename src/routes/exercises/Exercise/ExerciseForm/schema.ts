@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 export const schema = z.object({
   classification: z.enum(['standard', 'bodyweight']),
+  imageFilename: z.string().nullable().optional(),
   muscleGroupIds: z
     .array(z.number())
     .min(1, 'Select at least one muscle group'),

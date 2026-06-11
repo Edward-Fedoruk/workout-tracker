@@ -54,12 +54,14 @@ export const useExercises = () => {
         values.name,
         values.muscleGroupIds,
         values.classification,
+        values.imageFilename ?? null,
       );
     } else {
       await createExercise(
         values.name,
         values.muscleGroupIds,
         values.classification,
+        values.imageFilename ?? null,
       );
     }
 

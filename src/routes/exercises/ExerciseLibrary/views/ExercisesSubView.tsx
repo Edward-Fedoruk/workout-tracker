@@ -50,6 +50,7 @@ export const ExercisesSubView = ({
         editingExercise
           ? {
               classification: editingExercise.classification,
+              imageFilename: editingExercise.imageFilename,
               muscleGroupIds: editingExercise.muscleGroups.map(
                 (group) => group.id,
               ),

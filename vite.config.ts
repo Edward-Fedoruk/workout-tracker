@@ -15,6 +15,14 @@ export default defineConfig({
     VitePWA({
       filename: 'sw.ts',
       includeAssets: ['favicon.svg'],
+      // injectManifest is the option key honored for `strategies: 'injectManifest'`.
+      // jpg is included so all 1,324 exercise images in public/exercises/ are
+      // precached — the app is fully usable offline immediately after install
+      // (not just for images already viewed). Total image payload is ~11 MB.
+      injectManifest: {
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,wasm,jpg}'],
+        maximumFileSizeToCacheInBytes: 10 * 1_024 * 1_024,
+      },
       manifest: {
         background_color: '#1a202c',
         description:
@@ -54,7 +62,7 @@ export default defineConfig({
       srcDir: 'src',
       strategies: 'injectManifest',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,wasm}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,wasm,jpg}'],
         maximumFileSizeToCacheInBytes: 10 * 1_024 * 1_024,
       },
     }),

@@ -44,13 +44,28 @@ export const createExercise = (
   name: string,
   muscleGroupIds: number[],
   classification: ExerciseClassification,
-) => exerciseRepository.create(name, muscleGroupIds, classification);
+  imageFilename?: null | string,
+) =>
+  exerciseRepository.create(
+    name,
+    muscleGroupIds,
+    classification,
+    imageFilename,
+  );
 export const updateExercise = (
   id: number,
   name: string,
   muscleGroupIds: number[],
   classification: ExerciseClassification,
-) => exerciseRepository.update(id, name, muscleGroupIds, classification);
+  imageFilename?: null | string,
+) =>
+  exerciseRepository.update(
+    id,
+    name,
+    muscleGroupIds,
+    classification,
+    imageFilename,
+  );
 export const deleteExercise = (id: number) => exerciseRepository.delete(id);
 
 // Muscle group operations

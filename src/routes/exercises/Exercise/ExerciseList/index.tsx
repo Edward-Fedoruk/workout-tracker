@@ -2,12 +2,15 @@ import { type Exercise } from '@/database';
 import { MuscleGroupChip } from '@/routes/exercises/MuscleGroup/MuscleGroupChip';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import {
+  Avatar,
   Box,
   IconButton,
   List,
   ListItem,
+  ListItemAvatar,
   Stack,
   Tooltip,
   Typography,
@@ -54,6 +57,19 @@ export const ExerciseList = ({
             </Stack>
           }
         >
+          <ListItemAvatar sx={{ minWidth: 72 }}>
+            <Avatar
+              alt={exerciseItem.name}
+              src={
+                exerciseItem.imageFilename
+                  ? `${import.meta.env.BASE_URL}exercises/${exerciseItem.imageFilename}`
+                  : undefined
+              }
+              sx={{ height: 56, width: 56 }}
+            >
+              <FitnessCenterIcon />
+            </Avatar>
+          </ListItemAvatar>
           <Box>
             <Stack
               direction="row"

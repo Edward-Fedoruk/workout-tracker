@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Exercise image dataset clone (source for public/exercises/ + catalog).
+# The dataset itself is NOT tracked; the copied images in public/exercises/ ARE.
+exercises-dataset/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

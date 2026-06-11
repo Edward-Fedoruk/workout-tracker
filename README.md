@@ -74,6 +74,36 @@ The kv table (`key TEXT PRIMARY KEY, value TEXT NOT NULL`) is a placeholder — 
 - `vite.config.ts` sets `Cross-Origin-Opener-Policy` and `Cross-Origin-Embedder-Policy` headers (required for SQLite-WASM's OPFS VFS). Your production server must serve the same headers.
 - Icons in `public/` are generated placeholders — replace `favicon.svg` and re-generate the PNGs with your own artwork.
 
+## Exercise Images Setup
+
+The illustrated exercise library bundles ~1,324 thumbnail images from the
+[`hasaneyldrm/exercises-dataset`](https://github.com/hasaneyldrm/exercises-dataset)
+repo. These images are **committed** under `public/exercises/` and precached by the
+service worker, so the app shows exercise images fully offline after install. The
+dataset clone itself is gitignored (`exercises-dataset/`).
+
+To (re)generate the assets — a one-time step, already done in this repo — clone the
+dataset alongside this repo, then from the repo root:
+
+```bash
+# 1. Copy all .jpg thumbnails into the committed public folder
+mkdir -p public/exercises
+cp /path/to/exercises-dataset/images/*.jpg public/exercises/
+ls public/exercises/*.jpg | wc -l   # expect 1324
+
+# 2. Generate the picker's search catalog (src/assets/exercise-catalog.json)
+node scripts/generate-exercise-catalog.js
+```
+
+The catalog (`src/assets/exercise-catalog.json`) is a trimmed
+`{ filename, name, target, category }` index used only by the in-app image picker for
+client-side search — it is not stored in SQLite. The 24 default exercises are mapped to
+images via the Drizzle migration `drizzle/0003_exercise-image-filename.sql`.
+
+> Offline note: with `strategies: 'injectManifest'`, all `.jpg` files are **precached**
+> (via `globPatterns` in `vite.config.ts`), making the full image library available
+> offline immediately after the PWA installs (not only images already viewed).
+
 ## License
 
 MIT — see [LICENSE](./LICENSE).

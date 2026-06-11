@@ -12,6 +12,8 @@ export default tseslint.config(
       'node_modules',
       '.claude',
       '.specify',
+      'exercises-dataset',
+      'scripts',
     ],
   },
   ...auto,

@@ -1,8 +1,12 @@
 import { type FormValues, resolver } from './schema';
 import { DialogActionButtons, FormDialog } from '@/components';
 import { type MuscleGroup } from '@/database';
+import { ExerciseImagePicker } from '@/routes/exercises/Exercise/ExerciseImagePicker';
+import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import {
   Autocomplete,
+  Avatar,
+  Button,
   FormControl,
   InputLabel,
   MenuItem,
@@ -10,7 +14,7 @@ import {
   Stack,
   TextField,
 } from '@mui/material';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 
 export type ExerciseFormInitial = FormValues;
@@ -26,6 +30,7 @@ export type ExerciseFormProps = {
 
 const EMPTY_VALUES: FormValues = {
   classification: 'standard',
+  imageFilename: null,
   muscleGroupIds: [],
   name: '',
 };
@@ -45,10 +50,15 @@ export const ExerciseForm = ({
     register,
     reset,
     setError,
+    setValue,
+    watch,
   } = useForm<FormValues>({
     defaultValues: EMPTY_VALUES,
     resolver,
   });
+
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const selectedImage = watch('imageFilename') ?? null;
 
   useEffect(() => {
     if (open) {
@@ -139,7 +149,43 @@ export const ExerciseForm = ({
             </FormControl>
           )}
         />
+        <Stack
+          direction="row"
+          spacing={1.5}
+          sx={{ alignItems: 'center' }}
+        >
+          <Avatar
+            alt="Selected exercise image"
+            src={
+              selectedImage
+                ? `${import.meta.env.BASE_URL}exercises/${selectedImage}`
+                : undefined
+            }
+            sx={{ height: 48, width: 48 }}
+          >
+            <FitnessCenterIcon />
+          </Avatar>
+          <Button
+            onClick={() => {
+              setPickerOpen(true);
+            }}
+            variant="outlined"
+          >
+            {selectedImage ? 'Change image' : 'Select image'}
+          </Button>
+        </Stack>
       </Stack>
+      <ExerciseImagePicker
+        currentFilename={selectedImage}
+        onClose={() => {
+          setPickerOpen(false);
+        }}
+        onSelect={(filename) => {
+          setValue('imageFilename', filename);
+          setPickerOpen(false);
+        }}
+        open={pickerOpen}
+      />
     </FormDialog>
   );
 };

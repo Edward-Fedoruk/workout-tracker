@@ -18,6 +18,7 @@ export const exercise = sqliteTable(
       .default('standard'),
     createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
     id: integer('id').primaryKey({ autoIncrement: true }),
+    imageFilename: text('image_filename'),
     name: text('name').notNull(),
   },
   (table) => [
