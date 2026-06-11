@@ -16,11 +16,14 @@ export default defineConfig({
       filename: 'sw.ts',
       includeAssets: ['favicon.svg'],
       // injectManifest is the option key honored for `strategies: 'injectManifest'`.
-      // jpg is included so all 1,324 exercise images in public/exercises/ are
-      // precached — the app is fully usable offline immediately after install
-      // (not just for images already viewed). Total image payload is ~11 MB.
+      // jpg is deliberately NOT precached: the ~11 MB of exercise images would
+      // sit in Cache Storage, which shares the per-origin storage quota with
+      // OPFS. On storage-constrained phones that pressure evicted the imported
+      // SQLite DB (best-effort, non-persisted storage), breaking import. Images
+      // load over the network instead; add runtime caching later if offline
+      // images are needed — that does not bloat the install/precache.
       injectManifest: {
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,wasm,jpg}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,wasm}'],
         maximumFileSizeToCacheInBytes: 10 * 1_024 * 1_024,
       },
       manifest: {
@@ -62,7 +65,7 @@ export default defineConfig({
       srcDir: 'src',
       strategies: 'injectManifest',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,wasm,jpg}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,wasm}'],
         maximumFileSizeToCacheInBytes: 10 * 1_024 * 1_024,
       },
     }),

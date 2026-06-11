@@ -58,6 +58,13 @@ export const AppLayout = () => {
   useEffect(() => {
     const run = async () => {
       try {
+        // Request persistent storage so the browser does not evict our OPFS
+        // SQLite DB under storage pressure. Without this the DB is "best-effort"
+        // and can be reclaimed on storage-constrained devices, which silently
+        // wipes imported data after the post-import reload. Best-effort itself:
+        // never let a failure here block DB init.
+        await navigator.storage?.persist().catch(() => undefined);
+
         await initDatabase();
         setIsDatabaseReady(true);
       } catch (error) {
