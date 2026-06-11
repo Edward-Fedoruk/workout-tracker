@@ -34,12 +34,12 @@ export const BodyWeightForm = ({
     register,
     reset,
   } = useForm<FormValues>({
-    defaultValues: { bodyWeight: Number.NaN },
+    defaultValues: { bodyWeight: '' as unknown as number },
     resolver,
   });
 
   useEffect(() => {
-    reset({ bodyWeight: value ?? Number.NaN });
+    reset({ bodyWeight: (value ?? '') as unknown as number });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- sync the loaded/saved value into the field
   }, [value]);
 
@@ -51,7 +51,6 @@ export const BodyWeightForm = ({
     onChange: () => {
       onClearFeedback();
     },
-    valueAsNumber: true,
   });
 
   return (
@@ -67,9 +66,9 @@ export const BodyWeightForm = ({
         }
         label="Body weight (kg)"
         slotProps={{
-          htmlInput: { inputMode: 'decimal', min: '0.01', step: '0.01' },
+          htmlInput: { inputMode: 'decimal' },
         }}
-        type="number"
+        type="text"
         {...bodyWeightField}
       />
 
