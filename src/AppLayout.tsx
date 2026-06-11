@@ -1,4 +1,5 @@
 import { getDraft, initDatabase, MigrationError } from './database';
+import { SplashScreen } from '@/components/SplashScreen';
 import { MigrationErrorDialog } from './routes/workouts/MigrationErrorDialog';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
@@ -106,24 +107,25 @@ export const AppLayout = () => {
     );
   }
 
-  if (!isDatabaseReady) {
-    return <Box sx={{ padding: 2 }}>Loading...</Box>;
-  }
-
   const tabValue = pathnameToTabValue(location.pathname);
   const showNav = tabValue !== false;
 
   return (
     <>
-      <Box
-        sx={{
-          pb: showNav ? NAV_OFFSET : 0,
-          pt: 'env(safe-area-inset-top)',
-        }}
-      >
-        <Outlet />
-      </Box>
-      {showNav && (
+      <SplashScreen visible={!isDatabaseReady} />
+      {isDatabaseReady && (
+        <>
+          <Box
+            sx={{
+              pb: showNav ? NAV_OFFSET : 0,
+              pt: 'env(safe-area-inset-top)',
+            }}
+          >
+            <Outlet />
+          </Box>
+        </>
+      )}
+      {isDatabaseReady && showNav && (
         <Paper
           elevation={0}
           sx={{
