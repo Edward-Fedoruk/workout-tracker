@@ -51,6 +51,7 @@ export const BodyWeightForm = ({
     onChange: () => {
       onClearFeedback();
     },
+    setValueAs: (val: string) => parseFloat(String(val).replace(',', '.')),
   });
 
   return (
