@@ -14,6 +14,7 @@ import {
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Alert, Box, Button, IconButton, Typography } from '@mui/material';
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 
 export type RoutineWorkoutViewProps = {
   readonly bodyWeight: null | number;
@@ -42,6 +43,7 @@ export const RoutineWorkoutView = ({
   prefills,
   routine,
 }: RoutineWorkoutViewProps) => {
+  const navigate = useNavigate();
   const discardConfirm = useToggle();
   const {
     formState: { errors },
@@ -111,17 +113,25 @@ export const RoutineWorkoutView = ({
         </Alert>
       )}
 
-      {routine.exercises.map((routineExercise, exerciseIndex) => (
-        <RoutineWorkoutExercise
-          errors={errors}
-          exercise={routineExercise}
-          exerciseIndex={exerciseIndex}
-          key={routineExercise.id}
-          onAutoSave={handleAutoSave}
-          prefill={prefills.get(routineExercise.id) ?? []}
-          register={register}
-        />
-      ))}
+      {routine.exercises.map((routineExercise, exerciseIndex) => {
+        const found = exercises.find(
+          (library) => library.name === routineExercise.exerciseName,
+        );
+        return (
+          <RoutineWorkoutExercise
+            errors={errors}
+            exercise={routineExercise}
+            exerciseIndex={exerciseIndex}
+            key={routineExercise.id}
+            onAutoSave={handleAutoSave}
+            prefill={prefills.get(routineExercise.id) ?? []}
+            register={register}
+            {...(found !== undefined && {
+              onNavigateToExercise: () => navigate(`/exercises/${found.id}`),
+            })}
+          />
+        );
+      })}
 
       <Button
         disabled={isSubmitting}

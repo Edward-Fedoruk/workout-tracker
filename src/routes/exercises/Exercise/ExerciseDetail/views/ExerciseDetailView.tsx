@@ -11,6 +11,7 @@ import {
   Box,
   CircularProgress,
   DialogContentText,
+  Divider,
   IconButton,
   Menu,
   MenuItem,
@@ -65,48 +66,71 @@ export const ExerciseDetailView = ({
   }
 
   return (
-    <Box sx={{ padding: 2 }}>
-      <Box sx={{ alignItems: 'center', display: 'flex', gap: 1, mb: 2 }}>
-        <IconButton
-          aria-label="Go back"
-          onClick={onBack}
-        >
-          <ArrowBackIcon />
-        </IconButton>
-        <Avatar
-          alt={exercise?.name}
-          src={
-            exercise?.imageFilename
-              ? `${import.meta.env.BASE_URL}exercises/${exercise.imageFilename}`
-              : undefined
-          }
-          sx={{ height: 56, width: 56 }}
-        >
-          <FitnessCenterIcon />
-        </Avatar>
-        <Box sx={{ flex: 1 }}>
-          <Typography variant="h6">{exercise?.name}</Typography>
-          <Stack
-            direction="row"
-            spacing={0.5}
-            sx={{ flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}
-            useFlexGap
+    <Box
+      sx={{
+        bottom: 'calc(56px + env(safe-area-inset-bottom))',
+        display: 'flex',
+        flexDirection: 'column',
+        left: 0,
+        overflow: 'hidden',
+        position: 'fixed',
+        right: 0,
+        top: 'env(safe-area-inset-top)',
+      }}
+    >
+      {/* Exercise info header */}
+      <Box sx={{ flexShrink: 0, px: 2, py: 1.5 }}>
+        <Box sx={{ alignItems: 'center', display: 'flex', gap: 1, mb: 1 }}>
+          <IconButton
+            aria-label="Go back"
+            onClick={onBack}
           >
-            {exercise?.muscleGroups.map((group) => (
-              <MuscleGroupChip
-                color={group.color}
-                key={group.id}
-                label={group.name}
-              />
-            ))}
-          </Stack>
+            <ArrowBackIcon />
+          </IconButton>
+          <Avatar
+            alt={exercise?.name}
+            src={
+              exercise?.imageFilename
+                ? `${import.meta.env.BASE_URL}exercises/${exercise.imageFilename}`
+                : undefined
+            }
+            sx={{ height: 56, width: 56 }}
+          >
+            <FitnessCenterIcon />
+          </Avatar>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="h6">{exercise?.name}</Typography>
+            <Stack
+              direction="row"
+              spacing={0.5}
+              sx={{ flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}
+              useFlexGap
+            >
+              {exercise?.muscleGroups.map((group) => (
+                <MuscleGroupChip
+                  color={group.color}
+                  key={group.id}
+                  label={group.name}
+                />
+              ))}
+            </Stack>
+          </Box>
+          <IconButton
+            aria-label="More options"
+            onClick={(event) => setMenuAnchor(event.currentTarget)}
+          >
+            <MoreVertIcon />
+          </IconButton>
         </Box>
-        <IconButton
-          aria-label="More options"
-          onClick={(event) => setMenuAnchor(event.currentTarget)}
-        >
-          <MoreVertIcon />
-        </IconButton>
+
+        <Divider>
+          <Typography
+            color="text.secondary"
+            variant="overline"
+          >
+            History
+          </Typography>
+        </Divider>
       </Box>
 
       <Menu
@@ -133,17 +157,19 @@ export const ExerciseDetailView = ({
         </MenuItem>
       </Menu>
 
-      <Typography
-        sx={{ mb: 1 }}
-        variant="h6"
-      >
-        History
-      </Typography>
-      {groups.length === 0 ? (
-        <Typography color="text.secondary">No history yet.</Typography>
-      ) : (
-        <GroupedWorkoutTable groups={groups} />
-      )}
+      {/* History table — fills remaining space so sticky header works */}
+      <Box sx={{ flex: 1, minHeight: 0 }}>
+        {groups.length === 0 ? (
+          <Typography
+            color="text.secondary"
+            sx={{ pt: 1, px: 2 }}
+          >
+            No history yet.
+          </Typography>
+        ) : (
+          <GroupedWorkoutTable groups={groups} />
+        )}
+      </Box>
 
       <ExerciseForm
         initialValues={

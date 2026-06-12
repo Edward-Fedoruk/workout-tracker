@@ -1,7 +1,7 @@
 import { type LastExerciseSets, type RoutineExercise } from '@/database';
 import { formatRepRange } from '@/routes/routines/routineUtilities';
 import { type FormValues } from '@/routes/routines/RoutineWorkout/RoutineWorkoutForm.schema';
-import { Box, TextField, Typography } from '@mui/material';
+import { Box, ButtonBase, TextField, Typography } from '@mui/material';
 import { type FieldErrors, type UseFormRegister } from 'react-hook-form';
 
 export type RoutineWorkoutExerciseProps = {
@@ -9,6 +9,7 @@ export type RoutineWorkoutExerciseProps = {
   readonly exercise: RoutineExercise;
   readonly exerciseIndex: number;
   readonly onAutoSave: () => void;
+  readonly onNavigateToExercise?: () => void;
   readonly prefill: LastExerciseSets;
   readonly register: UseFormRegister<FormValues>;
 };
@@ -18,6 +19,7 @@ export const RoutineWorkoutExercise = ({
   exercise,
   exerciseIndex,
   onAutoSave,
+  onNavigateToExercise,
   prefill,
   register,
 }: RoutineWorkoutExerciseProps) => {
@@ -25,12 +27,26 @@ export const RoutineWorkoutExercise = ({
 
   return (
     <Box sx={{ mb: 3 }}>
-      <Typography
-        sx={{ fontWeight: 'bold' }}
-        variant="subtitle1"
-      >
-        {exercise.exerciseName}
-      </Typography>
+      {onNavigateToExercise ? (
+        <ButtonBase
+          onClick={onNavigateToExercise}
+          sx={{ display: 'block', mb: 0.25, textAlign: 'left' }}
+        >
+          <Typography
+            sx={{ fontWeight: 'bold' }}
+            variant="subtitle1"
+          >
+            {exercise.exerciseName}
+          </Typography>
+        </ButtonBase>
+      ) : (
+        <Typography
+          sx={{ fontWeight: 'bold' }}
+          variant="subtitle1"
+        >
+          {exercise.exerciseName}
+        </Typography>
+      )}
       <Typography
         color="text.secondary"
         sx={{ mb: 1 }}
