@@ -34,15 +34,15 @@ export const formatSetCell = (
   reps: null | number,
 ): string => {
   if (weight !== null && reps !== null) {
-    return `${weight}kg × ${reps}`;
+    return `${weight}×${reps}`;
   }
 
   if (weight !== null) {
-    return `${weight}kg`;
+    return `${weight}`;
   }
 
   if (reps !== null) {
-    return `${reps}`;
+    return `×${reps}`;
   }
 
   return '—';
@@ -58,7 +58,12 @@ const buildSetColumns = (
   return [
     {
       accessorFn: (row) => formatSetCell(row[weightKey], row[repsKey]),
-      Header: <SetIcon fontSize="medium" />,
+      Header: (
+        <SetIcon
+          color="secondary"
+          fontSize="medium"
+        />
+      ),
       header: `Set ${setNumber}`,
       id: `Set${setNumber}`,
       size: 110,
@@ -68,7 +73,10 @@ const buildSetColumns = (
       Cell: ({ cell }) => formatERM(cell.getValue<null | number>()),
       Header: (
         <Box sx={{ alignItems: 'center', display: 'flex', gap: 0.5 }}>
-          <SetIcon fontSize="small" />
+          <SetIcon
+            color="secondary"
+            fontSize="small"
+          />
           eRM
         </Box>
       ),

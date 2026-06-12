@@ -4,6 +4,7 @@ import { type WorkoutSet } from '@/db/entities/workout-set/types';
 export type { WorkoutSet } from '@/db/entities/workout-set/types';
 export type WorkoutLog = typeof workoutLog.$inferSelect;
 export type WorkoutTableRow = {
+  exercise_image_filename: null | string;
   exercise_name: string;
   id: number;
   Set1_erm: null | number;

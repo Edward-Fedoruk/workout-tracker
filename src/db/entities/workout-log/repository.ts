@@ -62,6 +62,7 @@ class WorkoutLogRepository {
           w.id,
           w.workout_date,
           w.exercise_name,
+          e.image_filename AS exercise_image_filename,
           MAX(CASE WHEN s.set_number = 1 THEN s.weight END) AS Set1_weight,
           MAX(CASE WHEN s.set_number = 1 THEN s.reps   END) AS Set1_reps,
           MAX(CASE WHEN s.set_number = 1 THEN s.erm    END) AS Set1_erm,
@@ -79,7 +80,8 @@ class WorkoutLogRepository {
           MAX(CASE WHEN s.set_number = 5 THEN s.erm    END) AS Set5_erm
         FROM workout_log w
         LEFT JOIN workout_set s ON s.workout_id = w.id
-        GROUP BY w.id, w.workout_date, w.exercise_name
+        LEFT JOIN exercise e ON e.name = w.exercise_name
+        GROUP BY w.id, w.workout_date, w.exercise_name, e.image_filename
         ORDER BY w.workout_date DESC, w.id DESC
       `,
     });

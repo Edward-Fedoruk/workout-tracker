@@ -39,7 +39,7 @@
   "scripts": {
     "build": "tsc -b && vite build",
     "check": "npm run typecheck && npm run lint",
-    "dev": "vite",
+    "dev": "vite --host",
     "lint": "eslint . --cache",
     "lint:fix": "eslint . --fix",
     "preview": "vite preview",

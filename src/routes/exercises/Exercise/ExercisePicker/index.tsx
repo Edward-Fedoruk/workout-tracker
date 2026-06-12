@@ -1,5 +1,11 @@
 import { type Exercise } from '@/database';
-import { Autocomplete, TextField } from '@mui/material';
+import {
+  FormControl,
+  FormHelperText,
+  InputLabel,
+  MenuItem,
+  Select,
+} from '@mui/material';
 
 export type ExercisePickerProps = {
   readonly disabled?: boolean | undefined;
@@ -19,40 +25,32 @@ export const ExercisePicker = ({
   label = 'Exercise',
   onChange,
   value,
-}: ExercisePickerProps) => {
-  return (
-    <Autocomplete
-      disabled={disabled}
-      filterOptions={(options, state) => {
-        const query = state.inputValue.trim().toLowerCase();
-        if (!query) {
-          return options;
-        }
-
-        return options.filter((option) =>
-          option.name.toLowerCase().includes(query),
-        );
+}: ExercisePickerProps) => (
+  <FormControl
+    disabled={disabled}
+    error={error}
+    fullWidth
+  >
+    <InputLabel>{label}</InputLabel>
+    <Select
+      label={label}
+      onChange={(event) => {
+        const selected =
+          exercises.find((exercise) => exercise.name === event.target.value) ??
+          null;
+        onChange(selected);
       }}
-      freeSolo={false}
-      fullWidth
-      getOptionLabel={(option) => option.name}
-      isOptionEqualToValue={(option, selected) => option.id === selected.id}
-      onChange={(_event, next) => {
-        onChange(next);
-      }}
-      options={exercises}
-      renderInput={(parameters) => (
-        <TextField
-          {...parameters}
-          error={error}
-          helperText={helperText}
-          label={label}
-          sx={{
-            '& .MuiInputBase-root': { minHeight: 44 },
-          }}
-        />
-      )}
-      value={value}
-    />
-  );
-};
+      value={value?.name ?? ''}
+    >
+      {exercises.map((exercise) => (
+        <MenuItem
+          key={exercise.id}
+          value={exercise.name}
+        >
+          {exercise.name}
+        </MenuItem>
+      ))}
+    </Select>
+    {helperText && <FormHelperText>{helperText}</FormHelperText>}
+  </FormControl>
+);

@@ -1,7 +1,13 @@
-import { WorkoutRowActions } from '@/routes/workouts/WorkoutRowActions';
 import { formatSetCell } from '@/routes/workouts/WorkoutSetRow';
 import { type WorkoutDateGroup } from '@/utils/dateGroup';
+import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
+import Looks3Icon from '@mui/icons-material/Looks3';
+import Looks4Icon from '@mui/icons-material/Looks4';
+import Looks5Icon from '@mui/icons-material/Looks5';
+import LooksOneIcon from '@mui/icons-material/LooksOne';
+import LooksTwoIcon from '@mui/icons-material/LooksTwo';
 import {
+  Avatar,
   Divider,
   Table,
   TableBody,
@@ -15,23 +21,42 @@ import { Fragment } from 'react';
 
 type Props = {
   readonly groups: WorkoutDateGroup[];
-  readonly onDelete: (id: number) => void;
   readonly onEdit: (id: number) => void;
 };
 
 const SET_NUMBERS = [1, 2, 3, 4, 5] as const;
-const TOTAL_COLUMNS = 1 + SET_NUMBERS.length + 1;
+const TOTAL_COLUMNS = 1 + SET_NUMBERS.length;
 
-export const GroupedWorkoutTable = ({ groups, onDelete, onEdit }: Props) => (
-  <TableContainer>
-    <Table size="small">
+type SetNumber = 1 | 2 | 3 | 4 | 5;
+
+const SET_ICON_MAP: Record<SetNumber, typeof LooksOneIcon> = {
+  '1': LooksOneIcon,
+  '2': LooksTwoIcon,
+  '3': Looks3Icon,
+  '4': Looks4Icon,
+  '5': Looks5Icon,
+};
+
+export const GroupedWorkoutTable = ({ groups, onEdit }: Props) => (
+  <TableContainer sx={{ height: '100%' }}>
+    <Table
+      size="small"
+      stickyHeader
+    >
       <TableHead>
         <TableRow>
-          <TableCell>Exercise</TableCell>
-          {SET_NUMBERS.map((setNumber) => (
-            <TableCell key={setNumber}>Set {setNumber}</TableCell>
-          ))}
-          <TableCell />
+          <TableCell sx={{ width: 64 }} />
+          {SET_NUMBERS.map((setNumber) => {
+            const SetIcon = SET_ICON_MAP[setNumber];
+            return (
+              <TableCell key={setNumber}>
+                <SetIcon
+                  color="secondary"
+                  fontSize="small"
+                />
+              </TableCell>
+            );
+          })}
         </TableRow>
       </TableHead>
       <TableBody>
@@ -63,22 +88,36 @@ export const GroupedWorkoutTable = ({ groups, onDelete, onEdit }: Props) => (
                 </TableCell>
               </TableRow>
               {group.rows.map((row) => (
-                <TableRow key={row.id}>
-                  <TableCell>{row.exercise_name}</TableCell>
+                <TableRow
+                  hover
+                  key={row.id}
+                  onClick={() => onEdit(row.id)}
+                  sx={{ cursor: 'pointer' }}
+                >
+                  <TableCell sx={{ px: '4px', width: 64 }}>
+                    <Avatar
+                      alt={row.exercise_name}
+                      src={
+                        row.exercise_image_filename
+                          ? `${import.meta.env.BASE_URL}exercises/${row.exercise_image_filename}`
+                          : undefined
+                      }
+                      sx={{ height: 56, width: 56 }}
+                    >
+                      <FitnessCenterIcon fontSize="large" />
+                    </Avatar>
+                  </TableCell>
                   {SET_NUMBERS.map((setNumber) => (
-                    <TableCell key={setNumber}>
+                    <TableCell
+                      key={setNumber}
+                      sx={{ fontSize: '12px', px: '10px' }}
+                    >
                       {formatSetCell(
                         row[`Set${setNumber}_weight`],
                         row[`Set${setNumber}_reps`],
                       )}
                     </TableCell>
                   ))}
-                  <TableCell>
-                    <WorkoutRowActions
-                      onDelete={() => onDelete(row.id)}
-                      onEdit={() => onEdit(row.id)}
-                    />
-                  </TableCell>
                 </TableRow>
               ))}
             </Fragment>

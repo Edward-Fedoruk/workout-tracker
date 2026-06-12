@@ -4,7 +4,7 @@ import {
   HIDDEN_SET_COLUMNS,
   useSetColumns,
 } from '@/routes/workouts/WorkoutSetRow';
-import { Box, Button } from '@mui/material';
+import { Box } from '@mui/material';
 import {
   MaterialReactTable,
   type MRT_ColumnDef,
@@ -13,18 +13,12 @@ import {
 import { useMemo } from 'react';
 
 type Props = {
-  readonly onAdd: () => void;
   readonly onDelete: (id: number) => void;
   readonly onEdit: (id: number) => void;
   readonly workouts: WorkoutTableRow[];
 };
 
-export const AdvancedWorkoutTable = ({
-  onAdd,
-  onDelete,
-  onEdit,
-  workouts,
-}: Props) => {
+export const AdvancedWorkoutTable = ({ onDelete, onEdit, workouts }: Props) => {
   const setColumns = useSetColumns();
 
   const columns = useMemo<Array<MRT_ColumnDef<WorkoutTableRow>>>(
@@ -39,6 +33,7 @@ export const AdvancedWorkoutTable = ({
   const table = useMaterialReactTable({
     columns,
     data: workouts,
+    enableFullScreenToggle: false,
     enableRowActions: true,
     initialState: { columnVisibility: HIDDEN_SET_COLUMNS },
     positionActionsColumn: 'last',
@@ -50,17 +45,11 @@ export const AdvancedWorkoutTable = ({
         }}
       />
     ),
-    renderTopToolbarCustomActions: () => (
-      <Box sx={{ alignItems: 'center', display: 'flex', gap: 2 }}>
-        <Button
-          onClick={onAdd}
-          variant="contained"
-        >
-          Add Workout
-        </Button>
-      </Box>
-    ),
   });
 
-  return <MaterialReactTable table={table} />;
+  return (
+    <Box sx={{ pt: 'max(env(safe-area-inset-top), 16px)' }}>
+      <MaterialReactTable table={table} />
+    </Box>
+  );
 };
