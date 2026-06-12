@@ -1,3 +1,4 @@
+import { Logo } from '@/components/SplashScreen';
 import { AdvancedWorkoutTable } from '@/routes/workouts/AdvancedWorkoutTable';
 import { DeleteWorkoutDialog } from '@/routes/workouts/DeleteWorkoutDialog';
 import { GroupedWorkoutTable } from '@/routes/workouts/GroupedWorkoutTable';
@@ -74,8 +75,13 @@ export const WorkoutsView = ({
       >
         <Typography
           component="h1"
+          sx={{ alignItems: 'center', display: 'flex', gap: 1 }}
           variant="h6"
         >
+          <Logo
+            height={33}
+            width={33}
+          />
           Workout Log
         </Typography>
         <Button

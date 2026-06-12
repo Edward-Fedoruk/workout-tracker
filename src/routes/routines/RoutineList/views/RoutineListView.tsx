@@ -1,3 +1,4 @@
+import { Logo } from '@/components/SplashScreen';
 import { RoutineCard } from '@/routes/routines/RoutineCard';
 import { type UseRoutinesReturn } from '@/routes/routines/RoutineList/hooks/useRoutines';
 import AddIcon from '@mui/icons-material/Add';
@@ -19,9 +20,13 @@ export const RoutineListView = ({
   <Box sx={{ padding: 2 }}>
     <Typography
       component="h1"
-      sx={{ mb: 2 }}
+      sx={{ alignItems: 'center', display: 'flex', gap: 1, mb: 2 }}
       variant="h6"
     >
+      <Logo
+        height={33}
+        width={33}
+      />
       Routines
     </Typography>
 

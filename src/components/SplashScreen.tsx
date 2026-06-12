@@ -1,11 +1,17 @@
 import { Box, Fade } from '@mui/material';
 
-const Logo = () => (
+export const Logo = ({
+  height = 96,
+  width = 96,
+}: {
+  readonly height?: number;
+  readonly width?: number;
+}) => (
   <svg
-    xmlns="http://www.w3.org/2000/svg"
+    height={height}
     viewBox="0 0 512 512"
-    width={96}
-    height={96}
+    width={width}
+    xmlns="http://www.w3.org/2000/svg"
   >
     <rect width="512" height="512" rx="96" fill="#1a202c" />
     <g
