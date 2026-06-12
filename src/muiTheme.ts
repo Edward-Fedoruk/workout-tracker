@@ -25,6 +25,7 @@ const token = {
   danger: '#EF4444',
   divider: 'rgba(255, 255, 255, 0.07)',
   // brand — vivid green (Spotify)
+  emerald200: '#9ac3a7',
   emerald300: '#5DE88A',
   emerald400: '#1ED760',
   emerald500: '#1DB954',
@@ -77,6 +78,14 @@ export const muiTheme = createTheme({
     MuiBackdrop: {
       styleOverrides: {
         root: { backgroundColor: token.scrim },
+      },
+    },
+
+    MuiDivider: {
+      styleOverrides: {
+        withChildren: {
+          '&::after, &::before': { borderTopColor: token.emerald200 },
+        },
       },
     },
     // ---- Bottom navigation (primary app menu) ----

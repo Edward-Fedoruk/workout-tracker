@@ -1,24 +1,28 @@
 import { FormDialog } from '@/components';
-import { type WorkoutTableRow } from '@/database';
+import { AdvancedWorkoutTable } from '@/routes/workouts/AdvancedWorkoutTable';
 import { DeleteWorkoutDialog } from '@/routes/workouts/DeleteWorkoutDialog';
+import { GroupedWorkoutTable } from '@/routes/workouts/GroupedWorkoutTable';
 import { type UseWorkoutsReturn } from '@/routes/workouts/hooks/useWorkouts';
 import { WorkoutForm } from '@/routes/workouts/WorkoutForm';
-import { WorkoutRowActions } from '@/routes/workouts/WorkoutRowActions';
+import AddIcon from '@mui/icons-material/Add';
+import CloseIcon from '@mui/icons-material/Close';
 import {
-  HIDDEN_SET_COLUMNS,
-  useSetColumns,
-} from '@/routes/workouts/WorkoutSetRow';
-import { Box, Button } from '@mui/material';
-import {
-  MaterialReactTable,
-  type MRT_ColumnDef,
-  useMaterialReactTable,
-} from 'material-react-table';
-import { useMemo } from 'react';
+  Alert,
+  AppBar,
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  Fab,
+  IconButton,
+  Toolbar,
+  Typography,
+} from '@mui/material';
 
 export type WorkoutsViewProps = UseWorkoutsReturn;
 
 export const WorkoutsView = ({
+  advancedView,
   bodyWeight,
   cancelDelete,
   confirmDelete,
@@ -26,6 +30,7 @@ export const WorkoutsView = ({
   editingWorkout,
   exercises,
   formDialog,
+  groups,
   handleCancelForm,
   handleSave,
   isLoading,
@@ -35,55 +40,88 @@ export const WorkoutsView = ({
   requestDelete,
   workouts,
 }: WorkoutsViewProps) => {
-  const setColumns = useSetColumns();
+  const handleAdvancedOpen = () => {
+    advancedView.onOpen();
+  };
 
-  const columns = useMemo<Array<MRT_ColumnDef<WorkoutTableRow>>>(
-    () => [
-      { accessorKey: 'workout_date', header: 'Date', size: 110 },
-      { accessorKey: 'exercise_name', header: 'Exercise', size: 200 },
-      ...setColumns,
-    ],
-    [setColumns],
-  );
-
-  const table = useMaterialReactTable({
-    columns,
-    data: workouts,
-    enableRowActions: true,
-    initialState: { columnVisibility: HIDDEN_SET_COLUMNS },
-    positionActionsColumn: 'last',
-    renderRowActions: ({ row }) => (
-      <WorkoutRowActions
-        onDelete={() => requestDelete(row.original.id)}
-        onEdit={() => {
-          openEdit(row.original.id).catch(() => undefined);
-        }}
-      />
-    ),
-    renderTopToolbarCustomActions: () => (
-      <Box sx={{ alignItems: 'center', display: 'flex', gap: 2 }}>
-        <Button
-          onClick={openCreate}
-          variant="contained"
-        >
-          Add Workout
-        </Button>
-      </Box>
-    ),
-    state: { isLoading, showAlertBanner: loadError !== null },
-    ...(loadError === null
-      ? {}
-      : {
-          muiToolbarAlertBannerProps: {
-            children: loadError,
-            severity: 'error' as const,
-          },
-        }),
-  });
+  const handleAdvancedClose = () => {
+    advancedView.onClose();
+  };
 
   return (
     <Box sx={{ maxWidth: 1_200, mx: 'auto', padding: 2 }}>
-      <MaterialReactTable table={table} />
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+        <Button
+          onClick={handleAdvancedOpen}
+          variant="outlined"
+        >
+          Advanced
+        </Button>
+      </Box>
+
+      {loadError !== null && (
+        <Alert
+          severity="error"
+          sx={{ mb: 2 }}
+        >
+          {loadError}
+        </Alert>
+      )}
+
+      {isLoading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <GroupedWorkoutTable
+          groups={groups}
+          onDelete={requestDelete}
+          onEdit={(id) => {
+            openEdit(id).catch(() => undefined);
+          }}
+        />
+      )}
+
+      <Fab
+        aria-label="add workout"
+        color="secondary"
+        onClick={openCreate}
+        sx={{ bottom: 80, position: 'fixed', right: 24 }}
+      >
+        <AddIcon />
+      </Fab>
+
+      <Dialog
+        fullScreen
+        open={advancedView.isOpen}
+      >
+        <AppBar position="relative">
+          <Toolbar>
+            <IconButton
+              aria-label="close"
+              color="inherit"
+              edge="start"
+              onClick={handleAdvancedClose}
+            >
+              <CloseIcon />
+            </IconButton>
+            <Typography
+              sx={{ ml: 2 }}
+              variant="h6"
+            >
+              Advanced View
+            </Typography>
+          </Toolbar>
+        </AppBar>
+        <AdvancedWorkoutTable
+          onAdd={openCreate}
+          onDelete={requestDelete}
+          onEdit={(id) => {
+            openEdit(id).catch(() => undefined);
+          }}
+          workouts={workouts}
+        />
+      </Dialog>
 
       <FormDialog
         maxWidth="sm"

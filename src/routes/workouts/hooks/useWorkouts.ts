@@ -12,8 +12,9 @@ import {
 } from '@/database';
 import { useToggle } from '@/hooks/useToggle';
 import { type FormValues } from '@/routes/workouts/WorkoutForm.schema';
+import { groupWorkoutsByDate } from '@/utils/dateGroup';
 import { computeEffectiveWeight, computeERM } from '@/utils/erm';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 export type UseWorkoutsReturn = ReturnType<typeof useWorkouts>;
 
@@ -30,6 +31,7 @@ export const useWorkouts = () => {
 
   const formDialog = useToggle();
   const deleteConfirm = useToggle();
+  const advancedView = useToggle();
 
   const refresh = async () => {
     setIsLoading(true);
@@ -129,7 +131,10 @@ export const useWorkouts = () => {
     deleteConfirm.onClose();
   };
 
+  const groups = useMemo(() => groupWorkoutsByDate(workouts), [workouts]);
+
   return {
+    advancedView,
     bodyWeight,
     cancelDelete,
     confirmDelete,
@@ -137,6 +142,7 @@ export const useWorkouts = () => {
     editingWorkout,
     exercises,
     formDialog,
+    groups,
     handleCancelForm,
     handleSave,
     isLoading,

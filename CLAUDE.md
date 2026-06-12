@@ -119,11 +119,11 @@ main thread (React)  ──►  promiser (async API)  ──►  Web Worker  ─
 - On unsupported browsers, the OPFS open throws and the fallback to `:memory:` is silent (a `console.warn` is logged). The app appears to work but data is lost on reload — check the console if persistence seems broken.
 
 <!-- SPECKIT START -->
-**Active Feature**: Exercise Images — illustrated exercise library (branch `013-exercise-images`)  
+**Active Feature**: Date Group Rows — date-divider rows in workout log (branch `014-date-group-rows`)  
 For implementation context, design decisions, data model, and step-by-step quickstart, see:
-- **Plan**: `specs/013-exercise-images/plan.md`
-- **Research**: `specs/013-exercise-images/research.md`
-- **Data Model**: `specs/013-exercise-images/data-model.md`
-- **Quickstart**: `specs/013-exercise-images/quickstart.md`
-- **Contracts**: `specs/013-exercise-images/contracts/exercise-image-picker.md`
+- **Plan**: `specs/014-date-group-rows/plan.md`
+- **Research**: `specs/014-date-group-rows/research.md`
+- **Data Model**: `specs/014-date-group-rows/data-model.md`
+- **Quickstart**: `specs/014-date-group-rows/quickstart.md`
+- **Contracts**: `specs/014-date-group-rows/contracts/date-grouped-table.md`
 <!-- SPECKIT END -->
