@@ -1,15 +1,23 @@
 import {
   deleteExercise,
+  deleteWorkout,
   type Exercise,
+  getBodyWeight,
   getExerciseById,
+  getWorkoutById,
+  listExercises,
   listMuscleGroups,
   listWorkoutsByExerciseName,
   type MuscleGroup,
   updateExercise,
+  updateWorkout,
+  type WorkoutWithSets,
 } from '@/database';
 import { useToggle } from '@/hooks/useToggle';
-import { type FormValues } from '@/routes/exercises/Exercise/ExerciseForm/schema';
+import { type FormValues as ExerciseFormValues } from '@/routes/exercises/Exercise/ExerciseForm/schema';
+import { type FormValues as WorkoutFormValues } from '@/routes/workouts/WorkoutForm.schema';
 import { groupWorkoutsByDate, type WorkoutDateGroup } from '@/utils/dateGroup';
+import { computeEffectiveWeight, computeERM } from '@/utils/erm';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -17,6 +25,8 @@ export type UseExerciseDetailReturn = ReturnType<typeof useExerciseDetail>;
 
 export const useExerciseDetail = (exerciseId: number) => {
   const navigate = useNavigate();
+
+  // Exercise state
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [exercise, setExercise] = useState<Exercise | null>(null);
@@ -27,11 +37,30 @@ export const useExerciseDetail = (exerciseId: number) => {
   const dialog = useToggle();
   const deleteConfirm = useToggle();
 
+  // Workout edit state
+  const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [bodyWeight, setBodyWeight] = useState<null | number>(null);
+  const [editingWorkout, setEditingWorkout] = useState<null | WorkoutWithSets>(
+    null,
+  );
+  const [pendingDeleteWorkoutId, setPendingDeleteWorkoutId] = useState<
+    null | number
+  >(null);
+  const workoutFormDialog = useToggle();
+  const workoutDeleteConfirm = useToggle();
+
+  const loadHistory = async (exerciseName: string) => {
+    const rows = await listWorkoutsByExerciseName(exerciseName);
+    setGroups(groupWorkoutsByDate(rows));
+  };
+
   const load = async () => {
     setIsLoading(true);
-    const [found, allMuscleGroups] = await Promise.all([
+    const [found, allMuscleGroups, allExercises, bw] = await Promise.all([
       getExerciseById(exerciseId),
       listMuscleGroups(),
+      listExercises(),
+      getBodyWeight(),
     ]);
 
     if (!found) {
@@ -42,18 +71,21 @@ export const useExerciseDetail = (exerciseId: number) => {
 
     setExercise(found);
     setMuscleGroups(allMuscleGroups);
-
-    const workouts = await listWorkoutsByExerciseName(found.name);
-    setGroups(groupWorkoutsByDate(workouts));
+    setExercises(allExercises);
+    setBodyWeight(bw);
+    await loadHistory(found.name);
     setIsLoading(false);
   };
 
+  // Exercise edit/delete
   const openEdit = () => {
     setEditingExercise(exercise);
     dialog.onOpen();
   };
 
-  const handleSave = async (values: FormValues): Promise<null | string> => {
+  const handleSave = async (
+    values: ExerciseFormValues,
+  ): Promise<null | string> => {
     if (!editingExercise) {
       return null;
     }
@@ -92,21 +124,105 @@ export const useExerciseDetail = (exerciseId: number) => {
     deleteConfirm.onClose();
   };
 
+  // Workout edit/delete
+  const openEditWorkout = async (id: number) => {
+    const workout = await getWorkoutById(id);
+    setEditingWorkout(workout);
+    workoutFormDialog.onOpen();
+  };
+
+  const handleCancelWorkoutForm = () => {
+    workoutFormDialog.onClose();
+    setEditingWorkout(null);
+  };
+
+  const handleSaveWorkout = async (
+    values: WorkoutFormValues,
+  ): Promise<null | string> => {
+    if (!editingWorkout) {
+      return null;
+    }
+
+    const parsedSets = values.sets.map((set) => {
+      const weight = Number.isNaN(set.weight) ? null : set.weight;
+      const effective = computeEffectiveWeight({
+        bodyWeight: values.bodyWeight,
+        classification: values.classification,
+        loggedWeight: weight,
+      });
+      const erm = effective === null ? null : computeERM(effective, set.reps);
+      return { erm, reps: set.reps, weight };
+    });
+
+    try {
+      await updateWorkout(
+        editingWorkout.id,
+        values.workoutDate,
+        values.exerciseName,
+        parsedSets,
+      );
+      workoutFormDialog.onClose();
+      setEditingWorkout(null);
+      if (exercise) {
+        await loadHistory(exercise.name);
+      }
+
+      return null;
+    } catch {
+      return 'Failed to save workout. Please try again.';
+    }
+  };
+
+  const requestDeleteWorkout = (id: number) => {
+    setPendingDeleteWorkoutId(id);
+    workoutDeleteConfirm.onOpen();
+  };
+
+  const confirmDeleteWorkout = async () => {
+    if (pendingDeleteWorkoutId === null) {
+      return;
+    }
+
+    const idToDelete = pendingDeleteWorkoutId;
+    setPendingDeleteWorkoutId(null);
+    workoutDeleteConfirm.onClose();
+    await deleteWorkout(idToDelete);
+    if (exercise) {
+      await loadHistory(exercise.name);
+    }
+  };
+
+  const cancelDeleteWorkout = () => {
+    setPendingDeleteWorkoutId(null);
+    workoutDeleteConfirm.onClose();
+  };
+
   return {
+    bodyWeight,
     cancelDelete,
+    cancelDeleteWorkout,
     confirmDelete,
+    confirmDeleteWorkout,
     deleteConfirm,
     dialog,
     editingExercise,
+    editingWorkout,
     exercise,
+    exercises,
     groups,
+    handleCancelWorkoutForm,
     handleSave,
+    handleSaveWorkout,
     isLoading,
     load,
     muscleGroups,
     notFound,
     openEdit,
+    openEditWorkout,
     pendingDelete,
     requestDelete,
+    requestDeleteWorkout,
+    workoutDeleteConfirm,
+    workoutFormDialog,
   };
 };

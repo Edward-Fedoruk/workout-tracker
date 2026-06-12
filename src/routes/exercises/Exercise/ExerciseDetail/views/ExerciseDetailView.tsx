@@ -2,8 +2,12 @@ import { type UseExerciseDetailReturn } from '../hooks/useExerciseDetail';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { ExerciseForm } from '@/routes/exercises/Exercise/ExerciseForm';
 import { MuscleGroupChip } from '@/routes/exercises/MuscleGroup/MuscleGroupChip';
+import { DeleteWorkoutDialog } from '@/routes/workouts/DeleteWorkoutDialog';
 import { GroupedWorkoutTable } from '@/routes/workouts/GroupedWorkoutTable';
+import { WorkoutForm } from '@/routes/workouts/WorkoutForm';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import CloseIcon from '@mui/icons-material/Close';
+import DeleteIcon from '@mui/icons-material/Delete';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import {
@@ -16,6 +20,7 @@ import {
   Menu,
   MenuItem,
   Stack,
+  SwipeableDrawer,
   Typography,
 } from '@mui/material';
 import { useState } from 'react';
@@ -25,21 +30,32 @@ export type ExerciseDetailViewProps = UseExerciseDetailReturn & {
 };
 
 export const ExerciseDetailView = ({
+  bodyWeight,
   cancelDelete,
+  cancelDeleteWorkout,
   confirmDelete,
+  confirmDeleteWorkout,
   deleteConfirm,
   dialog,
   editingExercise,
+  editingWorkout,
   exercise,
+  exercises,
   groups,
+  handleCancelWorkoutForm,
   handleSave,
+  handleSaveWorkout,
   isLoading,
   muscleGroups,
   notFound,
   onBack,
   openEdit,
+  openEditWorkout,
   pendingDelete,
   requestDelete,
+  requestDeleteWorkout,
+  workoutDeleteConfirm,
+  workoutFormDialog,
 }: ExerciseDetailViewProps) => {
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
 
@@ -167,10 +183,16 @@ export const ExerciseDetailView = ({
             No history yet.
           </Typography>
         ) : (
-          <GroupedWorkoutTable groups={groups} />
+          <GroupedWorkoutTable
+            groups={groups}
+            onEdit={(id) => {
+              openEditWorkout(id).catch(() => undefined);
+            }}
+          />
         )}
       </Box>
 
+      {/* Exercise edit form */}
       <ExerciseForm
         initialValues={
           editingExercise
@@ -191,6 +213,7 @@ export const ExerciseDetailView = ({
         open={dialog.isOpen}
       />
 
+      {/* Exercise delete confirm */}
       <ConfirmDialog
         confirmColor="error"
         confirmLabel="Delete"
@@ -206,6 +229,67 @@ export const ExerciseDetailView = ({
           are preserved; routine slots referencing it will be cleared.
         </DialogContentText>
       </ConfirmDialog>
+
+      {/* Workout edit drawer */}
+      <SwipeableDrawer
+        anchor="bottom"
+        disableSwipeToOpen
+        onClose={handleCancelWorkoutForm}
+        onOpen={() => undefined}
+        open={workoutFormDialog.isOpen}
+        sx={{
+          '& .MuiDrawer-paper': {
+            borderRadius: '12px 12px 0 0',
+            maxHeight: '90dvh',
+            overflowY: 'auto',
+          },
+        }}
+      >
+        <Box sx={{ pb: 4, pt: 2, px: 2 }}>
+          <Box
+            sx={{
+              alignItems: 'center',
+              display: 'flex',
+              justifyContent: 'space-between',
+              mb: 1,
+            }}
+          >
+            <Typography variant="h6">Edit Workout</Typography>
+            <Box sx={{ display: 'flex', gap: 0.5 }}>
+              {editingWorkout && (
+                <IconButton
+                  color="error"
+                  onClick={() => {
+                    handleCancelWorkoutForm();
+                    requestDeleteWorkout(editingWorkout.id);
+                  }}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              )}
+              <IconButton onClick={handleCancelWorkoutForm}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
+          </Box>
+          <WorkoutForm
+            bodyWeight={bodyWeight}
+            exercises={exercises}
+            onCancel={handleCancelWorkoutForm}
+            onSave={handleSaveWorkout}
+            {...(editingWorkout ? { initialData: editingWorkout } : {})}
+          />
+        </Box>
+      </SwipeableDrawer>
+
+      {/* Workout delete confirm */}
+      <DeleteWorkoutDialog
+        onCancel={cancelDeleteWorkout}
+        onConfirm={() => {
+          confirmDeleteWorkout().catch(() => undefined);
+        }}
+        open={workoutDeleteConfirm.isOpen}
+      />
     </Box>
   );
 };
