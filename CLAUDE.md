@@ -119,11 +119,11 @@ main thread (React)  ──►  promiser (async API)  ──►  Web Worker  ─
 - On unsupported browsers, the OPFS open throws and the fallback to `:memory:` is silent (a `console.warn` is logged). The app appears to work but data is lost on reload — check the console if persistence seems broken.
 
 <!-- SPECKIT START -->
-**Active Feature**: Exercise Detail Page — individual exercise page with three-dots menu, log history, and tappable exercise names in routines (branch `015-exercise-detail-page`)  
+**Active Feature**: Exercise Names in Tables — settings toggle to show exercise names instead of avatars in the Workout Log table; exercise detail page log always shows names (branch `016-exercise-names-tables`)  
 For implementation context, design decisions, data model, and step-by-step quickstart, see:
-- **Plan**: `specs/015-exercise-detail-page/plan.md`
-- **Research**: `specs/015-exercise-detail-page/research.md`
-- **Data Model**: `specs/015-exercise-detail-page/data-model.md`
-- **Quickstart**: `specs/015-exercise-detail-page/quickstart.md`
-- **Contracts**: `specs/015-exercise-detail-page/contracts/exercise-detail-page.md`
+- **Plan**: `specs/016-exercise-names-tables/plan.md`
+- **Research**: `specs/016-exercise-names-tables/research.md`
+- **Data Model**: `specs/016-exercise-names-tables/data-model.md`
+- **Quickstart**: `specs/016-exercise-names-tables/quickstart.md`
+- **Contracts**: `specs/016-exercise-names-tables/contracts/`
 <!-- SPECKIT END -->
