@@ -10,6 +10,7 @@ import {
   IconButton,
   Typography,
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 export type RoutineEditorViewProps = UseRoutineEditorReturn & {
   readonly onBack: () => void;
@@ -33,6 +34,8 @@ export const RoutineEditorView = ({
   routine,
   routineName,
 }: RoutineEditorViewProps) => {
+  const navigate = useNavigate();
+
   if (isLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', pt: 4 }}>
@@ -78,24 +81,32 @@ export const RoutineEditorView = ({
           No exercises yet.
         </Typography>
       ) : (
-        exercises.map((exercise, index) => (
-          <ExerciseRow
-            exercise={exercise}
-            isFirst={index === 0}
-            isLast={index === exercises.length - 1}
-            key={exercise.id}
-            onDelete={() => {
-              handleDeleteExercise(exercise).catch(() => undefined);
-            }}
-            onEdit={() => openEditExercise(exercise)}
-            onMoveDown={() => {
-              handleMove(exercise, 'down').catch(() => undefined);
-            }}
-            onMoveUp={() => {
-              handleMove(exercise, 'up').catch(() => undefined);
-            }}
-          />
-        ))
+        exercises.map((exercise, index) => {
+          const found = libraryExercises.find(
+            (library) => library.name === exercise.exerciseName,
+          );
+          return (
+            <ExerciseRow
+              exercise={exercise}
+              isFirst={index === 0}
+              isLast={index === exercises.length - 1}
+              key={exercise.id}
+              onDelete={() => {
+                handleDeleteExercise(exercise).catch(() => undefined);
+              }}
+              onEdit={() => openEditExercise(exercise)}
+              onMoveDown={() => {
+                handleMove(exercise, 'down').catch(() => undefined);
+              }}
+              onMoveUp={() => {
+                handleMove(exercise, 'up').catch(() => undefined);
+              }}
+              {...(found !== undefined && {
+                onNavigateToExercise: () => navigate(`/exercises/${found.id}`),
+              })}
+            />
+          );
+        })
       )}
 
       <Button

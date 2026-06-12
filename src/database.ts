@@ -40,6 +40,7 @@ export { initDatabase, MigrationError } from './db/initDatabase';
 
 // Exercise operations
 export const listExercises = () => exerciseRepository.list();
+export const getExerciseById = (id: number) => exerciseRepository.getById(id);
 export const createExercise = (
   name: string,
   muscleGroupIds: number[],
@@ -125,6 +126,8 @@ export const getLastExerciseSets = (exerciseName: string, setCount: number) =>
 
 // Workout operations
 export const listWorkouts = () => workoutLogRepository.list();
+export const listWorkoutsByExerciseName = (exerciseName: string) =>
+  workoutLogRepository.listByExerciseName(exerciseName);
 export const getWorkoutById = (id: number) => workoutLogRepository.getById(id);
 export const createWorkout = (
   workoutDate: string,

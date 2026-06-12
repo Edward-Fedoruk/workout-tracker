@@ -1,13 +1,10 @@
 import { type Exercise } from '@/database';
 import { MuscleGroupChip } from '@/routes/exercises/MuscleGroup/MuscleGroupChip';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import {
   Avatar,
   Box,
-  IconButton,
   List,
   ListItem,
   ListItemAvatar,
@@ -18,15 +15,10 @@ import {
 
 export type ExerciseListProps = {
   readonly exercises: Exercise[];
-  readonly onDelete: (exercise: Exercise) => void;
-  readonly onEdit: (exercise: Exercise) => void;
+  readonly onNavigate: (exercise: Exercise) => void;
 };
 
-export const ExerciseList = ({
-  exercises,
-  onDelete,
-  onEdit,
-}: ExerciseListProps) => {
+export const ExerciseList = ({ exercises, onNavigate }: ExerciseListProps) => {
   if (exercises.length === 0) {
     return <Typography color="text.secondary">No exercises yet.</Typography>;
   }
@@ -37,25 +29,8 @@ export const ExerciseList = ({
         <ListItem
           divider
           key={exerciseItem.id}
-          secondaryAction={
-            <Stack
-              direction="row"
-              spacing={0.5}
-            >
-              <IconButton
-                aria-label={`Edit ${exerciseItem.name}`}
-                onClick={() => onEdit(exerciseItem)}
-              >
-                <EditIcon />
-              </IconButton>
-              <IconButton
-                aria-label={`Delete ${exerciseItem.name}`}
-                onClick={() => onDelete(exerciseItem)}
-              >
-                <DeleteIcon />
-              </IconButton>
-            </Stack>
-          }
+          onClick={() => onNavigate(exerciseItem)}
+          sx={{ cursor: 'pointer' }}
         >
           <ListItemAvatar sx={{ minWidth: 72 }}>
             <Avatar

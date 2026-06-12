@@ -21,7 +21,7 @@ import { Fragment } from 'react';
 
 type Props = {
   readonly groups: WorkoutDateGroup[];
-  readonly onEdit: (id: number) => void;
+  readonly onEdit?: (id: number) => void;
 };
 
 const SET_NUMBERS = [1, 2, 3, 4, 5] as const;
@@ -89,10 +89,12 @@ export const GroupedWorkoutTable = ({ groups, onEdit }: Props) => (
               </TableRow>
               {group.rows.map((row) => (
                 <TableRow
-                  hover
+                  hover={onEdit !== undefined}
                   key={row.id}
-                  onClick={() => onEdit(row.id)}
-                  sx={{ cursor: 'pointer' }}
+                  {...(onEdit && {
+                    onClick: () => onEdit(row.id),
+                    sx: { cursor: 'pointer' },
+                  })}
                 >
                   <TableCell sx={{ px: '4px', width: 64 }}>
                     <Avatar

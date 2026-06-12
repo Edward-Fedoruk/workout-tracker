@@ -1,4 +1,5 @@
 import { AppLayout } from './AppLayout';
+import { ExerciseDetail } from './routes/exercises/Exercise/ExerciseDetail';
 import { ExerciseLibrary } from './routes/exercises/ExerciseLibrary';
 import { RoutineEditor } from './routes/routines/RoutineEditor';
 import { RoutineList } from './routes/routines/RoutineList';
@@ -16,6 +17,7 @@ export const router = createHashRouter([
       { element: <RoutineEditor />, path: '/routines/:id/edit' },
       { element: <RoutineWorkout />, path: '/routines/:id/start' },
       { element: <ExerciseLibrary />, path: '/exercises' },
+      { element: <ExerciseDetail />, path: '/exercises/:id' },
       { element: <Settings />, path: '/settings' },
       {
         element: (

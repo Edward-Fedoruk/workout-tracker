@@ -4,7 +4,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import { Box, IconButton, Typography } from '@mui/material';
+import { Box, ButtonBase, IconButton, Typography } from '@mui/material';
 
 export type ExerciseRowProps = {
   readonly exercise: RoutineExercise;
@@ -14,6 +14,7 @@ export type ExerciseRowProps = {
   readonly onEdit: () => void;
   readonly onMoveDown: () => void;
   readonly onMoveUp: () => void;
+  readonly onNavigateToExercise?: () => void;
 };
 
 export const ExerciseRow = ({
@@ -24,6 +25,7 @@ export const ExerciseRow = ({
   onEdit,
   onMoveDown,
   onMoveUp,
+  onNavigateToExercise,
 }: ExerciseRowProps) => (
   <Box
     sx={{
@@ -36,7 +38,16 @@ export const ExerciseRow = ({
     }}
   >
     <Box sx={{ flex: 1 }}>
-      <Typography variant="body1">{exercise.exerciseName}</Typography>
+      {onNavigateToExercise ? (
+        <ButtonBase
+          onClick={onNavigateToExercise}
+          sx={{ display: 'block', textAlign: 'left' }}
+        >
+          <Typography variant="body1">{exercise.exerciseName}</Typography>
+        </ButtonBase>
+      ) : (
+        <Typography variant="body1">{exercise.exerciseName}</Typography>
+      )}
       <Typography
         color="text.secondary"
         variant="body2"

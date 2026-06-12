@@ -73,6 +73,53 @@ class ExerciseRepository {
     });
   }
 
+  async getById(id: number): Promise<Exercise | null> {
+    const promiser = await getPromiser();
+    const databaseId = getDatabaseId();
+
+    const exercisesResult = await promiser<ExerciseRow>('exec', {
+      bind: [id],
+      dbId: databaseId,
+      rowMode: 'object',
+      sql: 'SELECT id, name, created_at, classification, image_filename FROM exercise WHERE id = ?',
+    });
+
+    const row = exercisesResult.result.resultRows[0];
+    if (!row) {
+      return null;
+    }
+
+    const joinResult = await promiser<ExerciseMuscleGroupRow>('exec', {
+      bind: [id],
+      dbId: databaseId,
+      rowMode: 'object',
+      sql: `
+        SELECT emg.exercise_id, mg.id AS muscle_group_id, mg.name AS muscle_group_name, mg.color AS muscle_group_color
+        FROM exercise_muscle_group emg
+        JOIN muscle_group mg ON mg.id = emg.muscle_group_id
+        WHERE emg.exercise_id = ?
+        ORDER BY mg.name COLLATE NOCASE ASC
+      `,
+    });
+
+    const muscleGroups: MuscleGroup[] = (
+      joinResult.result.resultRows || []
+    ).map((mgRow) => ({
+      color: mgRow.muscle_group_color,
+      id: mgRow.muscle_group_id,
+      name: mgRow.muscle_group_name,
+    }));
+
+    return {
+      classification: row.classification,
+      createdAt: row.created_at,
+      id: row.id,
+      imageFilename: row.image_filename,
+      muscleGroups,
+      name: row.name,
+    };
+  }
+
   async list(): Promise<Exercise[]> {
     const promiser = await getPromiser();
     const databaseId = getDatabaseId();
