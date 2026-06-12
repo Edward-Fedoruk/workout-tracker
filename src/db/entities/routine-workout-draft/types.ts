@@ -8,6 +8,7 @@ export type RoutineWorkoutDraft = {
 export type StoredDraftData = Record<string, StoredSetValues>;
 
 export type StoredSetValues = Array<{
+  completed?: boolean;
   reps: null | number;
   weight: null | number;
 }>;

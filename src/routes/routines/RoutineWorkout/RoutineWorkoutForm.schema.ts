@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
 const setSchema = z.object({
+  completed: z.boolean(),
   reps: z.union([z.number(), z.nan()]),
   weight: z.union([z.number(), z.nan()]),
 });

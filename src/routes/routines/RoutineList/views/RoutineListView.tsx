@@ -1,7 +1,7 @@
-import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { RoutineCard } from '@/routes/routines/RoutineCard';
 import { type UseRoutinesReturn } from '@/routes/routines/RoutineList/hooks/useRoutines';
-import { Box, Button, Typography } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import { Box, Fab, Typography } from '@mui/material';
 
 export type RoutineListViewProps = UseRoutinesReturn & {
   readonly onAdd: () => void;
@@ -10,34 +10,20 @@ export type RoutineListViewProps = UseRoutinesReturn & {
 };
 
 export const RoutineListView = ({
-  cancelDelete,
-  deleteConfirm,
   draftRoutineId,
-  handleConfirmDelete,
   onAdd,
   onEdit,
   onStart,
-  pendingDelete,
-  requestDelete,
   routines,
 }: RoutineListViewProps) => (
   <Box sx={{ padding: 2 }}>
-    <Box
-      sx={{
-        alignItems: 'center',
-        display: 'flex',
-        justifyContent: 'space-between',
-        mb: 2,
-      }}
+    <Typography
+      component="h1"
+      sx={{ mb: 2 }}
+      variant="h6"
     >
-      <Typography variant="h5">Routines</Typography>
-      <Button
-        onClick={onAdd}
-        variant="contained"
-      >
-        Add Routine
-      </Button>
-    </Box>
+      Routines
+    </Typography>
 
     {routines.length === 0 ? (
       <Typography color="text.secondary">
@@ -48,7 +34,6 @@ export const RoutineListView = ({
         <RoutineCard
           isInProgress={routine.id === draftRoutineId}
           key={routine.id}
-          onDelete={() => requestDelete(routine)}
           onEdit={() => onEdit(routine.id)}
           onStart={() => onStart(routine.id)}
           routine={routine}
@@ -56,17 +41,13 @@ export const RoutineListView = ({
       ))
     )}
 
-    <ConfirmDialog
-      confirmColor="error"
-      confirmLabel="Delete"
-      onCancel={cancelDelete}
-      onConfirm={() => {
-        handleConfirmDelete().catch(() => undefined);
-      }}
-      open={deleteConfirm.isOpen}
-      title="Delete Routine"
+    <Fab
+      aria-label="add routine"
+      color="secondary"
+      onClick={onAdd}
+      sx={{ bottom: 80, position: 'fixed', right: 24 }}
     >
-      Delete &ldquo;{pendingDelete?.name}&rdquo;? This cannot be undone.
-    </ConfirmDialog>
+      <AddIcon />
+    </Fab>
   </Box>
 );

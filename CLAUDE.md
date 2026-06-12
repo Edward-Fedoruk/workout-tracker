@@ -119,11 +119,11 @@ main thread (React)  ──►  promiser (async API)  ──►  Web Worker  ─
 - On unsupported browsers, the OPFS open throws and the fallback to `:memory:` is silent (a `console.warn` is logged). The app appears to work but data is lost on reload — check the console if persistence seems broken.
 
 <!-- SPECKIT START -->
-**Active Feature**: Exercise Detail Page — individual exercise page with three-dots menu, log history, and tappable exercise names in routines (branch `015-exercise-detail-page`)  
+**Active Feature**: Routine UI Improvements — exercise chips on list cards, FAB add button, Start button, set completion checkboxes, prefilled inputs, exercise avatars, Looks* set icons, three-dots menu in RoutineEditor (branch `016-routine-ui-improvements`)  
 For implementation context, design decisions, data model, and step-by-step quickstart, see:
-- **Plan**: `specs/015-exercise-detail-page/plan.md`
-- **Research**: `specs/015-exercise-detail-page/research.md`
-- **Data Model**: `specs/015-exercise-detail-page/data-model.md`
-- **Quickstart**: `specs/015-exercise-detail-page/quickstart.md`
-- **Contracts**: `specs/015-exercise-detail-page/contracts/exercise-detail-page.md`
+- **Plan**: `specs/016-routine-ui-improvements/plan.md`
+- **Research**: `specs/016-routine-ui-improvements/research.md`
+- **Data Model**: `specs/016-routine-ui-improvements/data-model.md`
+- **Quickstart**: `specs/016-routine-ui-improvements/quickstart.md`
+- **Contracts**: `specs/016-routine-ui-improvements/contracts/routine-ui-improvements.md`
 <!-- SPECKIT END -->

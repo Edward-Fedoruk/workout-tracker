@@ -79,13 +79,15 @@ class RoutineExerciseRepository {
     setCount: number,
   ): Promise<LastExerciseSets> {
     const promiser = await getPromiser();
+    const databaseId = getDatabaseId();
+
     const result = await promiser<{
       reps: number;
       set_number: number;
       weight: null | number;
     }>('exec', {
       bind: [exerciseName, exerciseName, setCount],
-      dbId: getDatabaseId(),
+      dbId: databaseId,
       rowMode: 'object',
       sql: `
         SELECT s.set_number, s.weight, s.reps
@@ -103,11 +105,48 @@ class RoutineExerciseRepository {
       `,
     });
 
-    return (result.result.resultRows || []).map((row) => ({
+    const rows = result.result.resultRows || [];
+    const sets: LastExerciseSets = rows.map((row) => ({
       reps: row.reps,
       setNumber: row.set_number,
       weight: row.weight,
     }));
+
+    // For any set position where the most recent workout has null weight and
+    // reps, walk back to find the most recent non-null values at that position.
+    for (let index = 0; index < sets.length; index++) {
+      const entry = sets[index];
+      if (entry && entry.weight === null) {
+        const fallback = await promiser<{
+          reps: number;
+          weight: null | number;
+        }>('exec', {
+          bind: [exerciseName, index + 1],
+          dbId: databaseId,
+          rowMode: 'object',
+          sql: `
+            SELECT s.weight, s.reps
+            FROM workout_log w
+            JOIN workout_set s ON s.workout_id = w.id
+            WHERE LOWER(w.exercise_name) = LOWER(?)
+              AND s.set_number = ?
+              AND s.weight IS NOT NULL
+            ORDER BY w.workout_date DESC, w.id DESC
+            LIMIT 1
+          `,
+        });
+        const fb = fallback.result.resultRows[0];
+        if (fb) {
+          sets[index] = {
+            reps: fb.reps,
+            setNumber: index + 1,
+            weight: fb.weight,
+          };
+        }
+      }
+    }
+
+    return sets;
   }
 
   async move(

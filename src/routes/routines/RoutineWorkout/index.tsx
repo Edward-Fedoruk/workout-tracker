@@ -44,6 +44,7 @@ export const RoutineWorkout = () => {
       bodyWeight={workout.bodyWeight}
       draftData={workout.draftData}
       error={workout.error}
+      exerciseImageMap={workout.exerciseImageMap}
       exercises={workout.exercises}
       isSubmitting={workout.isSubmitting}
       onAutoSave={(values) => workout.autoSave(values)}

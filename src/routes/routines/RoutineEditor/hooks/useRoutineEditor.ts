@@ -1,6 +1,7 @@
 import {
   addRoutineExercise,
   createRoutine,
+  deleteRoutine,
   deleteRoutineExercise,
   type Exercise,
   getRoutineById,
@@ -15,10 +16,12 @@ import { useToggle } from '@/hooks/useToggle';
 import { type FormValues as ExerciseFormValues } from '@/routes/routines/RoutineExerciseForm.schema';
 import { type FormValues as NameFormValues } from '@/routes/routines/RoutineNameForm.schema';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export type UseRoutineEditorReturn = ReturnType<typeof useRoutineEditor>;
 
 export const useRoutineEditor = () => {
+  const navigate = useNavigate();
   const [routine, setRoutine] = useState<null | RoutineWithExercises>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [currentRoutineId, setCurrentRoutineId] = useState<null | number>(null);
@@ -30,6 +33,8 @@ export const useRoutineEditor = () => {
   const [isSubmittingExercise, setIsSubmittingExercise] = useState(false);
 
   const exerciseDialog = useToggle();
+  const deleteConfirm = useToggle();
+  const editNameDialog = useToggle();
 
   const loadRoutine = async (rid: number): Promise<boolean> => {
     const data = await getRoutineById(rid);
@@ -135,10 +140,41 @@ export const useRoutineEditor = () => {
     await loadRoutine(currentRoutineId);
   };
 
+  const requestDelete = () => {
+    deleteConfirm.onOpen();
+  };
+
+  const cancelDelete = () => {
+    deleteConfirm.onClose();
+  };
+
+  const handleConfirmDelete = async () => {
+    if (currentRoutineId === null) {
+      return;
+    }
+
+    deleteConfirm.onClose();
+    await deleteRoutine(currentRoutineId);
+    navigate('/routines');
+  };
+
+  const openEditName = () => {
+    editNameDialog.onOpen();
+  };
+
+  const closeEditName = () => {
+    editNameDialog.onClose();
+  };
+
   return {
+    cancelDelete,
+    closeEditName,
     currentRoutineId,
+    deleteConfirm,
     editingExercise,
+    editNameDialog,
     exerciseDialog,
+    handleConfirmDelete,
     handleDeleteExercise,
     handleExerciseSave,
     handleMove,
@@ -150,6 +186,8 @@ export const useRoutineEditor = () => {
     libraryExercises,
     openAddExercise,
     openEditExercise,
+    openEditName,
+    requestDelete,
     routine,
     routineName,
   };

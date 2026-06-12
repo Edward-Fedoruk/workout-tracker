@@ -1,61 +1,105 @@
 import { type LastExerciseSets, type RoutineExercise } from '@/database';
 import { formatRepRange } from '@/routes/routines/routineUtilities';
 import { type FormValues } from '@/routes/routines/RoutineWorkout/RoutineWorkoutForm.schema';
-import { Box, ButtonBase, TextField, Typography } from '@mui/material';
-import { type FieldErrors, type UseFormRegister } from 'react-hook-form';
+import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
+import Looks3Icon from '@mui/icons-material/Looks3';
+import Looks4Icon from '@mui/icons-material/Looks4';
+import Looks5Icon from '@mui/icons-material/Looks5';
+import LooksOneIcon from '@mui/icons-material/LooksOne';
+import LooksTwoIcon from '@mui/icons-material/LooksTwo';
+import {
+  Avatar,
+  Box,
+  ButtonBase,
+  Checkbox,
+  TextField,
+  Typography,
+} from '@mui/material';
+import {
+  type FieldErrors,
+  type UseFormRegister,
+  type UseFormWatch,
+} from 'react-hook-form';
+
+const LOOKS_ICONS = [
+  LooksOneIcon,
+  LooksTwoIcon,
+  Looks3Icon,
+  Looks4Icon,
+  Looks5Icon,
+] as const;
 
 export type RoutineWorkoutExerciseProps = {
   readonly errors: FieldErrors<FormValues>;
   readonly exercise: RoutineExercise;
   readonly exerciseIndex: number;
+  readonly imageFilename?: string | undefined;
   readonly onAutoSave: () => void;
   readonly onNavigateToExercise?: () => void;
   readonly prefill: LastExerciseSets;
   readonly register: UseFormRegister<FormValues>;
+  readonly watch: UseFormWatch<FormValues>;
 };
 
 export const RoutineWorkoutExercise = ({
   errors,
   exercise,
   exerciseIndex,
+  imageFilename,
   onAutoSave,
   onNavigateToExercise,
   prefill,
   register,
+  watch,
 }: RoutineWorkoutExerciseProps) => {
   const setErrors = errors.exercises?.[exerciseIndex]?.sets;
 
   return (
-    <Box sx={{ mb: 3 }}>
-      {onNavigateToExercise ? (
-        <ButtonBase
-          onClick={onNavigateToExercise}
-          sx={{ display: 'block', mb: 0.25, textAlign: 'left' }}
+    <Box sx={{ mb: 6 }}>
+      <Box sx={{ alignItems: 'center', display: 'flex', gap: 1.5, mb: 3 }}>
+        <Avatar
+          alt={exercise.exerciseName}
+          src={
+            imageFilename
+              ? `${import.meta.env.BASE_URL}exercises/${imageFilename}`
+              : undefined
+          }
+          sx={{ height: 56, width: 56 }}
         >
+          <FitnessCenterIcon />
+        </Avatar>
+        <Box>
+          {onNavigateToExercise ? (
+            <ButtonBase
+              onClick={onNavigateToExercise}
+              sx={{ display: 'block', textAlign: 'left' }}
+            >
+              <Typography
+                sx={{ fontWeight: 'bold' }}
+                variant="subtitle1"
+              >
+                {exercise.exerciseName}
+              </Typography>
+            </ButtonBase>
+          ) : (
+            <Typography
+              sx={{ fontWeight: 'bold' }}
+              variant="subtitle1"
+            >
+              {exercise.exerciseName}
+            </Typography>
+          )}
           <Typography
-            sx={{ fontWeight: 'bold' }}
-            variant="subtitle1"
+            color="text.secondary"
+            variant="body2"
           >
-            {exercise.exerciseName}
+            Target: {exercise.suggestedSets} ×{' '}
+            {formatRepRange(exercise.minReps, exercise.maxReps)}
           </Typography>
-        </ButtonBase>
-      ) : (
-        <Typography
-          sx={{ fontWeight: 'bold' }}
-          variant="subtitle1"
-        >
-          {exercise.exerciseName}
-        </Typography>
-      )}
-      <Typography
-        color="text.secondary"
-        sx={{ mb: 1 }}
-        variant="body2"
-      >
-        Target: {exercise.suggestedSets} ×{' '}
-        {formatRepRange(exercise.minReps, exercise.maxReps)}
-      </Typography>
+        </Box>
+      </Box>
       {Array.from({ length: exercise.suggestedSets }, (_unused, setIndex) => {
+        const SetIcon = LOOKS_ICONS[setIndex] ?? Looks5Icon;
         const prefillEntry = prefill[setIndex];
         const weightError = setErrors?.[setIndex]?.weight?.message;
         const repsError = setErrors?.[setIndex]?.reps?.message;
@@ -67,21 +111,33 @@ export const RoutineWorkoutExercise = ({
           `exercises.${exerciseIndex}.sets.${setIndex}.reps`,
           { valueAsNumber: true },
         );
+        const completedField = register(
+          `exercises.${exerciseIndex}.sets.${setIndex}.completed`,
+        );
+        const completed = watch(
+          `exercises.${exerciseIndex}.sets.${setIndex}.completed`,
+        );
         return (
           <Box
             key={setIndex}
-            sx={{ alignItems: 'flex-start', display: 'flex', gap: 1, mb: 1 }}
+            sx={{
+              alignItems: 'flex-start',
+              bgcolor: completed ? '#81c78424' : 'transparent',
+              borderRadius: 1,
+              display: 'flex',
+              gap: 1,
+              padding: '15px 5px',
+              transition: 'background-color 0.2s',
+            }}
           >
-            <Typography
-              sx={{ minWidth: 40, pt: 1.5 }}
-              variant="body2"
-            >
-              Set {setIndex + 1}
-            </Typography>
+            <SetIcon
+              color="secondary"
+              sx={{ mt: 1 }}
+            />
             <TextField
               error={Boolean(weightError)}
               helperText={weightError}
-              label="Weight (kg)"
+              label="kg"
               placeholder={
                 prefillEntry
                   ? prefillEntry.weight === null
@@ -115,6 +171,16 @@ export const RoutineWorkoutExercise = ({
                 repsField.onBlur(event).catch(() => undefined);
                 onAutoSave();
               }}
+            />
+            <Checkbox
+              {...completedField}
+              checked={Boolean(completed)}
+              color="success"
+              onChange={(event) => {
+                completedField.onChange(event);
+                onAutoSave();
+              }}
+              sx={{ padding: 0.5 }}
             />
           </Box>
         );

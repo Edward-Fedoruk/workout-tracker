@@ -20,6 +20,7 @@ export type RoutineWorkoutViewProps = {
   readonly bodyWeight: null | number;
   readonly draftData: null | StoredDraftData;
   readonly error: null | string;
+  readonly exerciseImageMap: Map<string, string | undefined>;
   readonly exercises: Exercise[];
   readonly isSubmitting: boolean;
   readonly onAutoSave: (values: FormValues) => void;
@@ -34,6 +35,7 @@ export const RoutineWorkoutView = ({
   bodyWeight,
   draftData,
   error,
+  exerciseImageMap,
   exercises,
   isSubmitting,
   onAutoSave,
@@ -50,11 +52,13 @@ export const RoutineWorkoutView = ({
     getValues,
     handleSubmit,
     register,
+    watch,
   } = useForm<FormValues>({
     defaultValues: {
       bodyWeight,
       exercises: routine.exercises.map((routineExercise) => {
         const saved = draftData?.[String(routineExercise.id)];
+        const prefill = prefills.get(routineExercise.id);
         return {
           classification:
             exercises.find(
@@ -65,15 +69,26 @@ export const RoutineWorkoutView = ({
             { length: routineExercise.suggestedSets },
             (_unused, setIndex) => {
               const savedSet = saved?.[setIndex];
+              const prefillEntry = prefill?.[setIndex];
+              const hasNoSaved =
+                savedSet === undefined ||
+                (savedSet.reps === null && savedSet.weight === null);
               return {
+                completed: savedSet?.completed ?? false,
                 reps:
-                  savedSet?.reps === null || savedSet === undefined
-                    ? Number.NaN
-                    : savedSet.reps,
+                  savedSet?.reps !== null && savedSet?.reps !== undefined
+                    ? savedSet.reps
+                    : hasNoSaved && prefillEntry !== undefined
+                      ? prefillEntry.reps
+                      : Number.NaN,
                 weight:
-                  savedSet?.weight === null || savedSet === undefined
-                    ? Number.NaN
-                    : savedSet.weight,
+                  savedSet?.weight !== null && savedSet?.weight !== undefined
+                    ? savedSet.weight
+                    : hasNoSaved &&
+                        prefillEntry?.weight !== null &&
+                        prefillEntry !== undefined
+                      ? prefillEntry.weight
+                      : Number.NaN,
               };
             },
           ),
@@ -82,6 +97,13 @@ export const RoutineWorkoutView = ({
     },
     resolver,
   });
+
+  const exercisesValues = watch('exercises');
+  const allSetsCompleted =
+    exercisesValues.length > 0 &&
+    exercisesValues.every((ex) =>
+      ex.sets.every((set) => set.completed === true),
+    );
 
   // Persist the in-progress form to the draft when the user leaves a field.
   const handleAutoSave = () => {
@@ -122,10 +144,12 @@ export const RoutineWorkoutView = ({
             errors={errors}
             exercise={routineExercise}
             exerciseIndex={exerciseIndex}
+            imageFilename={exerciseImageMap.get(routineExercise.exerciseName)}
             key={routineExercise.id}
             onAutoSave={handleAutoSave}
             prefill={prefills.get(routineExercise.id) ?? []}
             register={register}
+            watch={watch}
             {...(found !== undefined && {
               onNavigateToExercise: () => navigate(`/exercises/${found.id}`),
             })}
@@ -134,7 +158,7 @@ export const RoutineWorkoutView = ({
       })}
 
       <Button
-        disabled={isSubmitting}
+        disabled={isSubmitting || !allSetsCompleted}
         fullWidth
         onClick={() => {
           submit().catch(() => undefined);

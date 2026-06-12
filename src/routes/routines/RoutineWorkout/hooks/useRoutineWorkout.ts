@@ -15,7 +15,7 @@ import {
 } from '@/database';
 import { type FormValues } from '@/routes/routines/RoutineWorkout/RoutineWorkoutForm.schema';
 import { computeEffectiveWeight, computeERM } from '@/utils/erm';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 export type UseRoutineWorkoutReturn = ReturnType<typeof useRoutineWorkout>;
 
@@ -85,6 +85,7 @@ export const useRoutineWorkout = () => {
         }
 
         data[String(routineExerciseId)] = exercise.sets.map((set) => ({
+          completed: set.completed,
           reps: Number.isNaN(set.reps) ? null : set.reps,
           weight: Number.isNaN(set.weight) ? null : set.weight,
         }));
@@ -136,12 +137,24 @@ export const useRoutineWorkout = () => {
     }
   };
 
+  const exerciseImageMap = useMemo(
+    () =>
+      new Map<string, string | undefined>(
+        exercises.map((exercise) => [
+          exercise.name,
+          exercise.imageFilename ?? undefined,
+        ]),
+      ),
+    [exercises],
+  );
+
   return {
     autoSave,
     bodyWeight,
     discardDraft,
     draftData,
     error,
+    exerciseImageMap,
     exercises,
     isLoading,
     isSubmitting,
