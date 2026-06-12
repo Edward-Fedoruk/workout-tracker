@@ -11,6 +11,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { useEffect } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 
 export type WorkoutFormProps = {
@@ -39,6 +40,7 @@ export const WorkoutForm = ({
     formState: { errors, isSubmitting },
     handleSubmit,
     register,
+    reset,
     setError,
     setValue,
     watch,
@@ -59,6 +61,31 @@ export const WorkoutForm = ({
     },
     resolver,
   });
+
+  useEffect(() => {
+    if (initialData === undefined) {
+      return;
+    }
+
+    const name = initialData.exerciseName;
+    reset({
+      bodyWeight,
+      classification:
+        exercises.find((opt) => opt.name === name)?.classification ??
+        'standard',
+      exerciseName: name,
+      sets:
+        initialData.sets.length > 0
+          ? initialData.sets.map((workoutSet) => ({
+              reps: workoutSet.reps,
+              weight:
+                workoutSet.weight === null ? Number.NaN : workoutSet.weight,
+            }))
+          : [{ reps: Number.NaN, weight: Number.NaN }],
+      workoutDate: initialData.workoutDate,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reset when a different workout is loaded for editing
+  }, [initialData?.id]);
 
   const { append, fields, remove } = useFieldArray({ control, name: 'sets' });
 
