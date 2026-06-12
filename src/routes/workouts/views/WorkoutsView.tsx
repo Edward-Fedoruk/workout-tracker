@@ -8,15 +8,12 @@ import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import {
   Alert,
-  AppBar,
   Box,
   Button,
   CircularProgress,
-  Dialog,
   Fab,
   IconButton,
   SwipeableDrawer,
-  Toolbar,
   Typography,
 } from '@mui/material';
 
@@ -41,14 +38,6 @@ export const WorkoutsView = ({
   requestDelete,
   workouts,
 }: WorkoutsViewProps) => {
-  const handleAdvancedOpen = () => {
-    advancedView.onOpen();
-  };
-
-  const handleAdvancedClose = () => {
-    advancedView.onClose();
-  };
-
   return (
     <Box
       sx={{
@@ -90,7 +79,7 @@ export const WorkoutsView = ({
           Workout Log
         </Typography>
         <Button
-          onClick={handleAdvancedOpen}
+          onClick={() => advancedView.onOpen()}
           size="small"
           variant="outlined"
         >
@@ -122,36 +111,16 @@ export const WorkoutsView = ({
         <AddIcon />
       </Fab>
 
-      <Dialog
-        fullScreen
-        open={advancedView.isOpen}
-      >
-        <AppBar position="relative">
-          <Toolbar>
-            <IconButton
-              aria-label="close"
-              color="inherit"
-              edge="start"
-              onClick={handleAdvancedClose}
-            >
-              <CloseIcon />
-            </IconButton>
-            <Typography
-              sx={{ ml: 2 }}
-              variant="h6"
-            >
-              Advanced View
-            </Typography>
-          </Toolbar>
-        </AppBar>
+      {advancedView.isOpen && (
         <AdvancedWorkoutTable
+          onClose={() => advancedView.onClose()}
           onDelete={requestDelete}
           onEdit={(id) => {
             openEdit(id).catch(() => undefined);
           }}
           workouts={workouts}
         />
-      </Dialog>
+      )}
 
       <SwipeableDrawer
         anchor="bottom"
