@@ -5,6 +5,7 @@
     "@hookform/resolvers": "^5.4.0",
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
+    "@mui/x-charts": "^9.5.0",
     "@mui/x-date-pickers": "^9.2.0",
     "@sqlite.org/sqlite-wasm": "^3.46.1-build2",
     "@tanstack/react-table": "^8.21.3",

@@ -11,6 +11,7 @@ import {
   type MuscleGroup,
   updateExercise,
   updateWorkout,
+  type WorkoutTableRow,
   type WorkoutWithSets,
 } from '@/database';
 import { useToggle } from '@/hooks/useToggle';
@@ -34,6 +35,7 @@ export const useExerciseDetail = (exerciseId: number) => {
   const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Exercise | null>(null);
   const [groups, setGroups] = useState<WorkoutDateGroup[]>([]);
+  const [rawRows, setRawRows] = useState<WorkoutTableRow[]>([]);
   const dialog = useToggle();
   const deleteConfirm = useToggle();
 
@@ -51,6 +53,7 @@ export const useExerciseDetail = (exerciseId: number) => {
 
   const loadHistory = async (exerciseName: string) => {
     const rows = await listWorkoutsByExerciseName(exerciseName);
+    setRawRows(rows);
     setGroups(groupWorkoutsByDate(rows));
   };
 
@@ -211,6 +214,7 @@ export const useExerciseDetail = (exerciseId: number) => {
     exercises,
     groups,
     handleCancelWorkoutForm,
+    rawRows,
     handleSave,
     handleSaveWorkout,
     isLoading,

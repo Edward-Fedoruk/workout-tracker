@@ -119,11 +119,11 @@ main thread (React)  ──►  promiser (async API)  ──►  Web Worker  ─
 - On unsupported browsers, the OPFS open throws and the fallback to `:memory:` is silent (a `console.warn` is logged). The app appears to work but data is lost on reload — check the console if persistence seems broken.
 
 <!-- SPECKIT START -->
-**Active Feature**: Routine UI Improvements — exercise chips on list cards, FAB add button, Start button, set completion checkboxes, prefilled inputs, exercise avatars, Looks* set icons, three-dots menu in RoutineEditor (branch `016-routine-ui-improvements`)  
+**Active Feature**: Exercise eRM Performance Chart — line chart on the exercise detail page tracking Estimated 1-Rep Max per set over time, with time-range filter (All Time / Last Year / Last Month), using MUI X Charts (branch `017-exercise-erm-chart`)  
 For implementation context, design decisions, data model, and step-by-step quickstart, see:
-- **Plan**: `specs/016-routine-ui-improvements/plan.md`
-- **Research**: `specs/016-routine-ui-improvements/research.md`
-- **Data Model**: `specs/016-routine-ui-improvements/data-model.md`
-- **Quickstart**: `specs/016-routine-ui-improvements/quickstart.md`
-- **Contracts**: `specs/016-routine-ui-improvements/contracts/routine-ui-improvements.md`
+- **Plan**: `specs/017-exercise-erm-chart/plan.md`
+- **Research**: `specs/017-exercise-erm-chart/research.md`
+- **Data Model**: `specs/017-exercise-erm-chart/data-model.md`
+- **Quickstart**: `specs/017-exercise-erm-chart/quickstart.md`
+- **Contracts**: `specs/017-exercise-erm-chart/contracts/exercise-erm-chart.md`
 <!-- SPECKIT END -->

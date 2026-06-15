@@ -1,4 +1,5 @@
 import { type UseExerciseDetailReturn } from '../hooks/useExerciseDetail';
+import { ExerciseErmChart } from './ExerciseErmChart';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { ExerciseForm } from '@/routes/exercises/Exercise/ExerciseForm';
 import { MuscleGroupChip } from '@/routes/exercises/MuscleGroup/MuscleGroupChip';
@@ -52,6 +53,7 @@ export const ExerciseDetailView = ({
   openEdit,
   openEditWorkout,
   pendingDelete,
+  rawRows,
   requestDelete,
   requestDeleteWorkout,
   workoutDeleteConfirm,
@@ -139,6 +141,12 @@ export const ExerciseDetailView = ({
           </IconButton>
         </Box>
 
+      </Box>
+
+      <ExerciseErmChart rows={rawRows} />
+
+      {/* History section */}
+      <Box sx={{ flexShrink: 0, px: 2 }}>
         <Divider>
           <Typography
             color="text.secondary"
