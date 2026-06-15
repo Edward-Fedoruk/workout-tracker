@@ -19,13 +19,15 @@ import {
 } from '@mui/material';
 import { Fragment } from 'react';
 
+type FirstColumn = 'avatar' | 'name' | 'none';
+
 type Props = {
+  readonly firstColumn: FirstColumn;
   readonly groups: WorkoutDateGroup[];
   readonly onEdit?: (id: number) => void;
 };
 
 const SET_NUMBERS = [1, 2, 3, 4, 5] as const;
-const TOTAL_COLUMNS = 1 + SET_NUMBERS.length;
 
 type SetNumber = 1 | 2 | 3 | 4 | 5;
 
@@ -37,95 +39,116 @@ const SET_ICON_MAP: Record<SetNumber, typeof LooksOneIcon> = {
   '5': Looks5Icon,
 };
 
-export const GroupedWorkoutTable = ({ groups, onEdit }: Props) => (
-  <TableContainer sx={{ height: '100%' }}>
-    <Table
-      size="small"
-      stickyHeader
-    >
-      <TableHead>
-        <TableRow>
-          <TableCell sx={{ width: 64 }} />
-          {SET_NUMBERS.map((setNumber) => {
-            const SetIcon = SET_ICON_MAP[setNumber];
-            return (
-              <TableCell key={setNumber}>
-                <SetIcon
-                  color="secondary"
-                  fontSize="small"
-                />
-              </TableCell>
-            );
-          })}
-        </TableRow>
-      </TableHead>
-      <TableBody>
-        {groups.length === 0 ? (
+export const GroupedWorkoutTable = ({ firstColumn, groups, onEdit }: Props) => {
+  const totalColumns = (firstColumn === 'none' ? 0 : 1) + SET_NUMBERS.length;
+
+  return (
+    <TableContainer sx={{ height: '100%' }}>
+      <Table
+        size="small"
+        stickyHeader
+      >
+        <TableHead>
           <TableRow>
-            <TableCell
-              colSpan={TOTAL_COLUMNS}
-              sx={{ py: 4, textAlign: 'center' }}
-            >
-              <Typography color="text.secondary">No workouts yet</Typography>
-            </TableCell>
-          </TableRow>
-        ) : (
-          groups.map((group) => (
-            <Fragment key={group.isoDate}>
-              <TableRow>
-                <TableCell
-                  colSpan={TOTAL_COLUMNS}
-                  sx={{ py: 0.5 }}
-                >
-                  <Divider>
-                    <Typography
-                      color="secondary"
-                      variant="overline"
-                    >
-                      {group.label}
-                    </Typography>
-                  </Divider>
+            {firstColumn === 'avatar' && <TableCell sx={{ width: 64 }} />}
+            {firstColumn === 'name' && <TableCell sx={{ width: 120 }} />}
+            {SET_NUMBERS.map((setNumber) => {
+              const SetIcon = SET_ICON_MAP[setNumber];
+              return (
+                <TableCell key={setNumber}>
+                  <SetIcon
+                    color="secondary"
+                    fontSize="small"
+                  />
                 </TableCell>
-              </TableRow>
-              {group.rows.map((row) => (
-                <TableRow
-                  hover={onEdit !== undefined}
-                  key={row.id}
-                  {...(onEdit && {
-                    onClick: () => onEdit(row.id),
-                    sx: { cursor: 'pointer' },
-                  })}
-                >
-                  <TableCell sx={{ px: '4px', width: 64 }}>
-                    <Avatar
-                      alt={row.exercise_name}
-                      src={
-                        row.exercise_image_filename
-                          ? `${import.meta.env.BASE_URL}exercises/${row.exercise_image_filename}`
-                          : undefined
-                      }
-                      sx={{ height: 56, width: 56 }}
-                    >
-                      <FitnessCenterIcon fontSize="large" />
-                    </Avatar>
+              );
+            })}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {groups.length === 0 ? (
+            <TableRow>
+              <TableCell
+                colSpan={totalColumns}
+                sx={{ py: 4, textAlign: 'center' }}
+              >
+                <Typography color="text.secondary">No workouts yet</Typography>
+              </TableCell>
+            </TableRow>
+          ) : (
+            groups.map((group) => (
+              <Fragment key={group.isoDate}>
+                <TableRow>
+                  <TableCell
+                    colSpan={totalColumns}
+                    sx={{ py: 0.5 }}
+                  >
+                    <Divider>
+                      <Typography
+                        color="secondary"
+                        variant="overline"
+                      >
+                        {group.label}
+                      </Typography>
+                    </Divider>
                   </TableCell>
-                  {SET_NUMBERS.map((setNumber) => (
-                    <TableCell
-                      key={setNumber}
-                      sx={{ fontSize: '12px', px: '10px' }}
-                    >
-                      {formatSetCell(
-                        row[`Set${setNumber}_weight`],
-                        row[`Set${setNumber}_reps`],
-                      )}
-                    </TableCell>
-                  ))}
                 </TableRow>
-              ))}
-            </Fragment>
-          ))
-        )}
-      </TableBody>
-    </Table>
-  </TableContainer>
-);
+                {group.rows.map((row) => (
+                  <TableRow
+                    hover={onEdit !== undefined}
+                    key={row.id}
+                    {...(onEdit && {
+                      onClick: () => onEdit(row.id),
+                      sx: { cursor: 'pointer' },
+                    })}
+                  >
+                    {firstColumn === 'avatar' && (
+                      <TableCell sx={{ px: '4px', width: 64 }}>
+                        <Avatar
+                          alt={row.exercise_name}
+                          src={
+                            row.exercise_image_filename
+                              ? `${import.meta.env.BASE_URL}exercises/${row.exercise_image_filename}`
+                              : undefined
+                          }
+                          sx={{ height: 56, width: 56 }}
+                        >
+                          <FitnessCenterIcon fontSize="large" />
+                        </Avatar>
+                      </TableCell>
+                    )}
+                    {firstColumn === 'name' && (
+                      <TableCell sx={{ px: '4px', width: 120 }}>
+                        <Typography
+                          sx={{
+                            fontSize: '12px',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {row.exercise_name}
+                        </Typography>
+                      </TableCell>
+                    )}
+                    {SET_NUMBERS.map((setNumber) => (
+                      <TableCell
+                        key={setNumber}
+                        sx={{ fontSize: '12px', px: '10px' }}
+                      >
+                        {formatSetCell(
+                          row[`Set${setNumber}_weight`],
+                          row[`Set${setNumber}_reps`],
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </Fragment>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+};

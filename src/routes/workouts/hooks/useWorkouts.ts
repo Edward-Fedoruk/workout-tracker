@@ -3,6 +3,7 @@ import {
   deleteWorkout,
   type Exercise,
   getBodyWeight,
+  getExerciseNamesInTables,
   getWorkoutById,
   listExercises,
   listWorkouts,
@@ -22,6 +23,7 @@ export const useWorkouts = () => {
   const [workouts, setWorkouts] = useState<WorkoutTableRow[]>([]);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [bodyWeight, setBodyWeight] = useState<null | number>(null);
+  const [exerciseNamesInTables, setExerciseNamesInTables] = useState(false);
   const [editingWorkout, setEditingWorkout] = useState<null | WorkoutWithSets>(
     null,
   );
@@ -37,14 +39,16 @@ export const useWorkouts = () => {
     setIsLoading(true);
     setLoadError(null);
     try {
-      const [rows, exerciseList, bw] = await Promise.all([
+      const [rows, exerciseList, bw, showNames] = await Promise.all([
         listWorkouts(),
         listExercises(),
         getBodyWeight(),
+        getExerciseNamesInTables(),
       ]);
       setWorkouts(rows);
       setExercises(exerciseList);
       setBodyWeight(bw);
+      setExerciseNamesInTables(showNames);
     } catch {
       setLoadError('Failed to load workouts. Please reload the page.');
     } finally {
@@ -140,6 +144,7 @@ export const useWorkouts = () => {
     confirmDelete,
     deleteConfirm,
     editingWorkout,
+    exerciseNamesInTables,
     exercises,
     formDialog,
     groups,

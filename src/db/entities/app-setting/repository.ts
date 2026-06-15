@@ -5,6 +5,8 @@ import { eq } from 'drizzle-orm';
 const BODY_WEIGHT_KEY = 'body_weight';
 const MAX_BODY_WEIGHT_KG = 500;
 
+const EXERCISE_NAMES_IN_TABLES_KEY = 'exercise_names_in_tables';
+
 class AppSettingRepository {
   async getBodyWeight(): Promise<null | number> {
     const rows = await database
@@ -23,6 +25,15 @@ class AppSettingRepository {
     }
 
     return parsed;
+  }
+
+  async getExerciseNamesInTables(): Promise<boolean> {
+    const rows = await database
+      .select({ value: appSetting.value })
+      .from(appSetting)
+      .where(eq(appSetting.key, EXERCISE_NAMES_IN_TABLES_KEY));
+
+    return rows[0]?.value === 'true';
   }
 
   async setBodyWeight(kg: number): Promise<void> {
@@ -47,6 +58,17 @@ class AppSettingRepository {
       .values({ key: BODY_WEIGHT_KEY, value: kg.toFixed(2) })
       .onConflictDoUpdate({
         set: { value: kg.toFixed(2) },
+        target: appSetting.key,
+      });
+  }
+
+  async setExerciseNamesInTables(enabled: boolean): Promise<void> {
+    const value = enabled ? 'true' : 'false';
+    await database
+      .insert(appSetting)
+      .values({ key: EXERCISE_NAMES_IN_TABLES_KEY, value })
+      .onConflictDoUpdate({
+        set: { value },
         target: appSetting.key,
       });
   }
