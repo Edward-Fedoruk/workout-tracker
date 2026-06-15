@@ -2,16 +2,26 @@ import { BodyWeightForm } from '@/routes/settings/BodyWeightForm';
 import { DatabaseActions } from '@/routes/settings/DatabaseActions';
 import { type UseBodyWeightReturn } from '@/routes/settings/hooks/useBodyWeight';
 import { type UseDatabaseActionsReturn } from '@/routes/settings/hooks/useDatabaseActions';
-import { Box, Divider, Stack, Typography } from '@mui/material';
+import { type UseDisplaySettingsReturn } from '@/routes/settings/hooks/useDisplaySettings';
+import {
+  Box,
+  Divider,
+  FormControlLabel,
+  Stack,
+  Switch,
+  Typography,
+} from '@mui/material';
 
 export type SettingsViewProps = {
   readonly bodyWeight: UseBodyWeightReturn;
   readonly databaseActions: UseDatabaseActionsReturn;
+  readonly displaySettings: UseDisplaySettingsReturn;
 };
 
 export const SettingsView = ({
   bodyWeight,
   databaseActions,
+  displaySettings,
 }: SettingsViewProps) => (
   <Box sx={{ maxWidth: 480, mx: 'auto', padding: 2 }}>
     <Typography
@@ -31,6 +41,22 @@ export const SettingsView = ({
         }}
         onSave={bodyWeight.handleSave}
         value={bodyWeight.value}
+      />
+
+      <Divider />
+
+      <Typography variant="subtitle1">Display</Typography>
+      <FormControlLabel
+        control={
+          <Switch
+            checked={displaySettings.exerciseNamesInTables}
+            disabled={displaySettings.isLoading}
+            onChange={() => {
+              displaySettings.toggle().catch(() => undefined);
+            }}
+          />
+        }
+        label="Exercise Names in Tables"
       />
 
       <Divider />

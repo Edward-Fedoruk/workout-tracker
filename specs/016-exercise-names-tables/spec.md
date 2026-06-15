@@ -13,6 +13,12 @@
 - Q: When exercise names are shown in the Workout Log, should the first column keep the avatar width (~64px) or expand? → A: Expand to a wider fixed width (~120px); truncate only very long names.
 - Q: On the Individual Exercise page log table, should the first column show the exercise name, or be removed entirely? → A: Remove it entirely — no icon, no name. The user already knows which exercise they are on.
 
+### Session 2026-06-15
+
+- Q: What should the Workout Log display during the brief async window before the `exercise_names_in_tables` preference is loaded from the DB? → A: Show images (toggle-off appearance) by default; switch to names once the preference resolves to on.
+- Q: Does "immediately" (FR-006/SC-002) mean live rerender while on Settings, or takes effect by next navigation back? → A: Takes effect by next navigation back — DB write on toggle, fresh read when Workout Log mounts. No shared React Context required.
+- Q: When a name is truncated with ellipsis in the Workout Log (toggle on), should tapping/hovering reveal the full name? → A: No — truncation with ellipsis only; no tooltip or reveal mechanism.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Toggle on to see exercise names instead of images in Workout Log (Priority: P1)
@@ -79,9 +85,10 @@ A user who previously enabled the toggle decides they prefer images again. They 
 ### Edge Cases
 
 - What happens when an exercise has no image assigned in the Workout Log (toggle off)? Fallback icon is shown, as before.
-- What happens when an exercise name is longer than the column can display (toggle on)? Name is truncated with ellipsis; layout does not break.
+- What happens when an exercise name is longer than the column can display (toggle on)? Name is truncated with ellipsis; layout does not break. No tooltip or tap-to-reveal mechanism is provided.
 - What happens on first install with no stored preference? Toggle defaults to off and images are shown in the Workout Log.
 - Does the toggle state affect the Individual Exercise page? No — that page always omits the identity column entirely, regardless of toggle.
+- What does the Workout Log render while the preference is being loaded from the DB? Images (toggle-off appearance) are shown as the initial state; the column switches to names once the async read resolves to on. No loading skeleton is needed for this column.
 
 ## Requirements *(mandatory)*
 
@@ -92,7 +99,7 @@ A user who previously enabled the toggle decides they prefer images again. They 
 - **FR-003**: When the toggle is on, the Workout Log table MUST display the exercise name in the column where an avatar/image previously appeared.
 - **FR-004**: When the toggle is off, the Workout Log table MUST display the exercise avatar (image or fallback icon) as before.
 - **FR-005**: The user's preference MUST be persisted across app sessions (stored in the app's existing key-value settings store).
-- **FR-006**: Toggling the setting MUST take effect immediately — the user does not need to reload or navigate away.
+- **FR-006**: Toggling the setting MUST take effect by the time the user navigates back to the Workout Log — no page reload is needed. Live rerender while on the Settings screen is not required.
 - **FR-007**: When the toggle is on, the Workout Log name column MUST be wider than the avatar column (~120px fixed width) to accommodate readable name text. Names that still exceed this width MUST be truncated with an ellipsis; the table layout MUST NOT break.
 - **FR-008**: The Individual Exercise page log table MUST NOT display any identity column (neither avatar nor name). The table MUST begin directly with the set columns, regardless of the toggle state.
 
@@ -105,7 +112,7 @@ A user who previously enabled the toggle decides they prefer images again. They 
 ### Measurable Outcomes
 
 - **SC-001**: A user can locate and toggle "Exercise Names in Tables" within Settings in under 10 seconds.
-- **SC-002**: Switching the toggle causes the Workout Log table to update without any page reload or navigation.
+- **SC-002**: After toggling the setting and navigating back to the Workout Log, the table reflects the new preference without requiring a page reload.
 - **SC-003**: The preference survives a full app reload 100% of the time once set.
 - **SC-004**: Exercise names in Workout Log table rows never cause horizontal overflow or layout breakage regardless of name length.
 - **SC-005**: The Individual Exercise page log table shows no identity column (avatar or name) on 100% of visits, regardless of toggle state.

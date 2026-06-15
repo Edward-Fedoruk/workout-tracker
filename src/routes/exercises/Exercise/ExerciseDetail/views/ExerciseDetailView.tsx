@@ -184,6 +184,7 @@ export const ExerciseDetailView = ({
           </Typography>
         ) : (
           <GroupedWorkoutTable
+            firstColumn="none"
             groups={groups}
             onEdit={(id) => {
               openEditWorkout(id).catch(() => undefined);

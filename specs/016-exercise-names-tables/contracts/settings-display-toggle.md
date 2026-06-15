@@ -42,6 +42,7 @@ A new "Display" section inserted **above** the existing "Data" section:
 
 ## Behaviour
 
-- Toggle takes effect immediately in the Workout Log without page reload.
+- Toggle is persisted to the DB immediately on change; the Workout Log reflects the new preference when the user navigates back to it (no page reload needed — the Workout Log reads fresh on mount).
+- Live rerender while the user is still on the Settings screen is not required (the Workout Log is unmounted during Settings navigation).
 - While `isLoading` is true the switch is disabled (prevents race on first paint).
 - No error state exposed to the user — failures are silent (same pattern as body weight).

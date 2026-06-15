@@ -26,6 +26,7 @@ export const WorkoutsView = ({
   confirmDelete,
   deleteConfirm,
   editingWorkout,
+  exerciseNamesInTables,
   exercises,
   formDialog,
   groups,
@@ -94,6 +95,7 @@ export const WorkoutsView = ({
       ) : (
         <Box sx={{ flex: 1, minHeight: 0 }}>
           <GroupedWorkoutTable
+            firstColumn={exerciseNamesInTables ? 'name' : 'avatar'}
             groups={groups}
             onEdit={(id) => {
               openEdit(id).catch(() => undefined);

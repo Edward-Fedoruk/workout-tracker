@@ -152,6 +152,10 @@ export const clearDraft = () => routineWorkoutDraftRepository.clear();
 export const getBodyWeight = () => appSettingRepository.getBodyWeight();
 export const setBodyWeight = (kg: number) =>
   appSettingRepository.setBodyWeight(kg);
+export const getExerciseNamesInTables = () =>
+  appSettingRepository.getExerciseNamesInTables();
+export const setExerciseNamesInTables = (enabled: boolean) =>
+  appSettingRepository.setExerciseNamesInTables(enabled);
 
 // Database utilities
 export const exportDatabaseBytes = async (): Promise<Uint8Array> => {

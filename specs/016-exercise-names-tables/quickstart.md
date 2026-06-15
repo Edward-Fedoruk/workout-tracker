@@ -27,10 +27,10 @@ The `app_setting` table already exists. The new key `exercise_names_in_tables` i
 ## Step-by-step implementation order
 
 1. **Repository** — add the two methods to `AppSettingRepository` and export from `database.ts`.
-2. **GroupedWorkoutTable** — add `showExerciseNames` prop; update the first column render.
+2. **GroupedWorkoutTable** — add `firstColumn: 'avatar' | 'name' | 'none'` prop; update the first column render accordingly.
 3. **useWorkouts** — load `getExerciseNamesInTables()` in the `refresh()` call; surface as `exerciseNamesInTables`.
 4. **WorkoutsView** — pass `exerciseNamesInTables` down to `GroupedWorkoutTable`.
-5. **ExerciseDetailView** — hardcode `showExerciseNames={true}` on its `GroupedWorkoutTable`.
+5. **ExerciseDetailView** — hardcode `firstColumn="none"` on its `GroupedWorkoutTable` (no identity column on the exercise detail page).
 6. **useDisplaySettings** — new hook: load on mount, expose `toggle()`.
 7. **SettingsView + Settings container** — add Display section with the Switch.
 
