@@ -5,7 +5,7 @@ import { z } from 'zod';
 const setSchema = z.object({
   completed: z.boolean(),
   reps: z.union([z.number(), z.nan()]),
-  weight: z.union([z.number(), z.nan()]),
+  weight: z.union([z.coerce.number<number>(), z.literal("")]),
 });
 
 export const schema = z
@@ -37,7 +37,7 @@ export const schema = z
           });
         }
 
-        const weightMessage = weightValidationMessage(
+       const weightMessage = weightValidationMessage(
           set.weight,
           exercise.classification,
           data.bodyWeight,

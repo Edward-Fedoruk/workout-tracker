@@ -88,13 +88,14 @@ export const RoutineWorkoutView = ({
                         prefillEntry?.weight !== null &&
                         prefillEntry !== undefined
                       ? prefillEntry.weight
-                      : Number.NaN,
+                      : '',
               };
             },
           ),
         };
       }),
     },
+    mode: "onBlur",
     resolver,
   });
 
@@ -136,6 +137,9 @@ export const RoutineWorkoutView = ({
       )}
 
       {routine.exercises.map((routineExercise, exerciseIndex) => {
+        const classification = exercises.find(
+              (option) => option.name === routineExercise.exerciseName,
+            )?.classification ?? 'standard';
         const found = exercises.find(
           (library) => library.name === routineExercise.exerciseName,
         );
@@ -143,6 +147,7 @@ export const RoutineWorkoutView = ({
           <RoutineWorkoutExercise
             errors={errors}
             exercise={routineExercise}
+            classification={classification}
             exerciseIndex={exerciseIndex}
             imageFilename={exerciseImageMap.get(routineExercise.exerciseName)}
             key={routineExercise.id}

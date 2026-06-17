@@ -30,11 +30,11 @@ export const computeERM = (effectiveWeight: number, reps: number): number => {
  * `weight` is `NaN` when the input was left empty.
  */
 export const weightValidationMessage = (
-  weight: number,
+  weight: number | '',
   classification: ExerciseClassification,
   bodyWeight: null | number,
 ): string | undefined => {
-  const isEmpty = Number.isNaN(weight);
+  const isEmpty = Number.isNaN(weight) || weight === '';
 
   if (classification === 'standard') {
     if (isEmpty || !Number.isFinite(weight) || weight <= 0) {
@@ -42,10 +42,6 @@ export const weightValidationMessage = (
     }
 
     return undefined;
-  }
-
-  if (!isEmpty && Number.isFinite(weight) && weight < 0) {
-    return 'Weight must be 0 or greater';
   }
 
   if ((isEmpty || weight === 0) && bodyWeight === null) {

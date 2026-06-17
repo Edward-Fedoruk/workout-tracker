@@ -1,4 +1,4 @@
-import { type LastExerciseSets, type RoutineExercise } from '@/database';
+import { type ExerciseClassification, type LastExerciseSets, type RoutineExercise } from '@/database';
 import { formatRepRange } from '@/routes/routines/routineUtilities';
 import { type FormValues } from '@/routes/routines/RoutineWorkout/RoutineWorkoutForm.schema';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
@@ -32,6 +32,7 @@ const LOOKS_ICONS = [
 export type RoutineWorkoutExerciseProps = {
   readonly errors: FieldErrors<FormValues>;
   readonly exercise: RoutineExercise;
+  readonly classification: ExerciseClassification;
   readonly exerciseIndex: number;
   readonly imageFilename?: string | undefined;
   readonly onAutoSave: () => void;
@@ -44,6 +45,7 @@ export type RoutineWorkoutExerciseProps = {
 export const RoutineWorkoutExercise = ({
   errors,
   exercise,
+  classification,
   exerciseIndex,
   imageFilename,
   onAutoSave,
@@ -53,6 +55,7 @@ export const RoutineWorkoutExercise = ({
   watch,
 }: RoutineWorkoutExerciseProps) => {
   const setErrors = errors.exercises?.[exerciseIndex]?.sets;
+  const isBodyWeight = classification === "bodyweight";
 
   return (
     <Box sx={{ mb: 6 }}>
@@ -105,7 +108,6 @@ export const RoutineWorkoutExercise = ({
         const repsError = setErrors?.[setIndex]?.reps?.message;
         const weightField = register(
           `exercises.${exerciseIndex}.sets.${setIndex}.weight`,
-          { valueAsNumber: true },
         );
         const repsField = register(
           `exercises.${exerciseIndex}.sets.${setIndex}.reps`,
@@ -146,11 +148,9 @@ export const RoutineWorkoutExercise = ({
                   : ''
               }
               size="small"
-              slotProps={{
-                htmlInput: { inputMode: 'decimal', min: 0, step: 0.5 },
-              }}
               sx={{ flex: 1 }}
-              type="number"
+              type={isBodyWeight ? "text" : "number"}
+              slotProps={isBodyWeight ? undefined : { htmlInput: { inputMode: 'decimal' } }}
               {...weightField}
               onBlur={(event) => {
                 weightField.onBlur(event).catch(() => undefined);

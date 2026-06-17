@@ -87,7 +87,7 @@ export const useRoutineWorkout = () => {
         data[String(routineExerciseId)] = exercise.sets.map((set) => ({
           completed: set.completed,
           reps: Number.isNaN(set.reps) ? null : set.reps,
-          weight: Number.isNaN(set.weight) ? null : set.weight,
+          weight: Number.isNaN(set.weight) || set.weight === '' ? null : set.weight,
         }));
       }
 
@@ -111,7 +111,7 @@ export const useRoutineWorkout = () => {
             (set) => !(Number.isNaN(set.reps) && Number.isNaN(set.weight)),
           )
           .map((set) => {
-            const weight = Number.isNaN(set.weight) ? null : set.weight;
+            const weight = Number.isNaN(set.weight) || set.weight === "" ? null : set.weight;
             const effective = computeEffectiveWeight({
               bodyWeight: values.bodyWeight,
               classification: exercise.classification,
