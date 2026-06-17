@@ -4,16 +4,13 @@
 // is unavailable there, and OPFS writes are only possible from a worker via
 // `createSyncAccessHandle`. This worker is the iOS-compatible write path.
 
+import {
+  type ImportRequest,
+  type ImportResponse,
+} from './importWorkerMessages';
+
 // eslint-disable-next-line consistent-this
 declare let self: DedicatedWorkerGlobalScope;
-
-export type ImportRequest = {
-  bytes: Uint8Array;
-  filename: string;
-  sidecars: string[];
-};
-
-export type ImportResponse = { error: string; ok: false } | { ok: true };
 
 // The sqlite worker may not have released its OPFS sync-access handle the instant
 // `promiser('close')` resolves. Retry briefly before giving up.

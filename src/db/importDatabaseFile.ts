@@ -1,4 +1,7 @@
-import { type ImportRequest, type ImportResponse } from './importWorker';
+import {
+  type ImportRequest,
+  type ImportResponse,
+} from './importWorkerMessages';
 
 const DATABASE_FILENAME = 'app.sqlite3';
 const SIDECARS = ['app.sqlite3-journal', 'app.sqlite3-wal', 'app.sqlite3-shm'];
@@ -9,7 +12,12 @@ const SIDECARS = ['app.sqlite3-journal', 'app.sqlite3-wal', 'app.sqlite3-shm'];
 // require `createSyncAccessHandle` (worker-only) rather than `createWritable`.
 export const writeDatabaseFile = (bytes: Uint8Array): Promise<void> => {
   return new Promise<void>((resolve, reject) => {
-    const worker = new Worker(new URL('importWorker.ts', import.meta.url), {
+    // The `./` prefix is required: Vite only externalizes the worker into its
+    // own chunk when the URL is an explicit relative literal. Without it, Vite
+    // inlines importWorker.ts into the main bundle, where its top-level
+    // `self.addEventListener('message')` runs on `window` and spins the CPU.
+    // eslint-disable-next-line unicorn/relative-url-style -- the leading ./ is load-bearing for Vite's worker bundling; see comment above
+    const worker = new Worker(new URL('./importWorker.ts', import.meta.url), {
       type: 'module',
     });
 
