@@ -13,7 +13,12 @@ export const Logo = ({
     width={width}
     xmlns="http://www.w3.org/2000/svg"
   >
-    <rect width="512" height="512" rx="96" fill="#1a202c" />
+    <rect
+      fill="#1a202c"
+      height="512"
+      rx="96"
+      width="512"
+    />
     <g
       fill="#90cdf4"
       stroke="#90cdf4"
@@ -21,21 +26,55 @@ export const Logo = ({
       strokeLinejoin="round"
       strokeWidth="20"
     >
-      <rect x="80" y="216" width="48" height="80" rx="12" />
-      <rect x="40" y="232" width="32" height="48" rx="10" />
-      <rect x="384" y="216" width="48" height="80" rx="12" />
-      <rect x="440" y="232" width="32" height="48" rx="10" />
-      <rect x="128" y="240" width="256" height="32" rx="8" />
+      <rect
+        height="80"
+        rx="12"
+        width="48"
+        x="80"
+        y="216"
+      />
+      <rect
+        height="48"
+        rx="10"
+        width="32"
+        x="40"
+        y="232"
+      />
+      <rect
+        height="80"
+        rx="12"
+        width="48"
+        x="384"
+        y="216"
+      />
+      <rect
+        height="48"
+        rx="10"
+        width="32"
+        x="440"
+        y="232"
+      />
+      <rect
+        height="32"
+        rx="8"
+        width="256"
+        x="128"
+        y="240"
+      />
     </g>
   </svg>
 );
 
-interface SplashScreenProps {
-  visible: boolean;
-}
+type SplashScreenProps = {
+  readonly visible: boolean;
+};
 
 export const SplashScreen = ({ visible }: SplashScreenProps) => (
-  <Fade in={visible} timeout={{ enter: 0, exit: 600 }} unmountOnExit>
+  <Fade
+    in={visible}
+    timeout={{ enter: 0, exit: 600 }}
+    unmountOnExit
+  >
     <Box
       sx={{
         alignItems: 'center',
@@ -47,7 +86,7 @@ export const SplashScreen = ({ visible }: SplashScreenProps) => (
         position: 'fixed',
         right: 0,
         top: 0,
-        zIndex: 9999,
+        zIndex: 9_999,
       }}
     >
       <Box

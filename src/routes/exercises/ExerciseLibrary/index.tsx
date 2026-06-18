@@ -21,6 +21,9 @@ export const ExerciseLibrary = () => {
 
   return (
     <ExerciseLibraryView
+      onAdd={
+        subView === 'exercises' ? exercises.openCreate : muscleGroups.openCreate
+      }
       onSubViewChange={setSubView}
       subView={subView}
     >

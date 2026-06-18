@@ -2,8 +2,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { type UseMuscleGroupsReturn } from '@/routes/exercises/ExerciseLibrary/hooks/useMuscleGroups';
 import { MuscleGroupForm } from '@/routes/exercises/MuscleGroup/MuscleGroupForm';
 import { MuscleGroupList } from '@/routes/exercises/MuscleGroup/MuscleGroupList';
-import AddIcon from '@mui/icons-material/Add';
-import { Button, DialogContentText, Stack } from '@mui/material';
+import { DialogContentText } from '@mui/material';
 
 export type MuscleGroupsSubViewProps = UseMuscleGroupsReturn & {
   readonly onAfterDelete: () => Promise<void>;
@@ -19,25 +18,11 @@ export const MuscleGroupsSubView = ({
   handleSave,
   muscleGroups,
   onAfterDelete,
-  openCreate,
   openRename,
   pendingDelete,
   requestDelete,
 }: MuscleGroupsSubViewProps) => (
   <>
-    <Stack
-      direction="row"
-      sx={{ justifyContent: 'flex-end', mb: 2 }}
-    >
-      <Button
-        onClick={openCreate}
-        startIcon={<AddIcon />}
-        variant="contained"
-      >
-        Add muscle group
-      </Button>
-    </Stack>
-
     <MuscleGroupList
       muscleGroups={muscleGroups}
       onDelete={requestDelete}

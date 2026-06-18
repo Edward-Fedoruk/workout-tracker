@@ -1,8 +1,10 @@
-import { Box, Tab, Tabs, Typography } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import { Box, Fab, Tab, Tabs, Typography } from '@mui/material';
 import { type ReactNode } from 'react';
 
 export type ExerciseLibraryViewProps = {
   readonly children: ReactNode;
+  readonly onAdd: () => void;
   readonly onSubViewChange: (view: SubView) => void;
   readonly subView: SubView;
 };
@@ -11,6 +13,7 @@ export type SubView = 'exercises' | 'muscle-groups';
 
 export const ExerciseLibraryView = ({
   children,
+  onAdd,
   onSubViewChange,
   subView,
 }: ExerciseLibraryViewProps) => (
@@ -38,5 +41,14 @@ export const ExerciseLibraryView = ({
     </Tabs>
 
     {children}
+
+    <Fab
+      aria-label={subView === 'exercises' ? 'add exercise' : 'add muscle group'}
+      color="secondary"
+      onClick={onAdd}
+      sx={{ bottom: 80, position: 'fixed', right: 24 }}
+    >
+      <AddIcon />
+    </Fab>
   </Box>
 );

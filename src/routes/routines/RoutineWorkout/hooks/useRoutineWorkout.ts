@@ -31,7 +31,9 @@ export const useRoutineWorkout = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<null | string>(null);
 
-  const load = async (routineId: number): Promise<boolean> => {
+  // Re-fetch routine + prefills + draft and update state. Shared by the initial
+  // load and by reload() after a structural mutation. Does not touch isLoading.
+  const fetchInto = async (routineId: number): Promise<boolean> => {
     const [data, bw, exerciseList, draft] = await Promise.all([
       getRoutineById(routineId),
       getBodyWeight(),
@@ -40,7 +42,6 @@ export const useRoutineWorkout = () => {
     ]);
 
     if (!data) {
-      setIsLoading(false);
       return false;
     }
 
@@ -64,17 +65,26 @@ export const useRoutineWorkout = () => {
       }),
     );
     setPrefills(prefillMap);
-    setIsLoading(false);
     return true;
   };
 
-  // Serialise the current form values into the singleton draft. NaN (empty
-  // numeric field) is stored as null. Best-effort — failures are swallowed so a
-  // draft-write error never blocks the user from logging.
-  const autoSave = useCallback(
-    (values: FormValues) => {
+  const load = async (routineId: number): Promise<boolean> => {
+    const found = await fetchInto(routineId);
+    setIsLoading(false);
+    return found;
+  };
+
+  // Re-project state after a structural edit, without the loading spinner.
+  const reload = useCallback(async (routineId: number): Promise<void> => {
+    await fetchInto(routineId);
+  }, []);
+
+  // Serialise the current form values into the draft shape (keyed by
+  // routineExercise.id). NaN/'' numeric fields become null.
+  const serialiseDraft = useCallback(
+    (values: FormValues): null | StoredDraftData => {
       if (!routine) {
-        return;
+        return null;
       }
 
       const data: StoredDraftData = {};
@@ -87,13 +97,38 @@ export const useRoutineWorkout = () => {
         data[String(routineExerciseId)] = exercise.sets.map((set) => ({
           completed: set.completed,
           reps: Number.isNaN(set.reps) ? null : set.reps,
-          weight: Number.isNaN(set.weight) || set.weight === '' ? null : set.weight,
+          weight:
+            Number.isNaN(set.weight) || set.weight === '' ? null : set.weight,
         }));
       }
 
-      saveDraft(routine.id, data).catch(() => undefined);
+      return data;
     },
     [routine],
+  );
+
+  // Best-effort blur-time persistence — failures are swallowed so a draft-write
+  // error never blocks the user from logging.
+  const autoSave = useCallback(
+    (values: FormValues) => {
+      const data = serialiseDraft(values);
+      if (routine && data) {
+        saveDraft(routine.id, data).catch(() => undefined);
+      }
+    },
+    [routine, serialiseDraft],
+  );
+
+  // Awaitable draft save used before structural mutations so a subsequent reload
+  // rehydrates the latest typed values.
+  const saveDraftNow = useCallback(
+    async (values: FormValues): Promise<void> => {
+      const data = serialiseDraft(values);
+      if (routine && data) {
+        await saveDraft(routine.id, data);
+      }
+    },
+    [routine, serialiseDraft],
   );
 
   const discardDraft = useCallback(async (): Promise<void> => {
@@ -111,7 +146,8 @@ export const useRoutineWorkout = () => {
             (set) => !(Number.isNaN(set.reps) && Number.isNaN(set.weight)),
           )
           .map((set) => {
-            const weight = Number.isNaN(set.weight) || set.weight === "" ? null : set.weight;
+            const weight =
+              Number.isNaN(set.weight) || set.weight === '' ? null : set.weight;
             const effective = computeEffectiveWeight({
               bodyWeight: values.bodyWeight,
               classification: exercise.classification,
@@ -160,7 +196,9 @@ export const useRoutineWorkout = () => {
     isSubmitting,
     load,
     prefills,
+    reload,
     routine,
+    saveDraftNow,
     submit,
   };
 };

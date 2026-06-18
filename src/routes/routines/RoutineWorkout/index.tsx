@@ -1,7 +1,9 @@
+import { useRoutineStructure } from './hooks/useRoutineStructure';
 import { useRoutineWorkout } from './hooks/useRoutineWorkout';
+import { type FormValues } from './RoutineWorkoutForm.schema';
 import { RoutineWorkoutView } from './views/RoutineWorkoutView';
 import { Box, CircularProgress } from '@mui/material';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 export const RoutineWorkout = () => {
@@ -9,6 +11,14 @@ export const RoutineWorkout = () => {
   const navigate = useNavigate();
   const routineId = id === undefined ? Number.NaN : Number.parseInt(id, 10);
   const workout = useRoutineWorkout();
+  const getValuesRef = useRef<(() => FormValues) | null>(null);
+
+  const structure = useRoutineStructure({
+    getCurrentValues: () => getValuesRef.current?.() ?? null,
+    reload: workout.reload,
+    routine: workout.routine,
+    saveDraftNow: workout.saveDraftNow,
+  });
 
   useEffect(() => {
     if (Number.isNaN(routineId)) {
@@ -47,8 +57,15 @@ export const RoutineWorkout = () => {
       exerciseImageMap={workout.exerciseImageMap}
       exercises={workout.exercises}
       isSubmitting={workout.isSubmitting}
+      onAddExercise={(values) => structure.addExercise(values)}
+      onAddSet={(exerciseId, currentCount) => {
+        structure.addSet(exerciseId, currentCount).catch(() => undefined);
+      }}
       onAutoSave={(values) => workout.autoSave(values)}
       onBack={() => navigate('/routines')}
+      onDeleteExercise={(exerciseId) => {
+        structure.deleteExercise(exerciseId).catch(() => undefined);
+      }}
       onDiscard={() => {
         const discard = async () => {
           await workout.discardDraft();
@@ -56,6 +73,21 @@ export const RoutineWorkout = () => {
         };
 
         discard().catch(() => undefined);
+      }}
+      onEditExercise={(exerciseId, values) =>
+        structure.editExercise(exerciseId, values)
+      }
+      onRegisterGetValues={(getValues) => {
+        getValuesRef.current = getValues;
+      }}
+      onRemoveSet={(exerciseId, currentCount) => {
+        structure.removeSet(exerciseId, currentCount).catch(() => undefined);
+      }}
+      onRename={(name) => {
+        structure.rename(name).catch(() => undefined);
+      }}
+      onReorder={(orderedIds) => {
+        structure.reorder(orderedIds).catch(() => undefined);
       }}
       onSubmit={async (values) => {
         const ok = await workout.submit(values);
@@ -65,6 +97,7 @@ export const RoutineWorkout = () => {
       }}
       prefills={workout.prefills}
       routine={workout.routine}
+      structureVersion={structure.structureVersion}
     />
   );
 };

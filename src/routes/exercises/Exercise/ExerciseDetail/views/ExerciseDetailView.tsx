@@ -140,7 +140,6 @@ export const ExerciseDetailView = ({
             <MoreVertIcon />
           </IconButton>
         </Box>
-
       </Box>
 
       <ExerciseErmChart rows={rawRows} />

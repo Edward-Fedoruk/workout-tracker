@@ -121,6 +121,12 @@ export const moveRoutineExercise = (
   routineId: number,
   direction: 'down' | 'up',
 ) => routineExerciseRepository.move(id, routineId, direction);
+export const reorderRoutineExercises = (
+  routineId: number,
+  orderedIds: number[],
+) => routineExerciseRepository.reorder(routineId, orderedIds);
+export const setRoutineExerciseSetCount = (id: number, suggestedSets: number) =>
+  routineExerciseRepository.updateSetCount(id, suggestedSets);
 export const getLastExerciseSets = (exerciseName: string, setCount: number) =>
   routineExerciseRepository.getLastSets(exerciseName, setCount);
 

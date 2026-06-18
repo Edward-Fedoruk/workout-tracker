@@ -119,11 +119,11 @@ main thread (React)  ──►  promiser (async API)  ──►  Web Worker  ─
 - On unsupported browsers, the OPFS open throws and the fallback to `:memory:` is silent (a `console.warn` is logged). The app appears to work but data is lost on reload — check the console if persistence seems broken.
 
 <!-- SPECKIT START -->
-**Active Feature**: Exercise eRM Performance Chart — line chart on the exercise detail page tracking Estimated 1-Rep Max per set over time, with time-range filter (All Time / Last Year / Last Month), using MUI X Charts (branch `017-exercise-erm-chart`)  
+**Active Feature**: Routine Inline Editing & UI Consistency — merge the routine editor into the in-progress workout view (rename, add/delete exercise, add/remove set, edit rep range, all persisted to the routine template in the DB), wrap exercises in cards (green when all sets complete, alternating gray set rows), reorder exercises via `@dnd-kit`, and standardize the "add" action on the exercise library to the plus FAB used on the log/routine screens (branch `018-routine-inline-editing`)  
 For implementation context, design decisions, data model, and step-by-step quickstart, see:
-- **Plan**: `specs/017-exercise-erm-chart/plan.md`
-- **Research**: `specs/017-exercise-erm-chart/research.md`
-- **Data Model**: `specs/017-exercise-erm-chart/data-model.md`
-- **Quickstart**: `specs/017-exercise-erm-chart/quickstart.md`
-- **Contracts**: `specs/017-exercise-erm-chart/contracts/exercise-erm-chart.md`
+- **Plan**: `specs/018-routine-inline-editing/plan.md`
+- **Research**: `specs/018-routine-inline-editing/research.md`
+- **Data Model**: `specs/018-routine-inline-editing/data-model.md`
+- **Quickstart**: `specs/018-routine-inline-editing/quickstart.md`
+- **Contracts**: `specs/018-routine-inline-editing/contracts/database-helpers.md`, `specs/018-routine-inline-editing/contracts/components.md`
 <!-- SPECKIT END -->
