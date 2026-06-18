@@ -202,6 +202,37 @@ class RoutineExerciseRepository {
     }
   }
 
+  async reorder(routineId: number, orderedIds: number[]): Promise<void> {
+    const promiser = await getPromiser();
+    const databaseId = getDatabaseId();
+
+    await promiser('exec', { dbId: databaseId, sql: 'BEGIN' });
+    try {
+      // Pass 1: park every row at a negative position so each write stays
+      // collision-free under UNIQUE(routine_id, position).
+      for (const [index, id] of orderedIds.entries()) {
+        await promiser('exec', {
+          bind: [-(index + 1), id, routineId],
+          dbId: databaseId,
+          sql: 'UPDATE routine_exercise SET position = ? WHERE id = ? AND routine_id = ?',
+        });
+      }
+
+      // Pass 2: flip the parked negatives back to their final positive values.
+      await promiser('exec', {
+        bind: [routineId],
+        dbId: databaseId,
+        sql: 'UPDATE routine_exercise SET position = -position WHERE routine_id = ? AND position < 0',
+      });
+      await promiser('exec', { dbId: databaseId, sql: 'COMMIT' });
+    } catch (error) {
+      await promiser('exec', { dbId: databaseId, sql: 'ROLLBACK' }).catch(
+        () => undefined,
+      );
+      throw error;
+    }
+  }
+
   async update(
     id: number,
     exerciseName: string,
@@ -212,6 +243,14 @@ class RoutineExerciseRepository {
     await database
       .update(routineExercise)
       .set({ exerciseName, maxReps, minReps, suggestedSets })
+      .where(eq(routineExercise.id, id));
+  }
+
+  async updateSetCount(id: number, suggestedSets: number): Promise<void> {
+    const clamped = Math.min(5, Math.max(1, suggestedSets));
+    await database
+      .update(routineExercise)
+      .set({ suggestedSets: clamped })
       .where(eq(routineExercise.id, id));
   }
 }

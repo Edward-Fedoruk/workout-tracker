@@ -30,7 +30,7 @@ export const computeERM = (effectiveWeight: number, reps: number): number => {
  * `weight` is `NaN` when the input was left empty.
  */
 export const weightValidationMessage = (
-  weight: number | '',
+  weight: '' | number,
   classification: ExerciseClassification,
   bodyWeight: null | number,
 ): string | undefined => {

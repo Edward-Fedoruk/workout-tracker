@@ -19,9 +19,18 @@ export const RoutineList = () => {
   return (
     <RoutineListView
       {...routines}
-      onAdd={() => navigate('/routines/new')}
-      onEdit={(id) => navigate(`/routines/${id}/edit`)}
-      onStart={(id) => navigate(`/routines/${id}/start`)}
+      onAdd={() => {
+        const addAndOpen = async () => {
+          const newId = await routines.create();
+          navigate(`/routines/${newId}`);
+        };
+
+        addAndOpen().catch(() => undefined);
+      }}
+      onDelete={(id) => {
+        routines.remove(id).catch(() => undefined);
+      }}
+      onOpen={(id) => navigate(`/routines/${id}`)}
     />
   );
 };

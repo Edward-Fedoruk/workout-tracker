@@ -1,6 +1,6 @@
 import { getDraft, initDatabase, MigrationError } from './database';
-import { SplashScreen } from '@/components/SplashScreen';
 import { MigrationErrorDialog } from './routes/workouts/MigrationErrorDialog';
+import { SplashScreen } from '@/components/SplashScreen';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay';
@@ -114,16 +114,14 @@ export const AppLayout = () => {
     <>
       <SplashScreen visible={!isDatabaseReady} />
       {isDatabaseReady && (
-        <>
-          <Box
-            sx={{
-              pb: showNav ? NAV_OFFSET : 0,
-              pt: 'env(safe-area-inset-top)',
-            }}
-          >
-            <Outlet />
-          </Box>
-        </>
+        <Box
+          sx={{
+            pb: showNav ? NAV_OFFSET : 0,
+            pt: 'env(safe-area-inset-top)',
+          }}
+        >
+          <Outlet />
+        </Box>
       )}
       {isDatabaseReady && showNav && (
         <Paper

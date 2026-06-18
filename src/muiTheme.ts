@@ -81,20 +81,12 @@ export const muiTheme = createTheme({
       },
     },
 
-    MuiDivider: {
-      styleOverrides: {
-        withChildren: {
-          '&::after, &::before': { borderTopColor: token.emerald200 },
-        },
-      },
-    },
     // ---- Bottom navigation (primary app menu) ----
     MuiBottomNavigation: {
       styleOverrides: {
         root: { backgroundColor: token.surfaceCard },
       },
     },
-
     MuiBottomNavigationAction: {
       styleOverrides: {
         root: {
@@ -103,6 +95,7 @@ export const muiTheme = createTheme({
         },
       },
     },
+
     // ---- Actions ----
     MuiButton: {
       defaultProps: { disableElevation: true },
@@ -146,7 +139,6 @@ export const muiTheme = createTheme({
         root: { fontWeight: 600 },
       },
     },
-
     // ---- Global element defaults (scrollbars, text selection) ----
     MuiCssBaseline: {
       styleOverrides: {
@@ -165,6 +157,7 @@ export const muiTheme = createTheme({
         },
       },
     },
+
     // … except overlays (dialogs/menus/popovers), which lift off the canvas.
     MuiDialog: {
       styleOverrides: {
@@ -181,6 +174,13 @@ export const muiTheme = createTheme({
           fontSize: '1.125rem',
           fontWeight: 600,
           letterSpacing: '-0.01em',
+        },
+      },
+    },
+    MuiDivider: {
+      styleOverrides: {
+        withChildren: {
+          '&::after, &::before': { borderTopColor: token.emerald200 },
         },
       },
     },

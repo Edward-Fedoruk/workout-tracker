@@ -1,4 +1,10 @@
-import { getDraft, listRoutines, type RoutineWithExercises } from '@/database';
+import {
+  createRoutine,
+  deleteRoutine,
+  getDraft,
+  listRoutines,
+  type RoutineWithExercises,
+} from '@/database';
 import { useState } from 'react';
 
 export type UseRoutinesReturn = ReturnType<typeof useRoutines>;
@@ -13,9 +19,18 @@ export const useRoutines = () => {
     setDraftRoutineId(draft ? draft.routineId : null);
   };
 
+  const create = async (): Promise<number> => createRoutine('New routine');
+
+  const remove = async (id: number): Promise<void> => {
+    await deleteRoutine(id);
+    await refresh();
+  };
+
   return {
+    create,
     draftRoutineId,
     refresh,
+    remove,
     routines,
   };
 };

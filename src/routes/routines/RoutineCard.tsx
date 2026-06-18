@@ -1,28 +1,32 @@
 import { type RoutineWithExercises } from '@/database';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import {
   Box,
-  Button,
   ButtonBase,
   Card,
   CardContent,
   Chip,
-  Tooltip,
+  IconButton,
+  Menu,
+  MenuItem,
   Typography,
 } from '@mui/material';
+import { useState } from 'react';
 
 export type RoutineCardProps = {
   readonly isInProgress?: boolean;
-  readonly onEdit: () => void;
-  readonly onStart: () => void;
+  readonly onDelete: () => void;
+  readonly onOpen: () => void;
   readonly routine: RoutineWithExercises;
 };
 
 export const RoutineCard = ({
   isInProgress = false,
-  onEdit,
-  onStart,
+  onDelete,
+  onOpen,
   routine,
 }: RoutineCardProps) => {
+  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const hasExercises = routine.exercises.length > 0;
 
   return (
@@ -33,7 +37,7 @@ export const RoutineCard = ({
       <CardContent sx={{ pb: 1 }}>
         <Box sx={{ alignItems: 'center', display: 'flex', gap: 1 }}>
           <ButtonBase
-            onClick={onEdit}
+            onClick={onOpen}
             sx={{
               flex: 1,
               gap: 2,
@@ -59,23 +63,30 @@ export const RoutineCard = ({
               />
             )}
           </ButtonBase>
-          <Tooltip
-            disableHoverListener={hasExercises}
-            title={hasExercises ? '' : 'Add exercises before starting'}
+          <IconButton
+            aria-label="Routine options"
+            onClick={(event) => setMenuAnchor(event.currentTarget)}
           >
-            <span>
-              <Button
-                color="success"
-                disabled={!hasExercises}
-                onClick={onStart}
-                size="small"
-                variant="contained"
-              >
-                {isInProgress ? 'Continue' : 'Start'}
-              </Button>
-            </span>
-          </Tooltip>
+            <MoreVertIcon />
+          </IconButton>
         </Box>
+
+        <Menu
+          anchorEl={menuAnchor}
+          onClose={() => setMenuAnchor(null)}
+          open={Boolean(menuAnchor)}
+        >
+          <MenuItem
+            onClick={() => {
+              setMenuAnchor(null);
+              onDelete();
+            }}
+            sx={{ color: 'error.main' }}
+          >
+            Delete
+          </MenuItem>
+        </Menu>
+
         {hasExercises && (
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.75 }}>
             {routine.exercises.map((exercise) => (
