@@ -206,24 +206,31 @@ class RoutineExerciseRepository {
     const promiser = await getPromiser();
     const databaseId = getDatabaseId();
 
+    // Park rows above the live range (1..n) so each write stays collision-free
+    // under UNIQUE(routine_id, position) while still honouring the
+    // position >= 1 CHECK constraint (negatives would violate it).
+    const offset = orderedIds.length;
+
     await promiser('exec', { dbId: databaseId, sql: 'BEGIN' });
     try {
-      // Pass 1: park every row at a negative position so each write stays
-      // collision-free under UNIQUE(routine_id, position).
+      // Pass 1: park every row at a temporary high position.
       for (const [index, id] of orderedIds.entries()) {
         await promiser('exec', {
-          bind: [-(index + 1), id, routineId],
+          bind: [offset + index + 1, id, routineId],
           dbId: databaseId,
           sql: 'UPDATE routine_exercise SET position = ? WHERE id = ? AND routine_id = ?',
         });
       }
 
-      // Pass 2: flip the parked negatives back to their final positive values.
-      await promiser('exec', {
-        bind: [routineId],
-        dbId: databaseId,
-        sql: 'UPDATE routine_exercise SET position = -position WHERE routine_id = ? AND position < 0',
-      });
+      // Pass 2: drop each parked row down to its final 1-based position.
+      for (const [index, id] of orderedIds.entries()) {
+        await promiser('exec', {
+          bind: [index + 1, id, routineId],
+          dbId: databaseId,
+          sql: 'UPDATE routine_exercise SET position = ? WHERE id = ? AND routine_id = ?',
+        });
+      }
+
       await promiser('exec', { dbId: databaseId, sql: 'COMMIT' });
     } catch (error) {
       await promiser('exec', { dbId: databaseId, sql: 'ROLLBACK' }).catch(
