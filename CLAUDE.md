@@ -119,11 +119,11 @@ main thread (React)  ──►  promiser (async API)  ──►  Web Worker  ─
 - On unsupported browsers, the OPFS open throws and the fallback to `:memory:` is silent (a `console.warn` is logged). The app appears to work but data is lost on reload — check the console if persistence seems broken.
 
 <!-- SPECKIT START -->
-**Active Feature**: Routine Inline Editing & UI Consistency — merge the routine editor into the in-progress workout view (rename, add/delete exercise, add/remove set, edit rep range, all persisted to the routine template in the DB), wrap exercises in cards (green when all sets complete, alternating gray set rows), reorder exercises via `@dnd-kit`, and standardize the "add" action on the exercise library to the plus FAB used on the log/routine screens (branch `018-routine-inline-editing`)  
+**Active Feature**: Exercise Analytics — an Analytics tab under the Exercises page with three views plus a home-screen strength indicator: (1) a customizable multi-series `LineChart` where you pick an exercise and any per-set parameters (Set 1–5 reps/weight/eRM, plus aggregate "Overall eRM"), (2) a weekly overall-strength progress `LineChart` (sum of each exercise's best-set eRM per rolling 7-day week) with a `/log` home banner reading "stronger/weaker by X%", and (3) a muscle-group wind rose `RadarChart` (per-group training volume over rolling Week/Month/Year). All math routes through swappable strategy registries in `src/utils/analytics/` (defaults: average overall-eRM, sum-of-best-eRM strength, training-volume rose). Read-only over existing tables — no schema change (branch `019-exercise-analytics`)  
 For implementation context, design decisions, data model, and step-by-step quickstart, see:
-- **Plan**: `specs/018-routine-inline-editing/plan.md`
-- **Research**: `specs/018-routine-inline-editing/research.md`
-- **Data Model**: `specs/018-routine-inline-editing/data-model.md`
-- **Quickstart**: `specs/018-routine-inline-editing/quickstart.md`
-- **Contracts**: `specs/018-routine-inline-editing/contracts/database-helpers.md`, `specs/018-routine-inline-editing/contracts/components.md`
+- **Plan**: `specs/019-exercise-analytics/plan.md`
+- **Research**: `specs/019-exercise-analytics/research.md`
+- **Data Model**: `specs/019-exercise-analytics/data-model.md`
+- **Quickstart**: `specs/019-exercise-analytics/quickstart.md`
+- **Contracts**: `specs/019-exercise-analytics/contracts/database-helpers.md`, `specs/019-exercise-analytics/contracts/components.md`
 <!-- SPECKIT END -->

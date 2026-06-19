@@ -3,6 +3,7 @@ import { useMuscleGroups } from './hooks/useMuscleGroups';
 import { ExerciseLibraryView, type SubView } from './views/ExerciseLibraryView';
 import { ExercisesSubView } from './views/ExercisesSubView';
 import { MuscleGroupsSubView } from './views/MuscleGroupsSubView';
+import { ExerciseAnalytics } from '@/routes/exercises/Analytics';
 import { useEffect, useState } from 'react';
 
 export const ExerciseLibrary = () => {
@@ -27,17 +28,19 @@ export const ExerciseLibrary = () => {
       onSubViewChange={setSubView}
       subView={subView}
     >
-      {subView === 'exercises' ? (
+      {subView === 'exercises' && (
         <ExercisesSubView
           {...exercises}
           muscleGroups={muscleGroups.muscleGroups}
         />
-      ) : (
+      )}
+      {subView === 'muscle-groups' && (
         <MuscleGroupsSubView
           {...muscleGroups}
           onAfterDelete={() => exercises.refresh()}
         />
       )}
+      {subView === 'analytics' && <ExerciseAnalytics />}
     </ExerciseLibraryView>
   );
 };

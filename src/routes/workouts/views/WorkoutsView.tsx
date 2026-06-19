@@ -3,6 +3,7 @@ import { AdvancedWorkoutTable } from '@/routes/workouts/AdvancedWorkoutTable';
 import { DeleteWorkoutDialog } from '@/routes/workouts/DeleteWorkoutDialog';
 import { GroupedWorkoutTable } from '@/routes/workouts/GroupedWorkoutTable';
 import { type UseWorkoutsReturn } from '@/routes/workouts/hooks/useWorkouts';
+import { StrengthBanner } from '@/routes/workouts/StrengthBanner';
 import { WorkoutForm } from '@/routes/workouts/WorkoutForm';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
@@ -93,6 +94,8 @@ export const WorkoutsView = ({
           Advanced view
         </Button>
       </Box>
+
+      <StrengthBanner />
 
       {isLoading ? (
         <Box sx={{ display: 'flex', flex: 1, justifyContent: 'center', py: 4 }}>

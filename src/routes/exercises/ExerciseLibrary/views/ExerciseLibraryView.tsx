@@ -9,7 +9,7 @@ export type ExerciseLibraryViewProps = {
   readonly subView: SubView;
 };
 
-export type SubView = 'exercises' | 'muscle-groups';
+export type SubView = 'analytics' | 'exercises' | 'muscle-groups';
 
 export const ExerciseLibraryView = ({
   children,
@@ -38,17 +38,25 @@ export const ExerciseLibraryView = ({
         label="Muscle Groups"
         value="muscle-groups"
       />
+      <Tab
+        label="Analytics"
+        value="analytics"
+      />
     </Tabs>
 
     {children}
 
-    <Fab
-      aria-label={subView === 'exercises' ? 'add exercise' : 'add muscle group'}
-      color="secondary"
-      onClick={onAdd}
-      sx={{ bottom: 80, position: 'fixed', right: 24 }}
-    >
-      <AddIcon />
-    </Fab>
+    {subView !== 'analytics' && (
+      <Fab
+        aria-label={
+          subView === 'exercises' ? 'add exercise' : 'add muscle group'
+        }
+        color="secondary"
+        onClick={onAdd}
+        sx={{ bottom: 80, position: 'fixed', right: 24 }}
+      >
+        <AddIcon />
+      </Fab>
+    )}
   </Box>
 );

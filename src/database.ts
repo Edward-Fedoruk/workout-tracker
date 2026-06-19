@@ -1,4 +1,5 @@
 import { getDatabaseId, getPromiser } from './db/driver';
+import { analyticsRepository } from './db/entities/analytics/repository';
 import { appSettingRepository } from './db/entities/app-setting/repository';
 import { exerciseRepository } from './db/entities/exercise/repository';
 import { type ExerciseClassification } from './db/entities/exercise/types';
@@ -37,6 +38,19 @@ export type {
   WorkoutWithSets,
 } from './db/entities/workout-log/types';
 export { initDatabase, MigrationError } from './db/initDatabase';
+
+export type {
+  AnalyticsMuscleGroupSetRow,
+  AnalyticsSetRow,
+} from './utils/analytics/types';
+
+// Analytics operations (read-only)
+export const listSetRowsInRange = (startIso: string, endIso: string) =>
+  analyticsRepository.listSetRowsInRange(startIso, endIso);
+export const listMuscleGroupSetRowsInRange = (
+  startIso: string,
+  endIso: string,
+) => analyticsRepository.listMuscleGroupSetRowsInRange(startIso, endIso);
 
 // Exercise operations
 export const listExercises = () => exerciseRepository.list();
