@@ -60,7 +60,10 @@ export const MuscleGroupRose = () => {
       ) : (
         <RadarChart
           height={300}
-          radar={{ metrics: spokes.map((spoke) => spoke.name) }}
+          radar={{
+            max: Math.max(...spokes.map((spoke) => spoke.value)),
+            metrics: spokes.map((spoke) => spoke.name),
+          }}
           series={[
             {
               data: spokes.map((spoke) => spoke.value),
