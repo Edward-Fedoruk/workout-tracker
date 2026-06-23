@@ -1,11 +1,9 @@
-import {
-  type Exercise,
-  listWorkoutsByExerciseName,
-  type WorkoutTableRow,
-} from '@/database';
+import { type Exercise, type WorkoutTableRow } from '@/database';
+import { useListWorkoutsByExerciseNameQuery } from '@/store/entities/workouts';
 import { sessionErmStrategies } from '@/utils/analytics/sessionErm';
 import { type AnalyticsSet } from '@/utils/analytics/types';
-import { useEffect, useMemo, useState } from 'react';
+import { skipToken } from '@reduxjs/toolkit/query/react';
+import { useMemo, useState } from 'react';
 
 export type ParameterKey =
   | 'overallErm'
@@ -106,7 +104,6 @@ export const useExerciseParameterChart = (exercises: Exercise[]) => {
   const [selectedExerciseId, setSelectedExerciseId] = useState<null | number>(
     null,
   );
-  const [rows, setRows] = useState<WorkoutTableRow[]>([]);
   const [selectedParameters, setSelectedParameters] = useState<ParameterKey[]>(
     [],
   );
@@ -118,27 +115,9 @@ export const useExerciseParameterChart = (exercises: Exercise[]) => {
     [exercises, selectedExerciseId],
   );
 
-  useEffect(() => {
-    let cancelled = false;
-
-    if (selectedName !== null) {
-      listWorkoutsByExerciseName(selectedName)
-        .then((result) => {
-          if (!cancelled) {
-            setRows(result);
-          }
-        })
-        .catch(() => {
-          if (!cancelled) {
-            setRows([]);
-          }
-        });
-    }
-
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedName]);
+  const { data: rows = [] } = useListWorkoutsByExerciseNameQuery(
+    selectedName ?? skipToken,
+  );
 
   // Parameters that actually have data for the selected exercise (any range).
   const availableParameters = useMemo(

@@ -119,11 +119,11 @@ main thread (React)  ──►  promiser (async API)  ──►  Web Worker  ─
 - On unsupported browsers, the OPFS open throws and the fallback to `:memory:` is silent (a `console.warn` is logged). The app appears to work but data is lost on reload — check the console if persistence seems broken.
 
 <!-- SPECKIT START -->
-**Active Feature**: Exercise Analytics — an Analytics tab under the Exercises page with three views plus a home-screen strength indicator: (1) a customizable multi-series `LineChart` where you pick an exercise and any per-set parameters (Set 1–5 reps/weight/eRM, plus aggregate "Overall eRM"), (2) a weekly overall-strength progress `LineChart` (sum of each exercise's best-set eRM per rolling 7-day week) with a `/log` home banner reading "stronger/weaker by X%", and (3) a muscle-group wind rose `RadarChart` (per-group training volume over rolling Week/Month/Year). All math routes through swappable strategy registries in `src/utils/analytics/` (defaults: average overall-eRM, sum-of-best-eRM strength, training-volume rose). Read-only over existing tables — no schema change (branch `019-exercise-analytics`)  
+**Active Feature**: Redux Cache Layer — insert a Redux Toolkit (RTK Query) store between the React UI and the existing `@/database` helpers so the UI reads from an in-memory caching proxy instead of re-querying SQLite on every navigation. Data sets load lazily on first page access and stay cached for the session (instant, spinner-free revisits); writes are **write-through** (await the `@/database` helper, then tag-invalidation refreshes the cache — read-your-writes). SQLite/OPFS stays the single durable store; the Redux store is in-memory only, never persisted, and is discarded by the existing import/restore `location.reload()`. New code lives in `src/store/` (`api.ts`, `index.ts`, `hooks.ts`, `entities/<entity>.ts`), grouped by entity; container hooks under `src/routes/**/hooks/` are re-pointed to generated query/mutation hooks while preserving their return shapes (views untouched). All endpoints wrap `@/database` helpers only — never the worker/promiser. No schema change (branch `020-redux-cache-layer`)  
 For implementation context, design decisions, data model, and step-by-step quickstart, see:
-- **Plan**: `specs/019-exercise-analytics/plan.md`
-- **Research**: `specs/019-exercise-analytics/research.md`
-- **Data Model**: `specs/019-exercise-analytics/data-model.md`
-- **Quickstart**: `specs/019-exercise-analytics/quickstart.md`
-- **Contracts**: `specs/019-exercise-analytics/contracts/database-helpers.md`, `specs/019-exercise-analytics/contracts/components.md`
+- **Plan**: `specs/020-redux-cache-layer/plan.md`
+- **Research**: `specs/020-redux-cache-layer/research.md`
+- **Data Model**: `specs/020-redux-cache-layer/data-model.md`
+- **Quickstart**: `specs/020-redux-cache-layer/quickstart.md`
+- **Contracts**: `specs/020-redux-cache-layer/contracts/store-api.md`, `specs/020-redux-cache-layer/contracts/ui-hooks.md`
 <!-- SPECKIT END -->

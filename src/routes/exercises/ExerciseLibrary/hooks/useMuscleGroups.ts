@@ -1,18 +1,22 @@
-import {
-  createMuscleGroup,
-  deleteMuscleGroup,
-  listMuscleGroups,
-  type MuscleGroup,
-  updateMuscleGroup,
-} from '@/database';
+import { type MuscleGroup } from '@/database';
 import { useToggle } from '@/hooks/useToggle';
 import { type FormValues } from '@/routes/exercises/MuscleGroup/MuscleGroupForm/schema';
+import {
+  useCreateMuscleGroupMutation,
+  useDeleteMuscleGroupMutation,
+  useListMuscleGroupsQuery,
+  useUpdateMuscleGroupMutation,
+} from '@/store/entities/muscleGroups';
 import { useState } from 'react';
 
 export type UseMuscleGroupsReturn = ReturnType<typeof useMuscleGroups>;
 
 export const useMuscleGroups = () => {
-  const [muscleGroups, setMuscleGroups] = useState<MuscleGroup[]>([]);
+  const { data: muscleGroups = [] } = useListMuscleGroupsQuery();
+  const [createMuscleGroup] = useCreateMuscleGroupMutation();
+  const [updateMuscleGroup] = useUpdateMuscleGroupMutation();
+  const [deleteMuscleGroup] = useDeleteMuscleGroupMutation();
+
   const [editingMuscleGroup, setEditingMuscleGroup] =
     useState<MuscleGroup | null>(null);
   const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
@@ -21,10 +25,9 @@ export const useMuscleGroups = () => {
   const dialog = useToggle();
   const deleteConfirm = useToggle();
 
-  const refresh = async () => {
-    const list = await listMuscleGroups();
-    setMuscleGroups(list);
-  };
+  // Cache invalidation keeps the list fresh; kept as a resolved no-op so the
+  // view's mount-time call stays valid (HR-2).
+  const refresh = async (): Promise<void> => undefined;
 
   const openCreate = () => {
     setEditingMuscleGroup(null);
@@ -50,12 +53,18 @@ export const useMuscleGroups = () => {
     }
 
     if (dialogMode === 'edit' && editingMuscleGroup) {
-      await updateMuscleGroup(editingMuscleGroup.id, values.name, values.color);
+      await updateMuscleGroup({
+        color: values.color,
+        id: editingMuscleGroup.id,
+        name: values.name,
+      }).unwrap();
     } else {
-      await createMuscleGroup(values.name, values.color);
+      await createMuscleGroup({
+        color: values.color,
+        name: values.name,
+      }).unwrap();
     }
 
-    await refresh();
     dialog.onClose();
     return null;
   };
@@ -73,8 +82,8 @@ export const useMuscleGroups = () => {
     const target = pendingDelete;
     setPendingDelete(null);
     deleteConfirm.onClose();
-    await deleteMuscleGroup(target.id);
-    await Promise.all([refresh(), onAfterDelete?.()]);
+    await deleteMuscleGroup(target.id).unwrap();
+    await onAfterDelete?.();
   };
 
   const cancelDelete = () => {

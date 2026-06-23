@@ -1,11 +1,12 @@
-import { getBodyWeight, listSetRowsInRange } from '@/database';
+import { useListSetRowsInRangeQuery } from '@/store/entities/analytics';
+import { useGetBodyWeightQuery } from '@/store/entities/settings';
 import { sessionsFromSetRows } from '@/utils/analytics/fromWorkouts';
 import {
   computeStrengthProgress,
   type WeekOverWeekResult,
 } from '@/utils/analytics/strengthScore';
 import { currentAndPreviousWeek } from '@/utils/analytics/timeWindows';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 
 const INSUFFICIENT: WeekOverWeekResult = {
   current: null,
@@ -19,42 +20,34 @@ const INSUFFICIENT: WeekOverWeekResult = {
  * current rolling 7-day window against the previous one.
  */
 export const useStrengthProgress = () => {
-  const [result, setResult] = useState<WeekOverWeekResult>(INSUFFICIENT);
-  const [loading, setLoading] = useState(true);
+  const { current, previous } = useMemo(() => currentAndPreviousWeek(), []);
 
-  useEffect(() => {
-    let cancelled = false;
+  const bodyWeightQuery = useGetBodyWeightQuery();
+  const currentQuery = useListSetRowsInRangeQuery({
+    endIso: current.endIso,
+    startIso: current.startIso,
+  });
+  const previousQuery = useListSetRowsInRangeQuery({
+    endIso: previous.endIso,
+    startIso: previous.startIso,
+  });
 
-    const load = async () => {
-      const { current, previous } = currentAndPreviousWeek();
-      const [bodyWeight, currentRows, previousRows] = await Promise.all([
-        getBodyWeight(),
-        listSetRowsInRange(current.startIso, current.endIso),
-        listSetRowsInRange(previous.startIso, previous.endIso),
-      ]);
+  const loading =
+    bodyWeightQuery.isLoading ||
+    currentQuery.isLoading ||
+    previousQuery.isLoading;
 
-      const next = computeStrengthProgress(
-        sessionsFromSetRows(currentRows, bodyWeight),
-        sessionsFromSetRows(previousRows, bodyWeight),
-      );
+  const result = useMemo<WeekOverWeekResult>(() => {
+    if (!currentQuery.data || !previousQuery.data) {
+      return INSUFFICIENT;
+    }
 
-      if (!cancelled) {
-        setResult(next);
-        setLoading(false);
-      }
-    };
-
-    load().catch(() => {
-      if (!cancelled) {
-        setResult(INSUFFICIENT);
-        setLoading(false);
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    const bodyWeight = bodyWeightQuery.data ?? null;
+    return computeStrengthProgress(
+      sessionsFromSetRows(currentQuery.data, bodyWeight),
+      sessionsFromSetRows(previousQuery.data, bodyWeight),
+    );
+  }, [bodyWeightQuery.data, currentQuery.data, previousQuery.data]);
 
   return { loading, result };
 };

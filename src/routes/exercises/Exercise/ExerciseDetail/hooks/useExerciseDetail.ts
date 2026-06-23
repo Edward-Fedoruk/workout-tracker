@@ -1,25 +1,25 @@
-import {
-  deleteExercise,
-  deleteWorkout,
-  type Exercise,
-  getBodyWeight,
-  getExerciseById,
-  getWorkoutById,
-  listExercises,
-  listMuscleGroups,
-  listWorkoutsByExerciseName,
-  type MuscleGroup,
-  updateExercise,
-  updateWorkout,
-  type WorkoutTableRow,
-  type WorkoutWithSets,
-} from '@/database';
+import { type Exercise, type WorkoutWithSets } from '@/database';
 import { useToggle } from '@/hooks/useToggle';
 import { type FormValues as ExerciseFormValues } from '@/routes/exercises/Exercise/ExerciseForm/schema';
 import { type FormValues as WorkoutFormValues } from '@/routes/workouts/WorkoutForm.schema';
-import { groupWorkoutsByDate, type WorkoutDateGroup } from '@/utils/dateGroup';
+import {
+  useDeleteExerciseMutation,
+  useGetExerciseQuery,
+  useListExercisesQuery,
+  useUpdateExerciseMutation,
+} from '@/store/entities/exercises';
+import { useListMuscleGroupsQuery } from '@/store/entities/muscleGroups';
+import { useGetBodyWeightQuery } from '@/store/entities/settings';
+import {
+  useDeleteWorkoutMutation,
+  useLazyGetWorkoutQuery,
+  useListWorkoutsByExerciseNameQuery,
+  useUpdateWorkoutMutation,
+} from '@/store/entities/workouts';
+import { groupWorkoutsByDate } from '@/utils/dateGroup';
 import { computeEffectiveWeight, computeERM } from '@/utils/erm';
-import { useState } from 'react';
+import { skipToken } from '@reduxjs/toolkit/query/react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export type UseExerciseDetailReturn = ReturnType<typeof useExerciseDetail>;
@@ -27,21 +27,42 @@ export type UseExerciseDetailReturn = ReturnType<typeof useExerciseDetail>;
 export const useExerciseDetail = (exerciseId: number) => {
   const navigate = useNavigate();
 
-  // Exercise state
-  const [isLoading, setIsLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
-  const [exercise, setExercise] = useState<Exercise | null>(null);
-  const [muscleGroups, setMuscleGroups] = useState<MuscleGroup[]>([]);
+  const exerciseQuery = useGetExerciseQuery(exerciseId);
+  const muscleGroupsQuery = useListMuscleGroupsQuery();
+  const exercisesQuery = useListExercisesQuery();
+  const bodyWeightQuery = useGetBodyWeightQuery();
+
+  const exercise = exerciseQuery.data ?? null;
+
+  const historyQuery = useListWorkoutsByExerciseNameQuery(
+    exercise ? exercise.name : skipToken,
+  );
+
+  const [updateExercise] = useUpdateExerciseMutation();
+  const [deleteExercise] = useDeleteExerciseMutation();
+  const [updateWorkout] = useUpdateWorkoutMutation();
+  const [deleteWorkout] = useDeleteWorkoutMutation();
+  const [fetchWorkout] = useLazyGetWorkoutQuery();
+
+  const muscleGroups = muscleGroupsQuery.data ?? [];
+  const exercises = exercisesQuery.data ?? [];
+  const bodyWeight = bodyWeightQuery.data ?? null;
+  const rawRows = useMemo(() => historyQuery.data ?? [], [historyQuery.data]);
+
+  const isLoading =
+    exerciseQuery.isLoading ||
+    muscleGroupsQuery.isLoading ||
+    exercisesQuery.isLoading ||
+    bodyWeightQuery.isLoading ||
+    historyQuery.isLoading;
+  const notFound = exerciseQuery.isSuccess && exercise === null;
+
   const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Exercise | null>(null);
-  const [groups, setGroups] = useState<WorkoutDateGroup[]>([]);
-  const [rawRows, setRawRows] = useState<WorkoutTableRow[]>([]);
   const dialog = useToggle();
   const deleteConfirm = useToggle();
 
   // Workout edit state
-  const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [bodyWeight, setBodyWeight] = useState<null | number>(null);
   const [editingWorkout, setEditingWorkout] = useState<null | WorkoutWithSets>(
     null,
   );
@@ -51,34 +72,11 @@ export const useExerciseDetail = (exerciseId: number) => {
   const workoutFormDialog = useToggle();
   const workoutDeleteConfirm = useToggle();
 
-  const loadHistory = async (exerciseName: string) => {
-    const rows = await listWorkoutsByExerciseName(exerciseName);
-    setRawRows(rows);
-    setGroups(groupWorkoutsByDate(rows));
-  };
+  const groups = useMemo(() => groupWorkoutsByDate(rawRows), [rawRows]);
 
-  const load = async () => {
-    setIsLoading(true);
-    const [found, allMuscleGroups, allExercises, bw] = await Promise.all([
-      getExerciseById(exerciseId),
-      listMuscleGroups(),
-      listExercises(),
-      getBodyWeight(),
-    ]);
-
-    if (!found) {
-      setNotFound(true);
-      setIsLoading(false);
-      return;
-    }
-
-    setExercise(found);
-    setMuscleGroups(allMuscleGroups);
-    setExercises(allExercises);
-    setBodyWeight(bw);
-    await loadHistory(found.name);
-    setIsLoading(false);
-  };
+  // Cache invalidation keeps data fresh; kept as a resolved no-op so the view's
+  // mount-time call stays valid (HR-2).
+  const load = async (): Promise<void> => undefined;
 
   // Exercise edit/delete
   const openEdit = () => {
@@ -93,15 +91,14 @@ export const useExerciseDetail = (exerciseId: number) => {
       return null;
     }
 
-    await updateExercise(
-      editingExercise.id,
-      values.name,
-      values.muscleGroupIds,
-      values.classification,
-      values.imageFilename ?? null,
-    );
+    await updateExercise({
+      classification: values.classification,
+      id: editingExercise.id,
+      imageFilename: values.imageFilename ?? null,
+      muscleGroupIds: values.muscleGroupIds,
+      name: values.name,
+    }).unwrap();
     dialog.onClose();
-    await load();
     return null;
   };
 
@@ -118,7 +115,7 @@ export const useExerciseDetail = (exerciseId: number) => {
     const target = pendingDelete;
     setPendingDelete(null);
     deleteConfirm.onClose();
-    await deleteExercise(target.id);
+    await deleteExercise(target.id).unwrap();
     navigate('/exercises');
   };
 
@@ -129,7 +126,7 @@ export const useExerciseDetail = (exerciseId: number) => {
 
   // Workout edit/delete
   const openEditWorkout = async (id: number) => {
-    const workout = await getWorkoutById(id);
+    const workout = await fetchWorkout(id).unwrap();
     setEditingWorkout(workout);
     workoutFormDialog.onOpen();
   };
@@ -158,18 +155,14 @@ export const useExerciseDetail = (exerciseId: number) => {
     });
 
     try {
-      await updateWorkout(
-        editingWorkout.id,
-        values.workoutDate,
-        values.exerciseName,
-        parsedSets,
-      );
+      await updateWorkout({
+        exerciseName: values.exerciseName,
+        id: editingWorkout.id,
+        sets: parsedSets,
+        workoutDate: values.workoutDate,
+      }).unwrap();
       workoutFormDialog.onClose();
       setEditingWorkout(null);
-      if (exercise) {
-        await loadHistory(exercise.name);
-      }
-
       return null;
     } catch {
       return 'Failed to save workout. Please try again.';
@@ -189,10 +182,7 @@ export const useExerciseDetail = (exerciseId: number) => {
     const idToDelete = pendingDeleteWorkoutId;
     setPendingDeleteWorkoutId(null);
     workoutDeleteConfirm.onClose();
-    await deleteWorkout(idToDelete);
-    if (exercise) {
-      await loadHistory(exercise.name);
-    }
+    await deleteWorkout(idToDelete).unwrap();
   };
 
   const cancelDeleteWorkout = () => {

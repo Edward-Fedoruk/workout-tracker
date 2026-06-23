@@ -1,29 +1,29 @@
+import { useGetDraftQuery } from '@/store/entities/draft';
 import {
-  createRoutine,
-  deleteRoutine,
-  getDraft,
-  listRoutines,
-  type RoutineWithExercises,
-} from '@/database';
-import { useState } from 'react';
+  useCreateRoutineMutation,
+  useDeleteRoutineMutation,
+  useListRoutinesQuery,
+} from '@/store/entities/routines';
 
 export type UseRoutinesReturn = ReturnType<typeof useRoutines>;
 
 export const useRoutines = () => {
-  const [routines, setRoutines] = useState<RoutineWithExercises[]>([]);
-  const [draftRoutineId, setDraftRoutineId] = useState<null | number>(null);
+  const { data: routines = [] } = useListRoutinesQuery();
+  const { data: draft } = useGetDraftQuery();
+  const [createRoutine] = useCreateRoutineMutation();
+  const [deleteRoutine] = useDeleteRoutineMutation();
 
-  const refresh = async () => {
-    const [list, draft] = await Promise.all([listRoutines(), getDraft()]);
-    setRoutines(list);
-    setDraftRoutineId(draft ? draft.routineId : null);
-  };
+  const draftRoutineId = draft ? draft.routineId : null;
 
-  const create = async (): Promise<number> => createRoutine('New routine');
+  // Cache invalidation keeps the list fresh; kept as a resolved no-op so the
+  // view's mount-time call stays valid (HR-2).
+  const refresh = async (): Promise<void> => undefined;
+
+  const create = async (): Promise<number> =>
+    createRoutine('New routine').unwrap();
 
   const remove = async (id: number): Promise<void> => {
-    await deleteRoutine(id);
-    await refresh();
+    await deleteRoutine(id).unwrap();
   };
 
   return {

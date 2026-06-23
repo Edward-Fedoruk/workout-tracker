@@ -1,19 +1,21 @@
-import { createExercise, type Exercise, listExercises } from '@/database';
 import { useToggle } from '@/hooks/useToggle';
 import { type FormValues } from '@/routes/exercises/Exercise/ExerciseForm/schema';
-import { useState } from 'react';
+import {
+  useCreateExerciseMutation,
+  useListExercisesQuery,
+} from '@/store/entities/exercises';
 
 export type UseExercisesReturn = ReturnType<typeof useExercises>;
 
 export const useExercises = () => {
-  const [exercises, setExercises] = useState<Exercise[]>([]);
+  const { data: exercises = [] } = useListExercisesQuery();
+  const [createExercise] = useCreateExerciseMutation();
 
   const dialog = useToggle();
 
-  const refresh = async () => {
-    const list = await listExercises();
-    setExercises(list);
-  };
+  // Cache invalidation keeps the list fresh; kept as a resolved no-op so the
+  // view's mount-time call and post-delete refresh stay valid (HR-2).
+  const refresh = async (): Promise<void> => undefined;
 
   const openCreate = () => {
     dialog.onOpen();
@@ -28,14 +30,13 @@ export const useExercises = () => {
       return 'An exercise with this name already exists';
     }
 
-    await createExercise(
-      values.name,
-      values.muscleGroupIds,
-      values.classification,
-      values.imageFilename ?? null,
-    );
+    await createExercise({
+      classification: values.classification,
+      imageFilename: values.imageFilename ?? null,
+      muscleGroupIds: values.muscleGroupIds,
+      name: values.name,
+    }).unwrap();
 
-    await refresh();
     dialog.onClose();
     return null;
   };

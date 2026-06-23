@@ -1,8 +1,9 @@
-import { getBodyWeight, listMuscleGroupSetRowsInRange } from '@/database';
+import { useListMuscleGroupSetRowsInRangeQuery } from '@/store/entities/analytics';
+import { useGetBodyWeightQuery } from '@/store/entities/settings';
 import { musclesFromSetRows } from '@/utils/analytics/fromWorkouts';
 import { muscleGroupMetricStrategies } from '@/utils/analytics/muscleGroupMetric';
 import { rollingRange, type RosePeriod } from '@/utils/analytics/timeWindows';
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 export type RoseSpoke = {
   color: string;
@@ -16,44 +17,28 @@ export type RoseSpoke = {
  */
 export const useMuscleGroupRose = () => {
   const [period, setPeriod] = useState<RosePeriod>('month');
-  const [spokes, setSpokes] = useState<RoseSpoke[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let cancelled = false;
+  const { endIso, startIso } = useMemo(() => rollingRange(period), [period]);
 
-    const load = async () => {
-      setLoading(true);
-      const { endIso, startIso } = rollingRange(period);
-      const [bodyWeight, rows] = await Promise.all([
-        getBodyWeight(),
-        listMuscleGroupSetRowsInRange(startIso, endIso),
-      ]);
+  const bodyWeightQuery = useGetBodyWeightQuery();
+  const rowsQuery = useListMuscleGroupSetRowsInRangeQuery({ endIso, startIso });
 
-      const strategy = muscleGroupMetricStrategies.getActive();
-      const next = musclesFromSetRows(rows, bodyWeight).map((group) => ({
-        color: group.color,
-        name: group.name,
-        value: strategy.calculate(group.sessions),
-      }));
+  const loading = bodyWeightQuery.isLoading || rowsQuery.isLoading;
 
-      if (!cancelled) {
-        setSpokes(next);
-        setLoading(false);
-      }
-    };
+  const spokes = useMemo<RoseSpoke[]>(() => {
+    const rows = rowsQuery.data;
+    if (!rows) {
+      return [];
+    }
 
-    load().catch(() => {
-      if (!cancelled) {
-        setSpokes([]);
-        setLoading(false);
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [period]);
+    const bodyWeight = bodyWeightQuery.data ?? null;
+    const strategy = muscleGroupMetricStrategies.getActive();
+    return musclesFromSetRows(rows, bodyWeight).map((group) => ({
+      color: group.color,
+      name: group.name,
+      value: strategy.calculate(group.sessions),
+    }));
+  }, [bodyWeightQuery.data, rowsQuery.data]);
 
   return {
     isEmpty: spokes.length === 0,

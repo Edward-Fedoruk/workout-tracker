@@ -1,8 +1,9 @@
-import { getBodyWeight, listSetRowsInRange } from '@/database';
+import { useListSetRowsInRangeQuery } from '@/store/entities/analytics';
+import { useGetBodyWeightQuery } from '@/store/entities/settings';
 import { sessionsFromSetRows } from '@/utils/analytics/fromWorkouts';
 import { strengthScoreStrategies } from '@/utils/analytics/strengthScore';
 import { weeklyBucketsSince } from '@/utils/analytics/timeWindows';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 
 export type StrengthProgressPoint = {
   score: null | number;
@@ -15,59 +16,39 @@ export type StrengthProgressPoint = {
  * buckets the chart plots oldest → newest.
  */
 export const useStrengthProgressChart = () => {
-  const [points, setPoints] = useState<StrengthProgressPoint[]>([]);
-  const [loading, setLoading] = useState(true);
+  const bodyWeightQuery = useGetBodyWeightQuery();
+  const rowsQuery = useListSetRowsInRangeQuery({
+    endIso: '9999-12-31',
+    startIso: '0001-01-01',
+  });
 
-  useEffect(() => {
-    let cancelled = false;
+  const loading = bodyWeightQuery.isLoading || rowsQuery.isLoading;
 
-    const load = async () => {
-      const [bodyWeight, rows] = await Promise.all([
-        getBodyWeight(),
-        listSetRowsInRange('0001-01-01', '9999-12-31'),
-      ]);
+  const points = useMemo<StrengthProgressPoint[]>(() => {
+    const rows = rowsQuery.data;
+    if (!rows) {
+      return [];
+    }
 
-      const firstIso = rows[0]?.isoDate;
-      if (firstIso === undefined) {
-        if (!cancelled) {
-          setPoints([]);
-          setLoading(false);
-        }
+    const firstIso = rows[0]?.isoDate;
+    if (firstIso === undefined) {
+      return [];
+    }
 
-        return;
-      }
+    const bodyWeight = bodyWeightQuery.data ?? null;
+    const strategy = strengthScoreStrategies.getActive();
+    const buckets = weeklyBucketsSince(firstIso);
+    return buckets.map((bucket) => {
+      const inBucket = rows.filter(
+        (row) => row.isoDate >= bucket.startIso && row.isoDate <= bucket.endIso,
+      );
 
-      const strategy = strengthScoreStrategies.getActive();
-      const buckets = weeklyBucketsSince(firstIso);
-      const next = buckets.map((bucket) => {
-        const inBucket = rows.filter(
-          (row) =>
-            row.isoDate >= bucket.startIso && row.isoDate <= bucket.endIso,
-        );
-
-        return {
-          score: strategy.calculate(sessionsFromSetRows(inBucket, bodyWeight)),
-          weekLabel: bucket.endIso,
-        };
-      });
-
-      if (!cancelled) {
-        setPoints(next);
-        setLoading(false);
-      }
-    };
-
-    load().catch(() => {
-      if (!cancelled) {
-        setPoints([]);
-        setLoading(false);
-      }
+      return {
+        score: strategy.calculate(sessionsFromSetRows(inBucket, bodyWeight)),
+        weekLabel: bucket.endIso,
+      };
     });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  }, [bodyWeightQuery.data, rowsQuery.data]);
 
   return {
     isEmpty: points.every((point) => point.score === null),

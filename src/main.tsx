@@ -1,6 +1,8 @@
 import App from './App.tsx';
+import { store } from './store';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { Provider } from 'react-redux';
 // eslint-disable-next-line import/no-unassigned-import -- CSS side-effect import
 import './ds-tokens.css';
 // eslint-disable-next-line import/no-unassigned-import -- CSS side-effect import
@@ -13,6 +15,8 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <App />
+    <Provider store={store}>
+      <App />
+    </Provider>
   </StrictMode>,
 );

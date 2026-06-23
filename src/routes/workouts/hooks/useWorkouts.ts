@@ -1,18 +1,18 @@
-import {
-  createWorkout,
-  deleteWorkout,
-  type Exercise,
-  getBodyWeight,
-  getExerciseNamesInTables,
-  getWorkoutById,
-  listExercises,
-  listWorkouts,
-  updateWorkout,
-  type WorkoutTableRow,
-  type WorkoutWithSets,
-} from '@/database';
+import { type WorkoutWithSets } from '@/database';
 import { useToggle } from '@/hooks/useToggle';
 import { type FormValues } from '@/routes/workouts/WorkoutForm.schema';
+import { useListExercisesQuery } from '@/store/entities/exercises';
+import {
+  useGetBodyWeightQuery,
+  useGetExerciseNamesInTablesQuery,
+} from '@/store/entities/settings';
+import {
+  useCreateWorkoutMutation,
+  useDeleteWorkoutMutation,
+  useLazyGetWorkoutQuery,
+  useListWorkoutsQuery,
+  useUpdateWorkoutMutation,
+} from '@/store/entities/workouts';
 import { groupWorkoutsByDate } from '@/utils/dateGroup';
 import { computeEffectiveWeight, computeERM } from '@/utils/erm';
 import { useMemo, useState } from 'react';
@@ -20,41 +20,51 @@ import { useMemo, useState } from 'react';
 export type UseWorkoutsReturn = ReturnType<typeof useWorkouts>;
 
 export const useWorkouts = () => {
-  const [workouts, setWorkouts] = useState<WorkoutTableRow[]>([]);
-  const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [bodyWeight, setBodyWeight] = useState<null | number>(null);
-  const [exerciseNamesInTables, setExerciseNamesInTables] = useState(false);
+  const workoutsQuery = useListWorkoutsQuery();
+  const exercisesQuery = useListExercisesQuery();
+  const bodyWeightQuery = useGetBodyWeightQuery();
+  const displayNamesQuery = useGetExerciseNamesInTablesQuery();
+
+  const [createWorkout] = useCreateWorkoutMutation();
+  const [updateWorkout] = useUpdateWorkoutMutation();
+  const [deleteWorkout] = useDeleteWorkoutMutation();
+  const [fetchWorkout] = useLazyGetWorkoutQuery();
+
+  const workouts = useMemo(
+    () => workoutsQuery.data ?? [],
+    [workoutsQuery.data],
+  );
+  const exercises = exercisesQuery.data ?? [];
+  const bodyWeight = bodyWeightQuery.data ?? null;
+  const exerciseNamesInTables = displayNamesQuery.data ?? false;
+
   const [editingWorkout, setEditingWorkout] = useState<null | WorkoutWithSets>(
     null,
   );
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState<null | string>(null);
+  const [actionError, setActionError] = useState<null | string>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<null | number>(null);
 
   const formDialog = useToggle();
   const deleteConfirm = useToggle();
   const advancedView = useToggle();
 
-  const refresh = async () => {
-    setIsLoading(true);
-    setLoadError(null);
-    try {
-      const [rows, exerciseList, bw, showNames] = await Promise.all([
-        listWorkouts(),
-        listExercises(),
-        getBodyWeight(),
-        getExerciseNamesInTables(),
-      ]);
-      setWorkouts(rows);
-      setExercises(exerciseList);
-      setBodyWeight(bw);
-      setExerciseNamesInTables(showNames);
-    } catch {
-      setLoadError('Failed to load workouts. Please reload the page.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const isLoading =
+    workoutsQuery.isLoading ||
+    exercisesQuery.isLoading ||
+    bodyWeightQuery.isLoading ||
+    displayNamesQuery.isLoading;
+
+  const loadError =
+    workoutsQuery.isError ||
+    exercisesQuery.isError ||
+    bodyWeightQuery.isError ||
+    displayNamesQuery.isError
+      ? 'Failed to load workouts. Please reload the page.'
+      : actionError;
+
+  // Cache invalidation keeps lists fresh; kept as a resolved no-op so the
+  // view's mount-time call stays valid (HR-2).
+  const refresh = async (): Promise<void> => undefined;
 
   const openCreate = () => {
     setEditingWorkout(null);
@@ -62,7 +72,7 @@ export const useWorkouts = () => {
   };
 
   const openEdit = async (id: number) => {
-    const workout = await getWorkoutById(id);
+    const workout = await fetchWorkout(id).unwrap();
     setEditingWorkout(workout);
     formDialog.onOpen();
   };
@@ -86,21 +96,20 @@ export const useWorkouts = () => {
 
     try {
       if (editingWorkout) {
-        await updateWorkout(
-          editingWorkout.id,
-          values.workoutDate,
-          values.exerciseName,
-          parsedSets,
-        );
+        await updateWorkout({
+          exerciseName: values.exerciseName,
+          id: editingWorkout.id,
+          sets: parsedSets,
+          workoutDate: values.workoutDate,
+        }).unwrap();
       } else {
-        await createWorkout(
-          values.workoutDate,
-          values.exerciseName,
-          parsedSets,
-        );
+        await createWorkout({
+          exerciseName: values.exerciseName,
+          sets: parsedSets,
+          workoutDate: values.workoutDate,
+        }).unwrap();
       }
 
-      await refresh();
       formDialog.onClose();
       setEditingWorkout(null);
       return null;
@@ -123,10 +132,9 @@ export const useWorkouts = () => {
     setPendingDeleteId(null);
     deleteConfirm.onClose();
     try {
-      await deleteWorkout(idToDelete);
-      await refresh();
+      await deleteWorkout(idToDelete).unwrap();
     } catch {
-      setLoadError('Failed to delete workout. Please try again.');
+      setActionError('Failed to delete workout. Please try again.');
     }
   };
 
