@@ -1,26 +1,22 @@
-import { getExerciseNamesInTables, setExerciseNamesInTables } from '@/database';
-import { useState } from 'react';
+import {
+  useGetExerciseNamesInTablesQuery,
+  useSetExerciseNamesInTablesMutation,
+} from '@/store/entities/settings';
 
 export type UseDisplaySettingsReturn = ReturnType<typeof useDisplaySettings>;
 
 export const useDisplaySettings = () => {
-  const [exerciseNamesInTables, setExerciseNamesInTablesState] =
-    useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data, isLoading } = useGetExerciseNamesInTablesQuery();
+  const [setExerciseNamesInTables] = useSetExerciseNamesInTablesMutation();
 
-  const refresh = async () => {
-    try {
-      const value = await getExerciseNamesInTables();
-      setExerciseNamesInTablesState(value);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const exerciseNamesInTables = data ?? false;
+
+  // Cache invalidation keeps the value fresh; kept as a resolved no-op so the
+  // view's mount-time call stays valid (HR-2).
+  const refresh = async (): Promise<void> => undefined;
 
   const toggle = async () => {
-    const next = !exerciseNamesInTables;
-    setExerciseNamesInTablesState(next);
-    await setExerciseNamesInTables(next);
+    await setExerciseNamesInTables(!exerciseNamesInTables).unwrap();
   };
 
   return {

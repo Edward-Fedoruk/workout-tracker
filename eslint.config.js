@@ -36,4 +36,14 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    // RTK Query models no-argument endpoints and no-result mutations as `void`
+    // in endpoint type arguments (e.g. `build.query<Result, void>` /
+    // `build.mutation<void, Arg>`), which is idiomatic and type-safe. The rule
+    // only guards `void` in parameter positions, so disable it for the store.
+    files: ['src/store/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-invalid-void-type': 'off',
+    },
+  },
 );

@@ -1,9 +1,12 @@
 import { type WorkoutTableRow } from '@/database';
+import {
+  Box,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from '@mui/material';
 import { LineChart } from '@mui/x-charts/LineChart';
-import { Box, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { useState } from 'react';
-
-type TimeRange = 'all' | 'month' | 'year';
 
 type ErmChartSeries = {
   data: Array<null | number>;
@@ -15,6 +18,8 @@ type ExerciseErmChartProps = {
   readonly rows: WorkoutTableRow[];
 };
 
+type TimeRange = 'all' | 'month' | 'year';
+
 const SET_DEFS = [
   { ermKey: 'Set1_erm' as const, id: 'set-1', label: 'Set 1' },
   { ermKey: 'Set2_erm' as const, id: 'set-2', label: 'Set 2' },
@@ -22,17 +27,6 @@ const SET_DEFS = [
   { ermKey: 'Set4_erm' as const, id: 'set-4', label: 'Set 4' },
   { ermKey: 'Set5_erm' as const, id: 'set-5', label: 'Set 5' },
 ] as const;
-
-function filterByRange(rows: WorkoutTableRow[], range: TimeRange): WorkoutTableRow[] {
-  if (range === 'all') return rows;
-  const now = new Date();
-  const cutoff =
-    range === 'year'
-      ? new Date(now.getFullYear() - 1, now.getMonth(), now.getDate())
-      : new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-  const cutoffStr = cutoff.toISOString().slice(0, 10);
-  return rows.filter((r) => r.workout_date >= cutoffStr);
-}
 
 function deriveChartData(filteredRows: WorkoutTableRow[]): {
   series: ErmChartSeries[];
@@ -48,6 +42,23 @@ function deriveChartData(filteredRows: WorkoutTableRow[]): {
   })).filter((s) => s.data.some((v) => v !== null));
 
   return { series, xDates };
+}
+
+function filterByRange(
+  rows: WorkoutTableRow[],
+  range: TimeRange,
+): WorkoutTableRow[] {
+  if (range === 'all') {
+    return rows;
+  }
+
+  const now = new Date();
+  const cutoff =
+    range === 'year'
+      ? new Date(now.getFullYear() - 1, now.getMonth(), now.getDate())
+      : new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+  const cutoffString = cutoff.toISOString().slice(0, 10);
+  return rows.filter((r) => r.workout_date >= cutoffString);
 }
 
 export const ExerciseErmChart = ({ rows }: ExerciseErmChartProps) => {
@@ -80,8 +91,10 @@ export const ExerciseErmChart = ({ rows }: ExerciseErmChartProps) => {
         </Typography>
         <ToggleButtonGroup
           exclusive
-          onChange={(_, value: TimeRange | null) => {
-            if (value !== null) setTimeRange(value);
+          onChange={(_, value: null | TimeRange) => {
+            if (value !== null) {
+              setTimeRange(value);
+            }
           }}
           size="small"
           value={timeRange}

@@ -1,72 +1,84 @@
 import {
-  clearDraft,
-  createWorkout,
-  type Exercise,
-  getBodyWeight,
-  getDraft,
   getLastExerciseSets,
-  getRoutineById,
   type LastExerciseSets,
-  listExercises,
   type RoutineExercise,
-  type RoutineWithExercises,
-  saveDraft,
   type StoredDraftData,
 } from '@/database';
 import { type FormValues } from '@/routes/routines/RoutineWorkout/RoutineWorkoutForm.schema';
+import {
+  useClearDraftMutation,
+  useLazyGetDraftQuery,
+  useSaveDraftMutation,
+} from '@/store/entities/draft';
+import { useListExercisesQuery } from '@/store/entities/exercises';
+import { useLazyGetRoutineQuery } from '@/store/entities/routines';
+import { useGetBodyWeightQuery } from '@/store/entities/settings';
+import { useCreateWorkoutMutation } from '@/store/entities/workouts';
 import { computeEffectiveWeight, computeERM } from '@/utils/erm';
 import { useCallback, useMemo, useState } from 'react';
 
 export type UseRoutineWorkoutReturn = ReturnType<typeof useRoutineWorkout>;
 
 export const useRoutineWorkout = () => {
-  const [routine, setRoutine] = useState<null | RoutineWithExercises>(null);
+  const [triggerGetRoutine, routineResult] = useLazyGetRoutineQuery();
+  const [triggerGetDraft] = useLazyGetDraftQuery();
+  const bodyWeightQuery = useGetBodyWeightQuery();
+  const exercisesQuery = useListExercisesQuery();
+
+  const [saveDraftMutation] = useSaveDraftMutation();
+  const [clearDraftMutation] = useClearDraftMutation();
+  const [createWorkout] = useCreateWorkoutMutation();
+
+  const routine = routineResult.data ?? null;
+  const bodyWeight = bodyWeightQuery.data ?? null;
+  const exercises = useMemo(
+    () => exercisesQuery.data ?? [],
+    [exercisesQuery.data],
+  );
+
   const [prefills, setPrefills] = useState<Map<number, LastExerciseSets>>(
     new Map(),
   );
-  const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [bodyWeight, setBodyWeight] = useState<null | number>(null);
   const [draftData, setDraftData] = useState<null | StoredDraftData>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<null | string>(null);
 
-  // Re-fetch routine + prefills + draft and update state. Shared by the initial
-  // load and by reload() after a structural mutation. Does not touch isLoading.
-  const fetchInto = async (routineId: number): Promise<boolean> => {
-    const [data, bw, exerciseList, draft] = await Promise.all([
-      getRoutineById(routineId),
-      getBodyWeight(),
-      listExercises(),
-      getDraft(),
-    ]);
+  // Re-fetch routine + prefills + draft from the cache and update local state.
+  // Shared by the initial load and by reload() after a structural mutation.
+  // Reads the draft once (not via a live subscription) so blur-time autosaves
+  // never reseed the form mid-edit. Does not touch isLoading.
+  const fetchInto = useCallback(
+    async (routineId: number): Promise<boolean> => {
+      const data = await triggerGetRoutine(routineId).unwrap();
+      if (!data) {
+        return false;
+      }
 
-    if (!data) {
-      return false;
-    }
+      const draft = await triggerGetDraft().unwrap();
 
-    setRoutine(data);
-    setBodyWeight(bw);
-    setExercises(exerciseList);
+      // Restore saved values only when the draft belongs to this routine.
+      setDraftData(
+        draft && draft.routineId === routineId ? draft.draftData : null,
+      );
 
-    // Restore saved values only when the draft belongs to this routine.
-    setDraftData(
-      draft && draft.routineId === routineId ? draft.draftData : null,
-    );
-
-    const prefillMap = new Map<number, LastExerciseSets>();
-    await Promise.all(
-      data.exercises.map(async (exercise: RoutineExercise) => {
-        const sets = await getLastExerciseSets(
-          exercise.exerciseName,
-          exercise.suggestedSets,
-        );
-        prefillMap.set(exercise.id, sets);
-      }),
-    );
-    setPrefills(prefillMap);
-    return true;
-  };
+      const prefillMap = new Map<number, LastExerciseSets>();
+      await Promise.all(
+        data.exercises.map(async (exercise: RoutineExercise) => {
+          // getLastExerciseSets is an on-demand workflow lookup, not a
+          // view-backing list — it stays a direct @/database call (HR-6).
+          const sets = await getLastExerciseSets(
+            exercise.exerciseName,
+            exercise.suggestedSets,
+          );
+          prefillMap.set(exercise.id, sets);
+        }),
+      );
+      setPrefills(prefillMap);
+      return true;
+    },
+    [triggerGetDraft, triggerGetRoutine],
+  );
 
   const load = async (routineId: number): Promise<boolean> => {
     const found = await fetchInto(routineId);
@@ -75,9 +87,12 @@ export const useRoutineWorkout = () => {
   };
 
   // Re-project state after a structural edit, without the loading spinner.
-  const reload = useCallback(async (routineId: number): Promise<void> => {
-    await fetchInto(routineId);
-  }, []);
+  const reload = useCallback(
+    async (routineId: number): Promise<void> => {
+      await fetchInto(routineId);
+    },
+    [fetchInto],
+  );
 
   // Serialise the current form values into the draft shape (keyed by
   // routineExercise.id). NaN/'' numeric fields become null.
@@ -113,10 +128,12 @@ export const useRoutineWorkout = () => {
     (values: FormValues) => {
       const data = serialiseDraft(values);
       if (routine && data) {
-        saveDraft(routine.id, data).catch(() => undefined);
+        saveDraftMutation({ data, routineId: routine.id })
+          .unwrap()
+          .catch(() => undefined);
       }
     },
-    [routine, serialiseDraft],
+    [routine, saveDraftMutation, serialiseDraft],
   );
 
   // Awaitable draft save used before structural mutations so a subsequent reload
@@ -125,15 +142,15 @@ export const useRoutineWorkout = () => {
     async (values: FormValues): Promise<void> => {
       const data = serialiseDraft(values);
       if (routine && data) {
-        await saveDraft(routine.id, data);
+        await saveDraftMutation({ data, routineId: routine.id }).unwrap();
       }
     },
-    [routine, serialiseDraft],
+    [routine, saveDraftMutation, serialiseDraft],
   );
 
   const discardDraft = useCallback(async (): Promise<void> => {
-    await clearDraft();
-  }, []);
+    await clearDraftMutation().unwrap();
+  }, [clearDraftMutation]);
 
   const submit = async (values: FormValues): Promise<boolean> => {
     setIsSubmitting(true);
@@ -159,12 +176,16 @@ export const useRoutineWorkout = () => {
           });
 
         if (filledSets.length > 0) {
-          await createWorkout(today, exercise.exerciseName, filledSets);
+          await createWorkout({
+            exerciseName: exercise.exerciseName,
+            sets: filledSets,
+            workoutDate: today,
+          }).unwrap();
         }
       }
 
       // Workout logged — the draft has served its purpose.
-      await clearDraft();
+      await clearDraftMutation().unwrap();
       return true;
     } catch {
       setError('Failed to save workout. Please try again.');

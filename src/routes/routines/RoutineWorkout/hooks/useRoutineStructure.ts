@@ -1,14 +1,14 @@
-import {
-  addRoutineExercise,
-  deleteRoutineExercise,
-  reorderRoutineExercises,
-  type RoutineWithExercises,
-  setRoutineExerciseSetCount,
-  updateRoutine,
-  updateRoutineExercise,
-} from '@/database';
+import { type RoutineWithExercises } from '@/database';
 import { type FormValues as ExerciseFormValues } from '@/routes/routines/RoutineExerciseForm.schema';
 import { type FormValues } from '@/routes/routines/RoutineWorkout/RoutineWorkoutForm.schema';
+import {
+  useAddRoutineExerciseMutation,
+  useDeleteRoutineExerciseMutation,
+  useReorderRoutineExercisesMutation,
+  useSetRoutineExerciseSetCountMutation,
+  useUpdateRoutineExerciseMutation,
+  useUpdateRoutineMutation,
+} from '@/store/entities/routines';
 import { useCallback, useState } from 'react';
 
 export type UseRoutineStructureParameters = {
@@ -27,6 +27,13 @@ export const useRoutineStructure = ({
   saveDraftNow,
 }: UseRoutineStructureParameters) => {
   const [structureVersion, setStructureVersion] = useState(0);
+
+  const [updateRoutine] = useUpdateRoutineMutation();
+  const [addRoutineExercise] = useAddRoutineExerciseMutation();
+  const [updateRoutineExercise] = useUpdateRoutineExerciseMutation();
+  const [deleteRoutineExercise] = useDeleteRoutineExerciseMutation();
+  const [setRoutineExerciseSetCount] = useSetRoutineExerciseSetCountMutation();
+  const [reorderRoutineExercises] = useReorderRoutineExercisesMutation();
 
   // autosave current form → mutate routine template → reload → bump version.
   const runStructural = useCallback(
@@ -49,54 +56,58 @@ export const useRoutineStructure = ({
 
   const rename = useCallback(
     (name: string): Promise<void> =>
-      runStructural((routineId) => updateRoutine(routineId, name)),
-    [runStructural],
+      runStructural(async (routineId) => {
+        await updateRoutine({ id: routineId, name }).unwrap();
+      }),
+    [runStructural, updateRoutine],
   );
 
   const addExercise = useCallback(
     async (values: ExerciseFormValues): Promise<null | string> => {
       try {
-        await runStructural((routineId) =>
-          addRoutineExercise(
+        await runStructural(async (routineId) => {
+          await addRoutineExercise({
+            exerciseName: values.name,
+            maxReps: values.maxReps,
+            minReps: values.minReps,
             routineId,
-            values.name,
-            values.sets,
-            values.minReps,
-            values.maxReps,
-          ).then(() => undefined),
-        );
+            suggestedSets: values.sets,
+          }).unwrap();
+        });
         return null;
       } catch {
         return 'Failed to add exercise. Please try again.';
       }
     },
-    [runStructural],
+    [addRoutineExercise, runStructural],
   );
 
   const editExercise = useCallback(
     async (id: number, values: ExerciseFormValues): Promise<null | string> => {
       try {
-        await runStructural(() =>
-          updateRoutineExercise(
+        await runStructural(async () => {
+          await updateRoutineExercise({
+            exerciseName: values.name,
             id,
-            values.name,
-            values.sets,
-            values.minReps,
-            values.maxReps,
-          ),
-        );
+            maxReps: values.maxReps,
+            minReps: values.minReps,
+            suggestedSets: values.sets,
+          }).unwrap();
+        });
         return null;
       } catch {
         return 'Failed to save exercise. Please try again.';
       }
     },
-    [runStructural],
+    [runStructural, updateRoutineExercise],
   );
 
   const deleteExercise = useCallback(
     (id: number): Promise<void> =>
-      runStructural((routineId) => deleteRoutineExercise(id, routineId)),
-    [runStructural],
+      runStructural(async (routineId) => {
+        await deleteRoutineExercise({ id, routineId }).unwrap();
+      }),
+    [deleteRoutineExercise, runStructural],
   );
 
   const addSet = useCallback(
@@ -105,11 +116,14 @@ export const useRoutineStructure = ({
         return Promise.resolve();
       }
 
-      return runStructural(() =>
-        setRoutineExerciseSetCount(exerciseId, currentCount + 1),
-      );
+      return runStructural(async () => {
+        await setRoutineExerciseSetCount({
+          id: exerciseId,
+          suggestedSets: currentCount + 1,
+        }).unwrap();
+      });
     },
-    [runStructural],
+    [runStructural, setRoutineExerciseSetCount],
   );
 
   const removeSet = useCallback(
@@ -118,19 +132,22 @@ export const useRoutineStructure = ({
         return Promise.resolve();
       }
 
-      return runStructural(() =>
-        setRoutineExerciseSetCount(exerciseId, currentCount - 1),
-      );
+      return runStructural(async () => {
+        await setRoutineExerciseSetCount({
+          id: exerciseId,
+          suggestedSets: currentCount - 1,
+        }).unwrap();
+      });
     },
-    [runStructural],
+    [runStructural, setRoutineExerciseSetCount],
   );
 
   const reorder = useCallback(
     (orderedIds: number[]): Promise<void> =>
-      runStructural((routineId) =>
-        reorderRoutineExercises(routineId, orderedIds),
-      ),
-    [runStructural],
+      runStructural(async (routineId) => {
+        await reorderRoutineExercises({ orderedIds, routineId }).unwrap();
+      }),
+    [reorderRoutineExercises, runStructural],
   );
 
   return {
