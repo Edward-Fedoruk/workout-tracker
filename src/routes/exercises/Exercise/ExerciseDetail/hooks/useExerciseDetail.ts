@@ -144,7 +144,8 @@ export const useExerciseDetail = (exerciseId: number) => {
     }
 
     const parsedSets = values.sets.map((set) => {
-      const weight = Number.isNaN(set.weight) ? null : set.weight;
+      const weight =
+        Number.isNaN(set.weight) || set.weight === '' ? null : set.weight;
       const effective = computeEffectiveWeight({
         bodyWeight: values.bodyWeight,
         classification: values.classification,

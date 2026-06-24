@@ -15,7 +15,7 @@ export const schema = z
             .number({ error: 'Reps must be greater than 0' })
             .int('Reps must be greater than 0')
             .positive('Reps must be greater than 0'),
-          weight: z.union([z.number(), z.nan()]),
+          weight: z.union([z.coerce.number<number>(), z.literal('')]),
         }),
       )
       .min(1, 'Must have at least 1 set'),

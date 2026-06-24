@@ -53,10 +53,9 @@ export const WorkoutForm = ({
         initialData && initialData.sets.length > 0
           ? initialData.sets.map((workoutSet) => ({
               reps: workoutSet.reps,
-              weight:
-                workoutSet.weight === null ? Number.NaN : workoutSet.weight,
+              weight: workoutSet.weight === null ? '' : workoutSet.weight,
             }))
-          : [{ reps: Number.NaN, weight: Number.NaN }],
+          : [{ reps: Number.NaN, weight: '' }],
       workoutDate: initialData?.workoutDate ?? getToday(),
     },
     resolver,
@@ -78,10 +77,9 @@ export const WorkoutForm = ({
         initialData.sets.length > 0
           ? initialData.sets.map((workoutSet) => ({
               reps: workoutSet.reps,
-              weight:
-                workoutSet.weight === null ? Number.NaN : workoutSet.weight,
+              weight: workoutSet.weight === null ? '' : workoutSet.weight,
             }))
-          : [{ reps: Number.NaN, weight: Number.NaN }],
+          : [{ reps: Number.NaN, weight: '' }],
       workoutDate: initialData.workoutDate,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reset when a different workout is loaded for editing
@@ -103,7 +101,7 @@ export const WorkoutForm = ({
 
   const addSet = () => {
     if (fields.length < 5) {
-      append({ reps: Number.NaN, weight: Number.NaN });
+      append({ reps: Number.NaN, weight: '' });
     }
   };
 
@@ -152,6 +150,7 @@ export const WorkoutForm = ({
         {fields.map((field, index) => (
           <WorkoutSetInputRow
             index={index}
+            isBodyWeight={classification === 'bodyweight'}
             key={field.id}
             register={register}
             repsError={errors.sets?.[index]?.reps?.message}

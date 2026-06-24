@@ -4,6 +4,7 @@ import { type UseFormRegister } from 'react-hook-form';
 
 export type WorkoutSetInputRowProps = {
   readonly index: number;
+  readonly isBodyWeight: boolean;
   readonly register: UseFormRegister<FormValues>;
   readonly repsError?: string | undefined;
   readonly weightError?: string | undefined;
@@ -12,6 +13,7 @@ export type WorkoutSetInputRowProps = {
 
 export const WorkoutSetInputRow = ({
   index,
+  isBodyWeight,
   register,
   repsError,
   weightError,
@@ -33,9 +35,13 @@ export const WorkoutSetInputRow = ({
       helperText={weightError}
       placeholder="kg"
       size="small"
-      slotProps={{ htmlInput: { ...weightInputProps, inputMode: 'decimal' } }}
-      type="number"
-      {...register(`sets.${index}.weight`, { valueAsNumber: true })}
+      slotProps={
+        isBodyWeight
+          ? undefined
+          : { htmlInput: { ...weightInputProps, inputMode: 'decimal' } }
+      }
+      type={isBodyWeight ? 'text' : 'number'}
+      {...register(`sets.${index}.weight`)}
     />
     <TextField
       error={Boolean(repsError)}

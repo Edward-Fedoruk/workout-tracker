@@ -84,7 +84,8 @@ export const useWorkouts = () => {
 
   const handleSave = async (values: FormValues): Promise<null | string> => {
     const parsedSets = values.sets.map((set) => {
-      const weight = Number.isNaN(set.weight) ? null : set.weight;
+      const weight =
+        Number.isNaN(set.weight) || set.weight === '' ? null : set.weight;
       const effective = computeEffectiveWeight({
         bodyWeight: values.bodyWeight,
         classification: values.classification,
