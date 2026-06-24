@@ -19,8 +19,12 @@ import { type AnalyticsSession } from './types';
  * Default (`sumOfBestErm`) is per the spec clarification: each week's score is
  * the sum, across all exercises trained that week, of that exercise's best-set
  * eRM. Because it sums totals, gains on some lifts and losses on others net out
- * into one direction, and an exercise present in only one week still
- * contributes to that week's total.
+ * into one direction.
+ *
+ * Note that the per-week score sums every exercise trained that week. The
+ * week-over-week comparison (`computeStrengthProgress`) restricts both weeks to
+ * the exercises they have in common before scoring, so skipping an exercise (or
+ * training a different one) never reads as "weaker" — see that function.
  */
 
 export type StrengthScoreStrategy = CalculationStrategy<
@@ -154,15 +158,54 @@ export const computeWeekOverWeekChange = (
 };
 
 /**
- * Convenience for the home-screen indicator and progress graph: score both
- * weeks with the given strategy (active by default) and compare them.
+ * Sessions whose exercise was trained in both weeks. Comparing only the shared
+ * exercises keeps the week-over-week change apples-to-apples: an exercise done
+ * in just one week (skipped this week, or newly added) is excluded from both
+ * sides so it can neither inflate nor deflate the comparison.
+ */
+const restrictToCommonExercises = (
+  currentWeekSessions: readonly AnalyticsSession[],
+  previousWeekSessions: readonly AnalyticsSession[],
+): {
+  current: AnalyticsSession[];
+  previous: AnalyticsSession[];
+} => {
+  const previousExercises = new Set(
+    previousWeekSessions.map((session) => session.exerciseName),
+  );
+  const currentExercises = new Set(
+    currentWeekSessions.map((session) => session.exerciseName),
+  );
+
+  return {
+    current: currentWeekSessions.filter((session) =>
+      previousExercises.has(session.exerciseName),
+    ),
+    previous: previousWeekSessions.filter((session) =>
+      currentExercises.has(session.exerciseName),
+    ),
+  };
+};
+
+/**
+ * Convenience for the home-screen indicator: score both weeks with the given
+ * strategy (active by default) and compare them. Only exercises trained in both
+ * weeks are scored, so dropping or swapping an exercise never reads as a
+ * strength change. When the weeks share no exercises, neither has a score and
+ * the result is `insufficient`.
  */
 export const computeStrengthProgress = (
   currentWeekSessions: readonly AnalyticsSession[],
   previousWeekSessions: readonly AnalyticsSession[],
   strategy: StrengthScoreStrategy = strengthScoreStrategies.getActive(),
-): WeekOverWeekResult =>
-  computeWeekOverWeekChange(
-    strategy.calculate(currentWeekSessions),
-    strategy.calculate(previousWeekSessions),
+): WeekOverWeekResult => {
+  const { current, previous } = restrictToCommonExercises(
+    currentWeekSessions,
+    previousWeekSessions,
   );
+
+  return computeWeekOverWeekChange(
+    strategy.calculate(current),
+    strategy.calculate(previous),
+  );
+};
